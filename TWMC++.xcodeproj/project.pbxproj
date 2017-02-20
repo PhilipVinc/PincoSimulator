@@ -261,7 +261,7 @@
 					/usr/local/include/eigen3/,
 				);
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				OTHER_LDFLAGS = (
 					"-lfftw3_threads",
 					"-lfftw3",
@@ -279,7 +279,7 @@
 					/usr/local/include/eigen3/,
 				);
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				OTHER_LDFLAGS = (
 					"-lfftw3_threads",
 					"-lfftw3",
