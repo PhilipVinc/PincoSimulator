@@ -115,7 +115,9 @@ int main(int argc, char * argv[])
     size_t num_threads = prefs->getOptionToInt("processes");
     cout << "singleOutputFile = " << singleOutputFile << endl;
     cout << "U= " << prefs->getOptionToFloat("U") << endl;
-    cout << "num_traj= " << prefs->getOptionToInt("num_traj") << endl;
+    cout << "Delta= " << prefs->getOptionToFloat("omega") << endl;
+    cout << "J= " << prefs->getOptionToFloat("J") << endl;
+    cout << "num_traj= " << prefs->getOptionToInt("n_traj") << endl;
     cout << "dt= " << simdata->dt << endl;
     cout << "data save format = X1Y1    X1Y2    X1Y3    ... X2Y1    X2Y2    X2Y3..." <<endl;
     cout << "----------------------------------" << endl;
@@ -171,12 +173,12 @@ int main(int argc, char * argv[])
         
         if (is1D)
         {
-            fftw_plans[i]->forward_fft = fftw_plan_dft_1d(int(nx),
+            fftw_plans[i]->forward_fft = fftw_plan_dft_1d(int(nx*ny),
                                                           reinterpret_cast<fftw_complex*>(f_in_ptr),
                                                           reinterpret_cast<fftw_complex*>(f_out_ptr),
                                                           FFTW_FORWARD,
                                                           FFTW_MEASURE);
-            fftw_plans[i]->inverse_fft = fftw_plan_dft_1d(int(nx),
+            fftw_plans[i]->inverse_fft = fftw_plan_dft_1d(int(nx*ny),
                                                           reinterpret_cast<fftw_complex*>(i_in_ptr),
                                                           reinterpret_cast<fftw_complex*>(i_out_ptr),
                                                           FFTW_BACKWARD,
@@ -313,8 +315,8 @@ TWMC_Data* SetupData(IniPrefReader* prefs)
     
     if(ny == 1)
     {
-        cout << "1D System with " << simData->nx << " x 1" << " sites."<< endl;
-        cout <<"Reshaping to 1 x " << simData->nx << " for calculation. Output will be the same." << endl;
+        cout << "1D System with " << nx << " x 1" << " sites."<< endl;
+        cout <<"Reshaping to 1 x " << nx << " for calculation. Output will be the same." << endl;
         ny = nx;
         nx = 1;
     }
@@ -346,8 +348,6 @@ TWMC_Data* SetupData(IniPrefReader* prefs)
     MatrixCXd deltaU = InitMatrix(nx, ny, deltaUTmp); delete[] deltaUTmp;
     MatrixCXd deltaOmega= InitMatrix(nx, ny, deltaOmegaTmp); delete[] deltaOmegaTmp;
     MatrixCXd deltaGamma = InitMatrix(nx, ny, deltaGammaTmp); delete[] deltaGammaTmp;
-    
-    cout << deltaOmega << endl;
     
     simData->U = simData->U + deltaU;
     simData->omega = simData->omega + deltaOmega;

@@ -33,9 +33,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "41EB6D851DE0578400208099"
-            BuildableName = "TWMC-test"
-            BlueprintName = "TWMC-test"
-            ReferencedContainer = "container:TWMC-test.xcodeproj">
+            BuildableName = "TWMC++"
+            BlueprintName = "TWMC++"
+            ReferencedContainer = "container:TWMC++.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -56,9 +56,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "41EB6D851DE0578400208099"
-            BuildableName = "TWMC-test"
-            BlueprintName = "TWMC-test"
-            ReferencedContainer = "container:TWMC-test.xcodeproj">
+            BuildableName = "TWMC++"
+            BlueprintName = "TWMC++"
+            ReferencedContainer = "container:TWMC++.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
