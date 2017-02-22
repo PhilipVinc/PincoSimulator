@@ -66,20 +66,20 @@ void TWMC_Evolve_Parallel(size_t th_id, TWMC_Data &dat, TWMC_Results &res, TWMC_
     std::normal_distribution<> normal(0,1);
     
     // Precompute the  Fourier Space evolution term.
-    MatrixCXd k_step = MatrixCXd::Zero(dat.nx, dat.ny);
-    MatrixCXd real_step_log = (-ij*dat.omega - dat.gamma/2.0)*dat.dt;
-    
+    MatrixCXd k_step_linear = MatrixCXd::Zero(dat.nx, dat.ny);
+    MatrixCXd real_step_linear = (-ij*dat.omega - dat.gamma/2.0);
+
     // If we have a 1D system, then we put to 0 it's contribution of the cosinus (1D/2D) code.
     double flag1DNx = (dat.nx==1) ? 0.0 : 1.0;
     double flag1DNy = (dat.ny==1) ? 0.0 : 1.0;
-    for (size_t i = 0, nRows = k_step.rows(), nCols = k_step.cols(); i < nRows; ++i)
+    for (size_t i = 0, nRows = k_step_linear.rows(), nCols = k_step_linear.cols(); i < nRows; ++i)
     {
         for (size_t j = 0; j < nCols; ++j)
         {
-            k_step(i,j) = exp((-ij*2.0*dat.J_val*(flag1DNx*cos(2.0*M_PI/double(dat.nx)*double(i)) + flag1DNy*cos(2.0*M_PI/double(dat.ny)*double(j))))*dat.dt);
+            k_step_linear(i,j) = -ij*2.0*dat.J_val*(flag1DNx*cos(2.0*M_PI/double(dat.nx)*double(i)) + flag1DNy*cos(2.0*M_PI/double(dat.ny)*double(j)));
         }
     }
-
+    
     complex_p temp_gamma = sqrt(dat.gamma_val*dat.dt/4.0);
     complex_p idt = ij*dat.dt;
 
@@ -90,60 +90,56 @@ void TWMC_Evolve_Parallel(size_t th_id, TWMC_Data &dat, TWMC_Results &res, TWMC_
     int frame_steps = floor(dat.dt_obs/dat.dt);
     
     // Initialize the beta value to the starting value.
-    plan.fft_i_out = dat.beta_init + temp_gamma*randCMat(dat.nx, dat.ny, gen,normal);
+    MatrixCXd beta_t = dat.beta_init + temp_gamma*randCMat(dat.nx, dat.ny, gen,normal);
   
     // If we are 1D then do not normalize, if we are 2D then normalize by nx*ny after each FFT cycle.
-    float_p fft_norm_factor = (dat.nx == dat.nxy || dat.ny == dat.nxy) ? 1.0 : dat.nxy;
+    float_p fft_norm_factor = dat.nxy; //(dat.nx == dat.nxy || dat.ny == dat.nxy) ? 1.0 : dat.nxy;
+    bool is2D = (dat.nx == dat.nxy || dat.ny == dat.nxy) ? false : true;
     
-    /*
-    cout << "Initial vector = " << plan.fft_i_out << endl << endl;
-    
-    cout << "k_step = " << k_step << endl << endl;
-    cout << "real_step_log = " << real_step_log << endl << endl;
-    
-    cout << "U =  " << dat.U << endl<<endl;
-    cout << "omega =  " << dat.omega << endl<<endl;
-    cout << "gamma =  " << dat.gamma << endl<<endl;
-    cout << "nxy =  " << dat.nxy << endl<<endl;
+    plan.fft_i_out = beta_t;
 
-    cout << "............................................." << endl;
-    plan.fft_f_in = plan.fft_i_out;
-    cout << "i= " << plan.fft_f_in << endl;
-    fftw_execute(plan.forward_fft);
-    plan.fft_i_in = plan.fft_f_out;
-    fftw_execute(plan.inverse_fft);
-    cout << "o= " << plan.fft_i_out << endl;
-    cout << "o= " << plan.fft_i_out/dat.nxy << endl;
-    cout << "............................................." << endl;
-     */
-
+    MatrixCXd kai_t = MatrixCXd::Zero(dat.nx, dat.ny);
+    MatrixCXd a_t = MatrixCXd::Zero(dat.nx, dat.ny);
+    MatrixCXd a_kai_t = MatrixCXd::Zero(dat.nx, dat.ny);
     
     while (t<dat.t_end)
     {
-        //cout << "t= " << t << "     psi= " << plan.fft_i_out << endl;
-        //cout <<"norm= " << plan.fft_i_out.cwiseAbs2() << endl << endl;
+        // First compute the Fourier Transform of the previous state
+        {
+            plan.fft_f_in = beta_t;
+            fftw_execute(plan.forward_fft);
+            
+            // Now in plan.fft_f_out I have the beta_t transformed.
+            // I apply the J step
+            plan.fft_i_in = k_step_linear.array() * plan.fft_f_out.array();
+            fftw_execute(plan.inverse_fft);
+            plan.fft_i_out = plan.fft_i_out/fft_norm_factor;
+        }
+        // Compute the a_t, that is used for the kai in the heun scheme
+        a_t = ((real_step_linear.array() + ij*dat.U.array()*(beta_t.array().abs2()-1.0) )*beta_t.array() + plan.fft_i_out.array() + (ij*dat.F_val))*dat.dt;
+        kai_t = beta_t.array() + a_t.array() + sqrt(dat.gamma_val*dat.dt/4.0)*randCMat(dat.nx, dat.ny, gen, normal).array();
         
-        complex_p tempDrive = ij*dat.F_val*dat.dt;
-
-        // Apply the real-space step, while writing directly to the forward fft register.
-        plan.fft_f_in = (real_step_log.array()+idt*dat.U.array()*(plan.fft_i_out.array().abs2() -1.0)).exp()*plan.fft_i_out.array() + tempDrive + temp_gamma*randCMat(dat.nx, dat.ny, gen, normal).array();
-        
-        // Do the fft, outputting to fft_f_out
-        fftw_execute(plan.forward_fft);
-                
-        // Apply k-space evolution
-        plan.fft_i_in = k_step.array()*plan.fft_f_out.array();
-        
-        // Inverse fft, storing result in fft_i_out
-        fftw_execute(plan.inverse_fft);
-        
-        plan.fft_i_out = plan.fft_i_out/fft_norm_factor;
+        // Now compute the a_kai_t, repeating the previous procedure
+        {
+            // First compute the fourier transform of the 'previously new state'
+            plan.fft_f_in = kai_t;
+            fftw_execute(plan.forward_fft);
+            
+            // Now in plan.fft_f_out I have the beta_t transformed.
+            // I apply the J step
+            plan.fft_i_in = k_step_linear.array() * plan.fft_f_out.array();
+            fftw_execute(plan.inverse_fft);
+            plan.fft_i_out = plan.fft_i_out/fft_norm_factor;
+        }
+        // Compute the a_kai_t
+        a_kai_t = ((real_step_linear.array() + ij*dat.U.array()*(kai_t.array().abs2()-1.0) )*kai_t.array() + plan.fft_i_out.array() + (ij*dat.F_val))*dat.dt;
+        beta_t = beta_t.array() + 0.5*(a_t.array() + a_kai_t.array() )+ sqrt(dat.gamma_val*dat.dt/4.0)*randCMat(dat.nx, dat.ny, gen, normal).array();
         
         // Print the data
         if((i_step % frame_steps ==0 ) && i_frame < dat.n_frames)
         {
             size_t size = res.nx*res.ny;
-            complex_p* data = plan.fft_i_out.data();
+            complex_p* data = beta_t.data();
 
             for (unsigned j= 0; j < size; j++)
             {

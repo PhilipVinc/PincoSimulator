@@ -119,6 +119,7 @@ int main(int argc, char * argv[])
     cout << "J= " << prefs->getOptionToFloat("J") << endl;
     cout << "num_traj= " << prefs->getOptionToInt("n_traj") << endl;
     cout << "dt= " << simdata->dt << endl;
+    cout << "n_timesteps= " << simdata->n_dt << endl;
     cout << "data save format = X1Y1    X1Y2    X1Y3    ... X2Y1    X2Y2    X2Y3..." <<endl;
     cout << "----------------------------------" << endl;
     cout << "      Running with " << num_threads << " threads" << endl;
