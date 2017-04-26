@@ -10,7 +10,6 @@
 		157040721E2FB737000A1C52 /* IniPrefReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 157040701E2FB737000A1C52 /* IniPrefReader.cpp */; };
 		157040751E2FCB12000A1C52 /* EigenUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 157040731E2FCB12000A1C52 /* EigenUtils.cpp */; };
 		4106FBF41DE8838C0049F08A /* test-sim.ini in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4106FBF31DE883870049F08A /* test-sim.ini */; };
-		41A792F31E30BE0B00411E70 /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 41A792F21E30BE0B00411E70 /* Makefile */; };
 		41A792F51E30C5CA00411E70 /* dOmega.dat in CopyFiles */ = {isa = PBXBuildFile; fileRef = 41A792F41E30C5C100411E70 /* dOmega.dat */; };
 		41EB6D8A1DE0578400208099 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41EB6D891DE0578400208099 /* main.cpp */; };
 		41EB6D921DE057A300208099 /* TWMC_evolve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41EB6D901DE057A300208099 /* TWMC_evolve.cpp */; };
@@ -32,13 +31,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		156DF41E1E5F4EF100AACA63 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		157040701E2FB737000A1C52 /* IniPrefReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IniPrefReader.cpp; sourceTree = "<group>"; };
 		157040711E2FB737000A1C52 /* IniPrefReader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IniPrefReader.hpp; sourceTree = "<group>"; };
 		157040731E2FCB12000A1C52 /* EigenUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EigenUtils.cpp; sourceTree = "<group>"; };
 		157040741E2FCB12000A1C52 /* EigenUtils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = EigenUtils.hpp; sourceTree = "<group>"; };
 		15FC4C7A1E5C9B10006685B6 /* notes.rtf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.rtf; path = notes.rtf; sourceTree = "<group>"; };
 		4106FBF31DE883870049F08A /* test-sim.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "test-sim.ini"; sourceTree = "<group>"; };
-		41A792F21E30BE0B00411E70 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		41A792F41E30C5C100411E70 /* dOmega.dat */ = {isa = PBXFileReference; lastKnownFileType = text; path = dOmega.dat; sourceTree = "<group>"; };
 		41EB6D861DE0578400208099 /* TWMC++ */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "TWMC++"; sourceTree = BUILT_PRODUCTS_DIR; };
 		41EB6D891DE0578400208099 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -63,6 +62,7 @@
 		41EB6D7D1DE0578400208099 = {
 			isa = PBXGroup;
 			children = (
+				156DF41E1E5F4EF100AACA63 /* Makefile */,
 				41EB6D881DE0578400208099 /* TWMC++ */,
 				41EB6D871DE0578400208099 /* Products */,
 			);
@@ -79,7 +79,6 @@
 		41EB6D881DE0578400208099 /* TWMC++ */ = {
 			isa = PBXGroup;
 			children = (
-				41A792F21E30BE0B00411E70 /* Makefile */,
 				15FC4C7A1E5C9B10006685B6 /* notes.rtf */,
 				41A792F41E30C5C100411E70 /* dOmega.dat */,
 				4106FBF31DE883870049F08A /* test-sim.ini */,
@@ -161,8 +160,8 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "cd TWMC++\nalias g++='g++  -stdlib=libc++'\nmake";
+			shellPath = /bin/bash;
+			shellScript = "alias g++='g++  -stdlib=libc++'\nmake";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -171,7 +170,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				41A792F31E30BE0B00411E70 /* Makefile in Sources */,
 				41EB6D8A1DE0578400208099 /* main.cpp in Sources */,
 				157040751E2FCB12000A1C52 /* EigenUtils.cpp in Sources */,
 				41EB6D921DE057A300208099 /* TWMC_evolve.cpp in Sources */,
@@ -260,6 +258,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;

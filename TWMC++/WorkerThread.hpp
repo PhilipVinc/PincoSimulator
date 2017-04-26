@@ -23,10 +23,12 @@ public:
     void Terminate();
     void WorkerLoop();
     
-    void AssignSimulatorData(TWMC_Data* data, TWMC_Results* result);
+    void AssignSimulatorData(TWMC_Data* data,
+                             TWMC_Results* result,
+                             unsigned int seed);
     void AssignPlan(TWMC_FFTW_plans* plan);
     void ClearSimulator();
-     
+    
     bool IsFinished();
     
     int id;
@@ -39,6 +41,7 @@ protected:
     std::atomic<bool> gotSimulator;
     std::atomic<bool> finished;
     std::atomic<bool> terminate;
+    std::atomic<unsigned int> seed;
     std::mutex threadMutex;
     
     void ClearPlan();

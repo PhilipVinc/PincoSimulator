@@ -26,17 +26,15 @@ inline complex_p randC(std::mt19937 &gen, std::normal_distribution<> norm)
     return (norm(gen)+ij*norm(gen));
 }
 
-inline MatrixCXd randCMat(size_t nx, size_t ny, std::mt19937 &gen, std::normal_distribution<> norm)
+inline void randCMat(MatrixCXd *mat, std::mt19937 &gen, std::normal_distribution<> norm)
 {
-    MatrixCXd mat = MatrixCXd::Zero(nx, ny);
-    complex_p* vals = mat.data();
-    size_t dim=nx*ny;
+    complex_p* vals = mat->data();
+    size_t dim=mat->rows()*mat->cols();
     
     for (size_t i =0; i<dim ; i++)
     {
         vals[i] = norm(gen)+ij*norm(gen);
     }
-    return mat;
 }
 
 
@@ -56,14 +54,14 @@ void printVector(complex_p* vec, int size, string name="")
 //
 // The Truncated Wigner Evolution Method.
 //
-void TWMC_Evolve_Parallel(size_t th_id, TWMC_Data &dat, TWMC_Results &res, TWMC_FFTW_plans &plan)
+void TWMC_Evolve_Parallel(size_t th_id, TWMC_Data &dat, TWMC_Results &res, TWMC_FFTW_plans &plan, unsigned int seed)
 {
     // Prepare the output
     res.n = dat.n_frames;
     // Setup the random number generation
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::normal_distribution<> normal(0,1);
+    std::mt19937 gen(seed);
+    std::normal_distribution<> normal(0,1); // mean = 0, std = 1;
+    MatrixCXd tmpRand = MatrixCXd::Zero(dat.nx, dat.ny);
     
     // Precompute the  Fourier Space evolution term.
     MatrixCXd k_step_linear = MatrixCXd::Zero(dat.nx, dat.ny);
@@ -90,11 +88,22 @@ void TWMC_Evolve_Parallel(size_t th_id, TWMC_Data &dat, TWMC_Results &res, TWMC_
     int frame_steps = floor(dat.dt_obs/dat.dt);
     
     // Initialize the beta value to the starting value.
-    MatrixCXd beta_t = dat.beta_init + temp_gamma*randCMat(dat.nx, dat.ny, gen,normal);
-  
+    MatrixCXd beta_t = dat.beta_init;
+
+    randCMat(&tmpRand, gen, normal);
+    if (dat.beta_init_sigma_val != 0)
+    {
+        beta_t += dat.beta_init_sigma_val*tmpRand;
+    }
+    else
+    {
+        beta_t = beta_t + temp_gamma*tmpRand;
+    }
+    
+    
     // If we are 1D then do not normalize, if we are 2D then normalize by nx*ny after each FFT cycle.
     float_p fft_norm_factor = dat.nxy; //(dat.nx == dat.nxy || dat.ny == dat.nxy) ? 1.0 : dat.nxy;
-    bool is2D = (dat.nx == dat.nxy || dat.ny == dat.nxy) ? false : true;
+    //bool is2D = (dat.nx == dat.nxy || dat.ny == dat.nxy) ? false : true;
     
     plan.fft_i_out = beta_t;
 
@@ -117,8 +126,10 @@ void TWMC_Evolve_Parallel(size_t th_id, TWMC_Data &dat, TWMC_Results &res, TWMC_
         }
         // Compute the a_t, that is used for the kai in the heun scheme
         a_t = ((real_step_linear.array() + ij*dat.U.array()*(beta_t.array().abs2()-1.0) )*beta_t.array() + plan.fft_i_out.array() + (ij*dat.F_val))*dat.dt;
-        kai_t = beta_t.array() + a_t.array() + sqrt(dat.gamma_val*dat.dt/4.0)*randCMat(dat.nx, dat.ny, gen, normal).array();
+        randCMat(&tmpRand, gen, normal);
+        kai_t = beta_t.array() + a_t.array() + sqrt(dat.gamma_val*dat.dt/4.0)*tmpRand.array();
         
+        /*
         // Now compute the a_kai_t, repeating the previous procedure
         {
             // First compute the fourier transform of the 'previously new state'
@@ -134,6 +145,8 @@ void TWMC_Evolve_Parallel(size_t th_id, TWMC_Data &dat, TWMC_Results &res, TWMC_
         // Compute the a_kai_t
         a_kai_t = ((real_step_linear.array() + ij*dat.U.array()*(kai_t.array().abs2()-1.0) )*kai_t.array() + plan.fft_i_out.array() + (ij*dat.F_val))*dat.dt;
         beta_t = beta_t.array() + 0.5*(a_t.array() + a_kai_t.array() )+ sqrt(dat.gamma_val*dat.dt/4.0)*randCMat(dat.nx, dat.ny, gen, normal).array();
+        */
+        beta_t = kai_t;
         
         // Print the data
         if((i_step % frame_steps ==0 ) && i_frame < dat.n_frames)
@@ -148,7 +161,6 @@ void TWMC_Evolve_Parallel(size_t th_id, TWMC_Data &dat, TWMC_Results &res, TWMC_
             }
             //cout << endl<<endl;
             i_frame = i_frame + 1;
-            
         }
         t += dat.dt;
         i_step++;

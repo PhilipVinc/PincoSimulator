@@ -38,8 +38,8 @@ struct TWMC_Data
     float_p F_val;
     float_p gamma_val;
     float_p omega_val;
-    float_p beta_init_val;
-    
+    complex_p beta_init_val;
+    float_p beta_init_sigma_val;
     float_p t_start;
     float_p t_end;
     float_p dt;

@@ -12,6 +12,6 @@
 #include <stdio.h>
 #include "TWMC_structures.h"
 
-void TWMC_Evolve_Parallel(size_t th_id, TWMC_Data &dat, TWMC_Results &res, TWMC_FFTW_plans &plan);
+void TWMC_Evolve_Parallel(size_t th_id, TWMC_Data &dat, TWMC_Results &res, TWMC_FFTW_plans &plan, unsigned int seed);
 
 #endif /* TWMC_evolve_hpp */

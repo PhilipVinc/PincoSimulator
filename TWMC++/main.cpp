@@ -18,6 +18,7 @@
 #include <cmath>
 #include <thread>
 #include <vector>
+#include <random>
 #include <queue>
 #include <tuple>
 #include <time.h>
@@ -101,8 +102,15 @@ int main(int argc, char * argv[])
     float_p w_max = *max_element(vals_array,vals_array+4);
     int n_times = round(log2((simdata->t_end - simdata->t_start)*w_max));
     simdata->dt = (simdata->t_end - simdata->t_start)/pow(2,n_times+timestep_factor);
-    simdata->dt_obs = (simdata->t_end - simdata->t_start)/simdata->n_frames;
+    simdata->dt_obs = simdata->n_frames == 0 ? 0.0 :(simdata->t_end - simdata->t_start)/simdata->n_frames;
     simdata->n_dt = (simdata->t_end - simdata->t_start)/simdata->dt;
+    
+    // Fix the dt_timestep
+    if (simdata->dt_obs < simdata->dt)
+    {
+        simdata->dt_obs = simdata->dt;
+        simdata->n_frames = simdata->n_dt;
+    }
     
     // Select 1D or 2D FFT
     bool is1D = ((simdata->ny == 1) || (simdata->nx == 1)) ? true : false;
@@ -111,15 +119,29 @@ int main(int argc, char * argv[])
     // Single output file?
     bool singleOutputFile = prefs->getOptionToInt("singleOutputFile");
     
-    // Instantiate the array holding the threads
+    // Initialize the RNG generator generating the seeds for each simulations
+    unsigned int SEED = prefs->getOptionToInt("SEED");
+    if (SEED == 0)
+        SEED = (unsigned int)time(0);
+    std::mt19937 seedGenerator(SEED);
+    
     size_t num_threads = prefs->getOptionToInt("processes");
+    if(num_threads > n_traj)
+        num_threads = n_traj;
+    
+    // Instantiate the array holding the threads
     cout << "singleOutputFile = " << singleOutputFile << endl;
+    cout << "Global Seed = " << SEED << endl;
     cout << "U= " << prefs->getOptionToFloat("U") << endl;
     cout << "Delta= " << prefs->getOptionToFloat("omega") << endl;
     cout << "J= " << prefs->getOptionToFloat("J") << endl;
+    cout << "F= " << prefs->getOptionToFloat("F") << endl;
+    cout << "beta_init= " << simdata->beta_init_val << endl;
+    cout << "beta_init_var= " << simdata->beta_init_sigma_val << endl;
     cout << "num_traj= " << prefs->getOptionToInt("n_traj") << endl;
     cout << "dt= " << simdata->dt << endl;
-    cout << "n_timesteps= " << simdata->n_dt << endl;
+    cout << "n_timesteps= " << simdata->n_dt << " divided by dt_obs = " << simdata->dt_obs << endl;
+    cout << "will save N_Frames = " << simdata->n_frames << endl;
     cout << "data save format = X1Y1    X1Y2    X1Y3    ... X2Y1    X2Y2    X2Y3..." <<endl;
     cout << "----------------------------------" << endl;
     cout << "      Running with " << num_threads << " threads" << endl;
@@ -137,9 +159,9 @@ int main(int argc, char * argv[])
     std::vector<TWMC_FFTW_plans*> fftw_plans(num_threads);
     std::vector<TWMC_Results*> results(num_threads);
     std::queue<TWMC_Results*> elaboratedResults;
-    std::vector<time_t> startTimes(num_threads);
     
     // Time handling
+    std::vector<time_t> startTimes(num_threads);
     time_t startComputationTime = time(NULL);
     time_t lastPrintTime = difftime(time(NULL),time(NULL));
     float averageComputationTime = 1;
@@ -209,7 +231,7 @@ int main(int argc, char * argv[])
         
         results[i] = res;
         workers[i]->AssignPlan(fftw_plans[i]);
-        workers[i]->AssignSimulatorData(simdata, res);
+        workers[i]->AssignSimulatorData(simdata, res, seedGenerator());
         startTimes[i] = time(NULL);
     }
 
@@ -238,13 +260,17 @@ int main(int argc, char * argv[])
                     res->beta_t = new complex_p[simdata->n_frames*simdata->nxy];
                 
                     results[i] = res;
-                    workers[i]->AssignSimulatorData(simdata, res);
+                    workers[i]->AssignSimulatorData(simdata,
+                                                    res,
+                                                    seedGenerator());
                     startTimes[i] = time(NULL);
                     //DebugCheck(res, averageComputationTime/double(n_traj));
                 }
                 else
                 {
-                    workers[i]->AssignSimulatorData(nullptr, nullptr);
+                    workers[i]->AssignSimulatorData(nullptr,
+                                                    nullptr,
+                                                    (unsigned int)NULL);
                 }
             }
         }
@@ -290,7 +316,7 @@ int main(int argc, char * argv[])
         // is more than enough. If a task lasts for 10 seconds it will never wait for than 0.5 seconds to be
         // fed a new simulation, and we are freeing up one core for additional computations, which guarantee
         // 9.5s more of computation time.
-        std::this_thread::sleep_for (std::chrono::milliseconds(200));
+        std::this_thread::sleep_for (std::chrono::milliseconds(50));
     }
     
     if (singleOutputFile)
@@ -333,7 +359,9 @@ TWMC_Data* SetupData(IniPrefReader* prefs)
     simData->F_val = prefs->getOptionToFloat("F");
     simData->omega_val = prefs->getOptionToFloat("omega");
     simData->gamma_val = prefs->getOptionToFloat("gamma");
-    simData->beta_init_val = prefs->getOptionToFloat("beta_init");
+    simData->beta_init_val = complex_p(1,0)*double(prefs->getOptionToFloat("beta_init_real"))+
+                       complex_p(0,1)*double(prefs->getOptionToFloat("beta_init_imag"));
+    simData->beta_init_sigma_val = prefs->getOptionToFloat("beta_init_sigma");
     
     // The 2D lattice is vectorized in a nx*ny line
     simData->U = InitMatrix(nx, ny, simData->U_val);

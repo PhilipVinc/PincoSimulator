@@ -23,12 +23,15 @@ WorkerThread::~WorkerThread()
 {
 }
 
-void WorkerThread::AssignSimulatorData(TWMC_Data *data, TWMC_Results* _result)
+void WorkerThread::AssignSimulatorData(TWMC_Data *data,
+                                       TWMC_Results* _result,
+                                       unsigned int _seed)
 {
     threadMutex.lock();
     finished = false;
     input = data;
     result = _result;
+    seed = _seed;
     gotSimulator = true;
     threadMutex.unlock();
 }
@@ -50,6 +53,7 @@ void WorkerThread::ClearSimulator()
     threadMutex.lock();
     input = nullptr;
     result = nullptr;
+    seed = NULL;
     gotSimulator = false;
     threadMutex.unlock();
 }
@@ -60,7 +64,7 @@ void WorkerThread::WorkerLoop()
     {
         if (gotSimulator && (input != nullptr) && (result != nullptr) && (plan !=nullptr))
         {
-            TWMC_Evolve_Parallel(id, *input, *result, *plan);
+            TWMC_Evolve_Parallel(id, *input, *result, *plan, seed);
             ClearSimulator();
         }
     }
