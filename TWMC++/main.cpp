@@ -22,6 +22,7 @@
 #include <queue>
 #include <tuple>
 #include <time.h>
+#include <stdio.h>
 #include <chrono>
 #include <fstream>
 #include "IniPrefReader.hpp"
@@ -159,6 +160,7 @@ int main(int argc, char * argv[])
     std::vector<TWMC_FFTW_plans*> fftw_plans(num_threads);
     std::vector<TWMC_Results*> results(num_threads);
     std::queue<TWMC_Results*> elaboratedResults;
+    unsigned int tmpSeed = 0;
     
     // Time handling
     std::vector<time_t> startTimes(num_threads);
@@ -167,9 +169,12 @@ int main(int argc, char * argv[])
     float averageComputationTime = 1;
     int computedTraj = 0;
 
-    std::ofstream ofile;
+    FILE* ofile = nullptr;
     if (singleOutputFile)
-        ofile.open(outputPath+"/computedTrajAll"+".dat", std::ofstream::out);// | std::ofstream::app );
+    {
+        ofile = fopen((outputPath+"/trajAll"+".bin").c_str(),"wb");
+        //ofile.open(outputPath+"/computedTrajAll"+".dat", std::ofstream::out);// | std::ofstream::app );
+    }
     
     // Id holding computation #
     int calcId = 0;
@@ -222,16 +227,21 @@ int main(int argc, char * argv[])
         }
         
         TWMC_Results *res = new TWMC_Results;
+        tmpSeed = seedGenerator();
+
         res->n = simdata->n_frames;
         res->nx = simdata->nx;
         res->ny = simdata->ny;
         res->id = calcId;
+        
+        res->seed = tmpSeed;
+        
         calcId++;
         res->beta_t = new complex_p[simdata->n_frames*simdata->nxy];
         
         results[i] = res;
         workers[i]->AssignPlan(fftw_plans[i]);
-        workers[i]->AssignSimulatorData(simdata, res, seedGenerator());
+        workers[i]->AssignSimulatorData(simdata, res, tmpSeed);
         startTimes[i] = time(NULL);
     }
 
@@ -259,12 +269,12 @@ int main(int argc, char * argv[])
                     res->id = calcId; calcId++;
                     res->beta_t = new complex_p[simdata->n_frames*simdata->nxy];
                 
+                    tmpSeed = seedGenerator();
+                    res->seed = tmpSeed;
+                    
                     results[i] = res;
-                    workers[i]->AssignSimulatorData(simdata,
-                                                    res,
-                                                    seedGenerator());
+                    workers[i]->AssignSimulatorData(simdata, res, tmpSeed);
                     startTimes[i] = time(NULL);
-                    //DebugCheck(res, averageComputationTime/double(n_traj));
                 }
                 else
                 {
@@ -281,22 +291,16 @@ int main(int argc, char * argv[])
             TWMC_Results res = *elaboratedResults.front();
             
             size_t size = res.nx*res.ny;
+            
+            if (!singleOutputFile)
+            {
+                ofile = fopen((outputPath+"/traj"+to_string(res.seed)+".bin").c_str(), "wb");
+            }
+            fwrite(res.beta_t, 1, sizeof(complex_p)*res.n*size, ofile);
 
             if (!singleOutputFile)
             {
-                ofile.open(outputPath+"/computedTraj"+to_string(res.id)+".dat", std::ofstream::out);// | std::ofstream::app );
-            }
-            for (int i =0; i < res.n; i++)
-            {
-                for (int j = 0; j < size-1; j++)
-                {
-                    ofile << res.beta_t[i*size+j].real() << "\t" << res.beta_t[i*size+j].imag() << "\t";
-                }
-                ofile << res.beta_t[i*size+size-1].real() << "\t" << res.beta_t[i*size+size-1].imag() << endl;
-            }
-            if (!singleOutputFile)
-            {
-                ofile.close();
+                fclose(ofile);
             }
             delete[] res.beta_t;
             delete elaboratedResults.front();
@@ -320,7 +324,7 @@ int main(int argc, char * argv[])
     }
     
     if (singleOutputFile)
-        ofile.close();
+        fclose(ofile);
     
     // We're done. Kill the peoons.
     for (int i = 0; i<num_threads; i++)

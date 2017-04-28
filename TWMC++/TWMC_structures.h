@@ -72,6 +72,7 @@ struct TWMC_Results
     size_t n;
     size_t nx;
     size_t ny;
+    unsigned int seed;
 };
 
 #endif /* TWMC_structures_h */
