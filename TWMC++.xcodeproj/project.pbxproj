@@ -10,7 +10,6 @@
 		157040721E2FB737000A1C52 /* IniPrefReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 157040701E2FB737000A1C52 /* IniPrefReader.cpp */; };
 		157040751E2FCB12000A1C52 /* EigenUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 157040731E2FCB12000A1C52 /* EigenUtils.cpp */; };
 		4106FBF41DE8838C0049F08A /* test-sim.ini in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4106FBF31DE883870049F08A /* test-sim.ini */; };
-		41A792F51E30C5CA00411E70 /* dOmega.dat in CopyFiles */ = {isa = PBXBuildFile; fileRef = 41A792F41E30C5C100411E70 /* dOmega.dat */; };
 		41EB6D8A1DE0578400208099 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41EB6D891DE0578400208099 /* main.cpp */; };
 		41EB6D921DE057A300208099 /* TWMC_evolve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41EB6D901DE057A300208099 /* TWMC_evolve.cpp */; };
 		41FC8E511DE2426F007F461B /* WorkerThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41FC8E4F1DE2426F007F461B /* WorkerThread.cpp */; };
@@ -23,7 +22,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
-				41A792F51E30C5CA00411E70 /* dOmega.dat in CopyFiles */,
 				4106FBF41DE8838C0049F08A /* test-sim.ini in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -36,9 +34,7 @@
 		157040711E2FB737000A1C52 /* IniPrefReader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IniPrefReader.hpp; sourceTree = "<group>"; };
 		157040731E2FCB12000A1C52 /* EigenUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EigenUtils.cpp; sourceTree = "<group>"; };
 		157040741E2FCB12000A1C52 /* EigenUtils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = EigenUtils.hpp; sourceTree = "<group>"; };
-		15FC4C7A1E5C9B10006685B6 /* notes.rtf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.rtf; path = notes.rtf; sourceTree = "<group>"; };
 		4106FBF31DE883870049F08A /* test-sim.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "test-sim.ini"; sourceTree = "<group>"; };
-		41A792F41E30C5C100411E70 /* dOmega.dat */ = {isa = PBXFileReference; lastKnownFileType = text; path = dOmega.dat; sourceTree = "<group>"; };
 		41EB6D861DE0578400208099 /* TWMC++ */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "TWMC++"; sourceTree = BUILT_PRODUCTS_DIR; };
 		41EB6D891DE0578400208099 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		41EB6D901DE057A300208099 /* TWMC_evolve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TWMC_evolve.cpp; sourceTree = "<group>"; };
@@ -79,8 +75,6 @@
 		41EB6D881DE0578400208099 /* TWMC++ */ = {
 			isa = PBXGroup;
 			children = (
-				15FC4C7A1E5C9B10006685B6 /* notes.rtf */,
-				41A792F41E30C5C100411E70 /* dOmega.dat */,
 				4106FBF31DE883870049F08A /* test-sim.ini */,
 				41EB6D891DE0578400208099 /* main.cpp */,
 				41FC8E4F1DE2426F007F461B /* WorkerThread.cpp */,

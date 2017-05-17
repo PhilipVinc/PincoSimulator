@@ -9,9 +9,6 @@
 //  DATA IS SAVED AS:
 //  X1Y1    X1Y2    X1Y3    ... X2Y1    X2Y2    X2Y3...
 //
-//
-//
-//
 
 #include <iostream>
 #include <complex>
@@ -29,6 +26,8 @@
 #include <libgen.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <iomanip>
+
 
 
 #include "TWMC_structures.h"
@@ -38,9 +37,11 @@
 #include "EigenUtils.hpp"
 
 void usage(const char * pname);
-bool file_exist(const std::string fileName);
+uint file_exist(const std::string fileName);
 void CheckCreateFolder(std::string folderName);
 void CopyFileToFolder(std::string inputFile, std::string outputFolder);
+std::vector<std::string> findAllFolders(std::string path);
+std::vector<std::string> findFoldersContainingString(std::string path, std::string pattern);
 
 using namespace std;
 
@@ -53,12 +54,21 @@ void PrintTimesFile(TWMC_Data& dat, string outputPath);
 
 TWMC_Data* SetupData(IniPrefReader* prefs);
 
+const string paramsFileName = "_sim.ini";
+const string folderSeparator = "/";
+const string trajectoryFolderBaseName = "trajectories";
+const string trajectoryNames = "traj";
+const string trajectoryExtension = ".bin";
+
 int main(int argc, char * argv[])
 {
 
     // Command Line options flags and values
     string inputPath = "rien";
     string outputPath = "lastSim";
+    bool continuationOfOldSim = false;
+    bool outputSet = false;
+    unsigned long trajectoryFoldersN = 1;
     // Parse input file name from commandline args
     int opt;
     while((opt = getopt(argc, argv, "i:o:h?")) != -1)
@@ -70,6 +80,7 @@ int main(int argc, char * argv[])
                 break;
             case 'o':
                 outputPath = optarg;
+                outputSet = true;
                 break;
             case 'h':
             case '?':
@@ -78,17 +89,46 @@ int main(int argc, char * argv[])
                 return 1;
         }
     }
-    if (!file_exist(inputPath))
+    uint fE = file_exist(inputPath);
+    if (fE == 2)
+    {
+        cout << "Loading Folder: " << inputPath << endl;
+        outputPath = inputPath;
+        inputPath = inputPath + folderSeparator + paramsFileName;
+        fE = file_exist(inputPath);
+        cout << "New params file is: " << inputPath << endl;
+        continuationOfOldSim = true;
+        
+        auto tmppp = findFoldersContainingString(outputPath, trajectoryFolderBaseName);
+        auto tmpN = findFoldersContainingString(outputPath, trajectoryFolderBaseName).size();
+        for (int i =0; i < tmpN; i++)
+            cout <<tmppp[i] << endl;
+        trajectoryFoldersN = findFoldersContainingString(outputPath, trajectoryFolderBaseName).size()+1;
+    }
+    if (fE == 0)
     {
         std::cerr << "Did not provide input data. Shutting down."<< std::endl;
         usage( argv[0] );
         return 0;
     }
-    CheckCreateFolder(outputPath);
-    CopyFileToFolder(inputPath, outputPath);
-
+    
     // Parse the input file.
     IniPrefReader* prefs = new IniPrefReader(inputPath);
+    string simName = prefs->getOptionToString("save_path");
+    if (simName != "" &&  !continuationOfOldSim && !outputSet)
+        outputPath = simName;
+    outputPath += "/";
+    
+    cout << "Reading Ini File: " << inputPath << endl;
+    cout << "Saving to Folder: " << outputPath << endl;
+
+    CheckCreateFolder(outputPath);
+
+    if (!continuationOfOldSim)
+    {
+        CopyFileToFolder(inputPath, outputPath);
+    }
+    
     
     // Load all the data from the input file. VERY IMPORTANT METHOD
     TWMC_Data* simdata = SetupData(prefs);
@@ -124,6 +164,8 @@ int main(int argc, char * argv[])
     unsigned int SEED = prefs->getOptionToInt("SEED");
     if (SEED == 0)
         SEED = (unsigned int)time(0);
+    else if (continuationOfOldSim)
+        SEED = SEED + (unsigned int)time(0);
     std::mt19937 seedGenerator(SEED);
     
     size_t num_threads = prefs->getOptionToInt("processes");
@@ -163,18 +205,26 @@ int main(int argc, char * argv[])
     unsigned int tmpSeed = 0;
     
     // Time handling
+    int sleepTimeMs = 10;
     std::vector<time_t> startTimes(num_threads);
-    time_t startComputationTime = time(NULL);
-    time_t lastPrintTime = difftime(time(NULL),time(NULL));
-    float averageComputationTime = 1;
+    auto t_start = std::chrono::steady_clock::now();
+    auto lastPrintTime = std::chrono::duration<double, std::milli>(t_start-t_start).count();
+    float averageComputationTime = 1000;
     int computedTraj = 0;
 
+    // File names preparation
+    const string trajectoryFolder = outputPath + folderSeparator + trajectoryFolderBaseName + to_string(trajectoryFoldersN) + folderSeparator;
+    const string trajectoryPrepend = trajectoryFolder + trajectoryNames;
+    CheckCreateFolder(trajectoryFolder);
+    cout << "will save trajectories to Folder: " << trajectoryFolder << endl;
+    
     FILE* ofile = nullptr;
     if (singleOutputFile)
     {
-        ofile = fopen((outputPath+"/trajAll"+".bin").c_str(),"wb");
+        ofile = fopen((trajectoryPrepend+"All"+trajectoryExtension).c_str(),"wb");
         //ofile.open(outputPath+"/computedTrajAll"+".dat", std::ofstream::out);// | std::ofstream::app );
     }
+    cout << std::setprecision(2)<< std::fixed;
     
     // Id holding computation #
     int calcId = 0;
@@ -258,7 +308,6 @@ int main(int argc, char * argv[])
                 elaboratedResults.push(results[i]);
                 workers[i]->ClearSimulator();
                 computedTraj++;
-                averageComputationTime = floor(difftime(time(NULL),startComputationTime)/double(computedTraj)*double(n_traj));
                 
                 if (calcId < n_traj)
                 {
@@ -284,6 +333,17 @@ int main(int argc, char * argv[])
                 }
             }
         }
+     
+        auto t_now = std::chrono::steady_clock::now();
+        double elapsedTime = std::chrono::duration<double, std::milli>(t_now-t_start).count();
+
+        if (!elaboratedResults.empty() && computedTraj > 0)
+        {
+            averageComputationTime = elapsedTime / double(computedTraj)*double(n_traj);
+            sleepTimeMs = elapsedTime / double(computedTraj) * double(num_threads)/10;
+            if (sleepTimeMs > 1000)
+                sleepTimeMs = 1000;
+        }
         
         // Write to the filesystem elaborated data in the queue.
         while (!elaboratedResults.empty())
@@ -294,7 +354,7 @@ int main(int argc, char * argv[])
             
             if (!singleOutputFile)
             {
-                ofile = fopen((outputPath+"/traj"+to_string(res.seed)+".bin").c_str(), "wb");
+                ofile = fopen((trajectoryPrepend+to_string(res.seed)+trajectoryExtension).c_str(), "wb");
             }
             fwrite(res.beta_t, 1, sizeof(complex_p)*res.n*size, ofile);
 
@@ -306,21 +366,21 @@ int main(int argc, char * argv[])
             delete elaboratedResults.front();
             elaboratedResults.pop();
         }
-        
+
         // Print the progress
-        double elapsedTime = difftime(time(NULL),startComputationTime);
+
         double timeIncrement = averageComputationTime/100.0;
-        if ((lastPrintTime != elapsedTime) && ((elapsedTime - lastPrintTime) / timeIncrement >= 1) )
+        if ((lastPrintTime + 1000 < elapsedTime) && ((elapsedTime - lastPrintTime) / timeIncrement >= 1) && computedTraj!= 0)
         {
             lastPrintTime = elapsedTime;
-            cout << "Computed " << computedTraj << " / " << n_traj << " trajectories. Time: " << elapsedTime << " / " << averageComputationTime<<endl;
+            cout << "Computed " << computedTraj << " / " << n_traj << " trajectories. Time: " << int(elapsedTime/1000) << " / " << int(averageComputationTime/1000) << "   (Sleep="<<double(sleepTimeMs)/1000<<" s)"<<endl;
+            
         }
-        
         // It's useless for this control while loop to be run many times, a couple of times per second
         // is more than enough. If a task lasts for 10 seconds it will never wait for than 0.5 seconds to be
         // fed a new simulation, and we are freeing up one core for additional computations, which guarantee
         // 9.5s more of computation time.
-        std::this_thread::sleep_for (std::chrono::milliseconds(50));
+        std::this_thread::sleep_for (std::chrono::milliseconds(sleepTimeMs));
     }
     
     if (singleOutputFile)
@@ -402,7 +462,7 @@ void PrintTimesFile(TWMC_Data& dat, string outputPath)
     int frame_steps = floor(dat.dt_obs/dat.dt);
     
     std::ofstream tfile, ffile;
-    tfile.open(outputPath+"/_times.dat", std::ofstream::out);// | std::ofstream::app );
+    tfile.open(outputPath+folderSeparator+"_times.dat", std::ofstream::out);// | std::ofstream::app );
     while (t<dat.t_end)
     {
         // Print the data
@@ -424,10 +484,19 @@ void usage(const char * pname)
     std::cerr << "[-o \"nomefile\"] output folder name" << std::endl;
 }
 
-bool file_exist(const string fileName)
+#include <sys/stat.h>
+uint file_exist(const string fileName)
 {
-    std::ifstream infile(fileName);
-    return infile.good();
+    struct stat st;
+    stat(fileName.c_str(), &st);
+    bool isDir = S_ISDIR(st.st_mode);
+    if (isDir)
+        return 2;
+    else
+    {
+        std::ifstream infile(fileName);
+        return infile.good();
+    }
 }
 
 float_p* CreateRealVector(int dim, float_p val)
@@ -479,20 +548,90 @@ complex_p* RealToComplexArray(int dim, float_p* arr)
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
+
+// Recursive mkdir
+int mkpath(char* file_path, mode_t mode) {
+    assert(file_path && *file_path);
+    char* p;
+    for (p=strchr(file_path+1, '/'); p; p=strchr(p+1, '/')) {
+        *p='\0';
+        if (mkdir(file_path, mode)==-1) {
+            if (errno!=EEXIST) { *p='/'; return -1; }
+        }
+        *p='/';
+    }
+    return 0;
+}
+int mkpathAll(const char* file_path) ;
+
+int mkpathAll(const char* _file_path) {
+    char file_path[1500];
+    strcpy(file_path,_file_path);
+    
+    assert(file_path && *file_path);
+    char* p;
+    for (p=strchr(file_path+1, '/'); p; p=strchr(p+1, '/')) {
+        *p='\0';
+        if (mkdir(file_path, 0777)==-1) {
+            if (errno!=EEXIST) { *p='/'; return -1; }
+        }
+        *p='/';
+    }
+    return 0;
+}
+
+std::vector<string> findAllFolders(string path)
+{
+    std::vector<string> result = std::vector<string>(0);
+    
+    const char* PATH = path.c_str();
+    
+    DIR *dir = opendir(PATH);
+    struct dirent *entry = readdir(dir);
+    
+    while (entry != NULL)
+    {
+        if (entry->d_type == DT_DIR)
+        {
+            printf("%s\n", entry->d_name);
+            result.push_back(entry->d_name);
+        }
+        
+        entry = readdir(dir);
+    }
+    closedir(dir);
+    return result;
+}
+
+std::vector<string> findFoldersContainingString(string path, string pattern)
+{
+    std::vector<string> allFolders = findAllFolders(path);
+    for (int i=0; i< allFolders.size(); i++)
+    {
+        if (allFolders[i].find(pattern) == std::string::npos)
+        {
+            allFolders.erase(allFolders.begin()+i);
+            i--;
+        }
+    }
+    return allFolders;
+}
 
 void CheckCreateFolder(string folderName)
 {
     struct stat sb;
     if (!(stat(folderName.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)))
     {
-        mkdir(folderName.c_str(), 0777);
+        mkpathAll(folderName.c_str());
     }
 }
+
 
 void CopyFileToFolder(string inputFile, string outputFolder)
 {
     std::ifstream  src(inputFile, std::ios::binary);
-    std::ofstream  dst(outputFolder+"/_sim.ini",   std::ios::binary);
+    std::ofstream  dst(outputFolder+folderSeparator+paramsFileName,   std::ios::binary);
         
     dst << src.rdbuf();
     src.close();

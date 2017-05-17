@@ -1,10 +1,11 @@
 CC = g++
 INCLUDES = -I. -I/usr/local/include -I/usr/local/include/eigen3
 LIBRARIES = -L/usr/local/lib -lfftw3 -lm -static-libstdc++ 
-FLAGS = -g -pthread -std=c++11  -D_GLIBCXX_USE_NANOSLEEP  -O3 -static-libstdc++
+FLAGS = -g -pthread -std=c++11  -D_GLIBCXX_USE_NANOSLEEP  -O3 -static-libstdc++ -march=native
 #
 
 EXECUTABLE_NAME = twmc
+INSTALL_DIR = $(HOME)/bin/
 
 SOURCEDIR = ./TWMC++
 BUILD_DIR = ./build
@@ -24,7 +25,7 @@ ifeq ($(UNAME_S),Darwin)
 endif
 # Fix for old version of Matlab in Linux Cluster
 ifeq ($(UNAME_S),Linux)
-	CC += -static-libstdc++
+	CC =g++-63 -static-libstdc++
 	# Fix for th2 install of fftw shitty
 	LIBRARIES += -L/usr/lib
 endif
@@ -47,3 +48,6 @@ clean:
 
 list:
 	echo $(SOURCES); echo $(OBJECTS); echo $(UNAME_S); echo $(CC); echo $(TMP);
+
+install:
+	cp $(BUILD_DIR)/$(EXECUTABLE_NAME) $(INSTALL_DIR)
