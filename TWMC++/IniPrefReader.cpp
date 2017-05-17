@@ -248,8 +248,6 @@ complex_p* IniPrefReader::getValueOrMatrixImag(std::string key, size_t nx, size_
     return resMatrix;
 }
 
-
-
 std::string IniPrefReader::parseOptionName(std::string value)
 {
     size_t found;

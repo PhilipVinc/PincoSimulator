@@ -14,7 +14,7 @@
 WorkerThread::WorkerThread(int _id)
 {
     id = _id;
-    gotSimulator = false;
+    gotSimulation = false;
     finished = false;
     terminate = false;
 }
@@ -23,38 +23,20 @@ WorkerThread::~WorkerThread()
 {
 }
 
-void WorkerThread::AssignSimulatorData(TWMC_Data *data,
-                                       TWMC_Results* _result,
-                                       unsigned int _seed)
+void WorkerThread::AssignSimulation(Simulation* _simulation)
 {
     threadMutex.lock();
     finished = false;
-    input = data;
-    result = _result;
-    seed = _seed;
-    gotSimulator = true;
+    simulation = _simulation;
+    gotSimulation = true;
     threadMutex.unlock();
 }
 
-void WorkerThread::AssignPlan(TWMC_FFTW_plans *_plan)
+void WorkerThread::ClearSimulation()
 {
     threadMutex.lock();
-    plan = _plan;
-    threadMutex.unlock();
-}
-
-void WorkerThread::ClearPlan()
-{
-    plan = nullptr;
-}
-
-void WorkerThread::ClearSimulator()
-{
-    threadMutex.lock();
-    input = nullptr;
-    result = nullptr;
-    seed = NULL;
-    gotSimulator = false;
+    simulation = nullptr;
+    gotSimulation = false;
     threadMutex.unlock();
 }
 
@@ -62,18 +44,21 @@ void WorkerThread::WorkerLoop()
 {
     while (!terminate)
     {
-        if (gotSimulator && (input != nullptr) && (result != nullptr) && (plan !=nullptr))
+        if (gotSimulation && (simulation != nullptr))
         {
-            TWMC_Evolve_Parallel(id, *input, *result, *plan, seed);
-            ClearSimulator();
+            simulation->PreCompute();
+            simulation->Compute();
+            simulation->PostCompute();
+            ClearSimulation();
         }
     }
     ClearPlan();
     delete this;
 }
 
+
 bool WorkerThread::IsFinished() {
-    return (!gotSimulator);
+    return (!gotSimulation);
 }
 
 void WorkerThread::Terminate()

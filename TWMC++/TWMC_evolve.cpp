@@ -17,39 +17,11 @@
 
 
 using namespace std;
-
 const complex_p ij(0.0,1.0);
 
-
-inline complex_p randC(std::mt19937 &gen, std::normal_distribution<> norm)
-{
-    return (norm(gen)+ij*norm(gen));
-}
-
-inline void randCMat(MatrixCXd *mat, std::mt19937 &gen, std::normal_distribution<> norm)
-{
-    complex_p* vals = mat->data();
-    size_t dim=mat->rows()*mat->cols();
-    
-    for (size_t i =0; i<dim ; i++)
-    {
-        vals[i] = norm(gen)+ij*norm(gen);
-    }
-}
-
-
-void printVector(complex_p* vec, int size, string name="")
-{
-    cout << "----vec: " << name << " -----"<<endl;
-#pragma clang loop vectorize(disable)
-    for (int i = 0; i != size; i++)
-    {
-        cout << i << " | " << vec[i] << endl;
-    }
-    cout <<endl;
-}
-/* END Utility Methods */
-
+inline complex_p randC(std::mt19937 &gen, std::normal_distribution<> norm);
+inline void randCMat(MatrixCXd *mat, std::mt19937 &gen, std::normal_distribution<> norm);
+void printVector(complex_p* vec, int size, string name="");
 
 //
 // The Truncated Wigner Evolution Method.
@@ -79,7 +51,6 @@ void TWMC_Evolve_Parallel(size_t th_id, TWMC_Data &dat, TWMC_Results &res, TWMC_
     }
     
     complex_p temp_gamma = sqrt(dat.gamma_val*dat.dt/4.0);
-    complex_p idt = ij*dat.dt;
 
     // Initial iteration values
     float_p t = 0;
@@ -129,23 +100,6 @@ void TWMC_Evolve_Parallel(size_t th_id, TWMC_Data &dat, TWMC_Results &res, TWMC_
         randCMat(&tmpRand, gen, normal);
         kai_t = beta_t.array() + a_t.array() + sqrt(dat.gamma_val*dat.dt/4.0)*tmpRand.array();
         
-        /*
-        // Now compute the a_kai_t, repeating the previous procedure
-        {
-            // First compute the fourier transform of the 'previously new state'
-            plan.fft_f_in = kai_t;
-            fftw_execute(plan.forward_fft);
-            
-            // Now in plan.fft_f_out I have the beta_t transformed.
-            // I apply the J step
-            plan.fft_i_in = k_step_linear.array() * plan.fft_f_out.array();
-            fftw_execute(plan.inverse_fft);
-            plan.fft_i_out = plan.fft_i_out/fft_norm_factor;
-        }
-        // Compute the a_kai_t
-        a_kai_t = ((real_step_linear.array() + ij*dat.U.array()*(kai_t.array().abs2()-1.0) )*kai_t.array() + plan.fft_i_out.array() + (ij*dat.F_val))*dat.dt;
-        beta_t = beta_t.array() + 0.5*(a_t.array() + a_kai_t.array() )+ sqrt(dat.gamma_val*dat.dt/4.0)*randCMat(dat.nx, dat.ny, gen, normal).array();
-        */
         beta_t = kai_t;
         
         // Print the data
@@ -169,4 +123,34 @@ void TWMC_Evolve_Parallel(size_t th_id, TWMC_Data &dat, TWMC_Results &res, TWMC_
     // Not returning any quantity because results are stored in referenced structures.
     return;
 };
+
+/* START Utility Methods */
+
+inline complex_p randC(std::mt19937 &gen, std::normal_distribution<> norm)
+{
+    return (norm(gen)+ij*norm(gen));
+}
+
+inline void randCMat(MatrixCXd *mat, std::mt19937 &gen, std::normal_distribution<> norm)
+{
+    complex_p* vals = mat->data();
+    size_t dim=mat->rows()*mat->cols();
+    
+    for (size_t i =0; i<dim ; i++)
+    {
+        vals[i] = norm(gen)+ij*norm(gen);
+    }
+}
+
+void printVector(complex_p* vec, int size, string name)
+{
+    cout << "----vec: " << name << " -----"<<endl;
+#pragma clang loop vectorize(disable)
+    for (int i = 0; i != size; i++)
+    {
+        cout << i << " | " << vec[i] << endl;
+    }
+    cout <<endl;
+}
+/* END Utility Methods */
 

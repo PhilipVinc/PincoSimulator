@@ -7,6 +7,7 @@
 //
 
 #include "EigenUtils.hpp"
+const complex_p ij(0.0,1.0);
 
 MatrixCXd InitDiagMatrix(size_t dim, size_t diag, complex_p value)
 {
@@ -120,5 +121,7 @@ MatrixCXd vecSqrt(MatrixCXd mat)
     }
     return newmat;
 }
+
+
 
 

@@ -13,7 +13,7 @@
 #include <atomic>
 #include <mutex>
 
-#include "TWMC_structures.h"
+#include "Simulation.hpp"
 
 class WorkerThread
 {
@@ -23,25 +23,19 @@ public:
     void Terminate();
     void WorkerLoop();
     
-    void AssignSimulatorData(TWMC_Data* data,
-                             TWMC_Results* result,
-                             unsigned int seed);
-    void AssignPlan(TWMC_FFTW_plans* plan);
-    void ClearSimulator();
+    void AssignSimulation(Simulation* simulation);
+    void ClearSimulation();
     
     bool IsFinished();
     
     int id;
     
 protected:
-    std::atomic<TWMC_Data*> input;
-    std::atomic<TWMC_Results*> result;
-    std::atomic<TWMC_FFTW_plans*> plan;
+    Simulation* simulation;
     
-    std::atomic<bool> gotSimulator;
+    std::atomic<bool> gotSimulation;
     std::atomic<bool> finished;
     std::atomic<bool> terminate;
-    std::atomic<unsigned int> seed;
     std::mutex threadMutex;
     
     void ClearPlan();
