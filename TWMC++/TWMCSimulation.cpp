@@ -7,6 +7,7 @@
 //
 
 #include "TWMCSimulation.hpp"
+#include "Settings.hpp"
 
 #include <iostream>
 #include <random>
@@ -20,6 +21,15 @@ using namespace std;
 inline void randCMat(MatrixCXd *mat, std::mt19937 &gen, std::normal_distribution<> norm);
 inline complex_p randC(std::mt19937 &gen, std::normal_distribution<> norm);
 
+
+TWMCSimulation::TWMCSimulation(const Settings* settings)
+{
+    
+}
+
+void TWMCSimulation::Setup(SimData* simData)
+{
+}
 
 //
 // The Truncated Wigner Evolution Method.

@@ -139,7 +139,7 @@ void Settings::SetupOutputFolder()
 
 
 
-template <typename T> T Settings::get(string path)
+template <class T> T Settings::get(string path) const
 {
     T result;
     try
@@ -153,19 +153,19 @@ template <typename T> T Settings::get(string path)
     return result;
 }
 
-template<> string Settings::get<string>(string path)
+template<> string Settings::get<string>(string path) const
 {
     string result = tree->get<string>(path, "");
     return result;
 }
 
-template<> bool Settings::get<bool>(string path)
+template<> bool Settings::get<bool>(string path) const
 {
     bool result = tree->get<bool>(path, false);
     return result;
 }
 
-template<> complex<float> Settings::get<complex<float>>(string path)
+template<> complex<float> Settings::get<complex<float>>(string path) const
 {
     complex<float> result;
     try
@@ -182,7 +182,7 @@ template<> complex<float> Settings::get<complex<float>>(string path)
     return result;
 }
 
-template<> complex<double> Settings::get<complex<double>>(string path)
+template<> complex<double> Settings::get<complex<double>>(string path) const
 {
     complex<double> result;
     try

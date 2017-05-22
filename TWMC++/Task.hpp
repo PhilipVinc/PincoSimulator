@@ -13,24 +13,26 @@
 
 #include "SimData.hpp"
 
-class Simulation
+class Task
 {
 public:
-    Simulation(int id);
-    virtual ~Simulation();
+    Task();
+    Task(size_t id);
+    ~Task();
     
     virtual void Setup(SimData* simData) = 0;
-    virtual void PreCompute();
-    virtual void Compute() = 0;
-    virtual void PostCompute();
     virtual void Save();
     
-    size_t th_id;
+    void Execute();
+    
+    size_t task_id;
     
     unsigned int seed;
 
 protected:
-
+    virtual void PreCompute();
+    virtual void Compute() = 0;
+    virtual void PostCompute();
 private:
     
 };

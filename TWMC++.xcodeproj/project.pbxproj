@@ -7,15 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		157040721E2FB737000A1C52 /* IniPrefReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 157040701E2FB737000A1C52 /* IniPrefReader.cpp */; };
-		157040751E2FCB12000A1C52 /* EigenUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 157040731E2FCB12000A1C52 /* EigenUtils.cpp */; };
 		15E19CB21ECCBC0B006520C8 /* Settings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15E19CB01ECCBC0B006520C8 /* Settings.cpp */; };
 		15E2003B1ECCD020009B01A8 /* FsUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15E200391ECCD020009B01A8 /* FsUtils.cpp */; };
-		15E28E2A1ECC987E00DEAF3F /* Simulation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15E28E281ECC987E00DEAF3F /* Simulation.cpp */; };
+		15E28E2A1ECC987E00DEAF3F /* Task.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15E28E281ECC987E00DEAF3F /* Task.cpp */; };
 		15E28E2D1ECC994900DEAF3F /* SimData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15E28E2B1ECC994900DEAF3F /* SimData.cpp */; };
 		4106FBF41DE8838C0049F08A /* test-sim.ini in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4106FBF31DE883870049F08A /* test-sim.ini */; };
+		411FE8F01ED39B2C00595C7A /* ManagerFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 411FE8EE1ED39B2C00595C7A /* ManagerFactory.cpp */; };
+		411FE8F11ED3AC5B00595C7A /* TWMCSimData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15E28E361ECC9C3900DEAF3F /* TWMCSimData.cpp */; };
+		411FE8F21ED3AC5E00595C7A /* TWMCSimulation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15E28E331ECC9C2B00DEAF3F /* TWMCSimulation.cpp */; };
+		411FE8F31ED3AC7700595C7A /* EigenUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 157040731E2FCB12000A1C52 /* EigenUtils.cpp */; };
 		41EB6D8A1DE0578400208099 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41EB6D891DE0578400208099 /* main.cpp */; };
 		41EB6D921DE057A300208099 /* TWMC_evolve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41EB6D901DE057A300208099 /* TWMC_evolve.cpp */; };
+		41F313C61ECE0DBA00621AB7 /* ThreadManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41F313C41ECE0DBA00621AB7 /* ThreadManager.cpp */; };
+		41F313C91ECE0DC600621AB7 /* TWMCThreadManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41F313C71ECE0DC600621AB7 /* TWMCThreadManager.cpp */; };
+		41F313CC1ECE0DD000621AB7 /* Manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41F313CA1ECE0DD000621AB7 /* Manager.cpp */; };
+		41F313CF1ECE4CDF00621AB7 /* WorkerThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41FC8E4F1DE2426F007F461B /* WorkerThread.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -43,8 +49,8 @@
 		15E19CB71ECCC281006520C8 /* FilesystemUtils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FilesystemUtils.hpp; sourceTree = "<group>"; };
 		15E200391ECCD020009B01A8 /* FsUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FsUtils.cpp; sourceTree = "<group>"; };
 		15E2003A1ECCD020009B01A8 /* FsUtils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FsUtils.hpp; sourceTree = "<group>"; };
-		15E28E281ECC987E00DEAF3F /* Simulation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Simulation.cpp; path = "TWMC++/Simulation.cpp"; sourceTree = "<group>"; };
-		15E28E291ECC987E00DEAF3F /* Simulation.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Simulation.hpp; path = "TWMC++/Simulation.hpp"; sourceTree = "<group>"; };
+		15E28E281ECC987E00DEAF3F /* Task.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Task.cpp; path = "TWMC++/Task.cpp"; sourceTree = "<group>"; };
+		15E28E291ECC987E00DEAF3F /* Task.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Task.hpp; path = "TWMC++/Task.hpp"; sourceTree = "<group>"; };
 		15E28E2B1ECC994900DEAF3F /* SimData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SimData.cpp; path = "TWMC++/SimData.cpp"; sourceTree = "<group>"; };
 		15E28E2C1ECC994900DEAF3F /* SimData.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = SimData.hpp; path = "TWMC++/SimData.hpp"; sourceTree = "<group>"; };
 		15E28E331ECC9C2B00DEAF3F /* TWMCSimulation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TWMCSimulation.cpp; path = "TWMC++/TWMCSimulation.cpp"; sourceTree = "<group>"; };
@@ -55,11 +61,20 @@
 		15E28E3B1ECCAE5200DEAF3F /* oldMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = oldMain.cpp; sourceTree = "<group>"; };
 		4106FBF31DE883870049F08A /* test-sim.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "test-sim.ini"; sourceTree = "<group>"; };
 		410770221ECCFA720004675C /* CustomTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CustomTypes.h; path = "TWMC++/CustomTypes.h"; sourceTree = "<group>"; };
+		411FE8EE1ED39B2C00595C7A /* ManagerFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ManagerFactory.cpp; path = "TWMC++/ManagerFactory.cpp"; sourceTree = "<group>"; };
+		411FE8EF1ED39B2C00595C7A /* ManagerFactory.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ManagerFactory.hpp; path = "TWMC++/ManagerFactory.hpp"; sourceTree = "<group>"; };
 		41EB6D861DE0578400208099 /* TWMC++ */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "TWMC++"; sourceTree = BUILT_PRODUCTS_DIR; };
-		41EB6D891DE0578400208099 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		41EB6D891DE0578400208099 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = "TWMC++/main.cpp"; sourceTree = "<group>"; };
 		41EB6D901DE057A300208099 /* TWMC_evolve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TWMC_evolve.cpp; sourceTree = "<group>"; };
 		41EB6D911DE057A300208099 /* TWMC_evolve.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TWMC_evolve.hpp; sourceTree = "<group>"; };
 		41EB6D931DE057C900208099 /* TWMC_structures.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWMC_structures.h; sourceTree = "<group>"; };
+		41F313C41ECE0DBA00621AB7 /* ThreadManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ThreadManager.cpp; path = "TWMC++/ThreadManager.cpp"; sourceTree = "<group>"; };
+		41F313C51ECE0DBA00621AB7 /* ThreadManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ThreadManager.hpp; path = "TWMC++/ThreadManager.hpp"; sourceTree = "<group>"; };
+		41F313C71ECE0DC600621AB7 /* TWMCThreadManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TWMCThreadManager.cpp; path = "TWMC++/TWMCThreadManager.cpp"; sourceTree = "<group>"; };
+		41F313C81ECE0DC600621AB7 /* TWMCThreadManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = TWMCThreadManager.hpp; path = "TWMC++/TWMCThreadManager.hpp"; sourceTree = "<group>"; };
+		41F313CA1ECE0DD000621AB7 /* Manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Manager.cpp; path = "TWMC++/Manager.cpp"; sourceTree = "<group>"; };
+		41F313CB1ECE0DD000621AB7 /* Manager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Manager.hpp; path = "TWMC++/Manager.hpp"; sourceTree = "<group>"; };
+		41F313CE1ECE4CDA00621AB7 /* concurrentqueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = concurrentqueue.h; path = "TWMC++/concurrentqueue.h"; sourceTree = "<group>"; };
 		41FC8E4F1DE2426F007F461B /* WorkerThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WorkerThread.cpp; path = "TWMC++/WorkerThread.cpp"; sourceTree = "<group>"; };
 		41FC8E501DE2426F007F461B /* WorkerThread.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = WorkerThread.hpp; path = "TWMC++/WorkerThread.hpp"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -80,13 +95,19 @@
 			children = (
 				15E28E2B1ECC994900DEAF3F /* SimData.cpp */,
 				15E28E2C1ECC994900DEAF3F /* SimData.hpp */,
-				15E28E281ECC987E00DEAF3F /* Simulation.cpp */,
-				15E28E291ECC987E00DEAF3F /* Simulation.hpp */,
+				15E28E281ECC987E00DEAF3F /* Task.cpp */,
+				15E28E291ECC987E00DEAF3F /* Task.hpp */,
 				41FC8E4F1DE2426F007F461B /* WorkerThread.cpp */,
 				41FC8E501DE2426F007F461B /* WorkerThread.hpp */,
+				410770221ECCFA720004675C /* CustomTypes.h */,
+				41F313C41ECE0DBA00621AB7 /* ThreadManager.cpp */,
+				41F313C51ECE0DBA00621AB7 /* ThreadManager.hpp */,
+				41F313CA1ECE0DD000621AB7 /* Manager.cpp */,
+				41F313CB1ECE0DD000621AB7 /* Manager.hpp */,
+				411FE8EE1ED39B2C00595C7A /* ManagerFactory.cpp */,
+				411FE8EF1ED39B2C00595C7A /* ManagerFactory.hpp */,
 				15E19CB01ECCBC0B006520C8 /* Settings.cpp */,
 				15E19CB11ECCBC0B006520C8 /* Settings.hpp */,
-				410770221ECCFA720004675C /* CustomTypes.h */,
 			);
 			name = Base;
 			sourceTree = "<group>";
@@ -99,6 +120,8 @@
 				15E28E331ECC9C2B00DEAF3F /* TWMCSimulation.cpp */,
 				15E28E341ECC9C2B00DEAF3F /* TWMCSimulation.hpp */,
 				15E28E391ECC9DD000DEAF3F /* TWMCTypes.h */,
+				41F313C71ECE0DC600621AB7 /* TWMCThreadManager.cpp */,
+				41F313C81ECE0DC600621AB7 /* TWMCThreadManager.hpp */,
 			);
 			name = TWMC;
 			sourceTree = "<group>";
@@ -117,12 +140,14 @@
 		41EB6D7D1DE0578400208099 = {
 			isa = PBXGroup;
 			children = (
+				41EB6D891DE0578400208099 /* main.cpp */,
 				15E28E321ECC9C1600DEAF3F /* TWMC */,
-				15E28E311ECC9C1000DEAF3F /* Base */,
 				156DF41E1E5F4EF100AACA63 /* Makefile */,
+				15E28E311ECC9C1000DEAF3F /* Base */,
 				41EB6D881DE0578400208099 /* TWMC++ */,
 				15E28E3A1ECCA4CD00DEAF3F /* Delete */,
 				41EB6D871DE0578400208099 /* Products */,
+				41F313CD1ECE4CC900621AB7 /* Libraries */,
 			);
 			sourceTree = "<group>";
 		};
@@ -138,7 +163,6 @@
 			isa = PBXGroup;
 			children = (
 				4106FBF31DE883870049F08A /* test-sim.ini */,
-				41EB6D891DE0578400208099 /* main.cpp */,
 				15E28E3B1ECCAE5200DEAF3F /* oldMain.cpp */,
 				157040701E2FB737000A1C52 /* IniPrefReader.cpp */,
 				157040711E2FB737000A1C52 /* IniPrefReader.hpp */,
@@ -150,6 +174,14 @@
 				15E2003A1ECCD020009B01A8 /* FsUtils.hpp */,
 			);
 			path = "TWMC++";
+			sourceTree = "<group>";
+		};
+		41F313CD1ECE4CC900621AB7 /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				41F313CE1ECE4CDA00621AB7 /* concurrentqueue.h */,
+			);
+			name = Libraries;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -226,14 +258,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				41F313C91ECE0DC600621AB7 /* TWMCThreadManager.cpp in Sources */,
+				41F313C61ECE0DBA00621AB7 /* ThreadManager.cpp in Sources */,
+				411FE8F11ED3AC5B00595C7A /* TWMCSimData.cpp in Sources */,
 				15E28E2D1ECC994900DEAF3F /* SimData.cpp in Sources */,
-				15E28E2A1ECC987E00DEAF3F /* Simulation.cpp in Sources */,
+				15E28E2A1ECC987E00DEAF3F /* Task.cpp in Sources */,
 				41EB6D8A1DE0578400208099 /* main.cpp in Sources */,
-				157040751E2FCB12000A1C52 /* EigenUtils.cpp in Sources */,
 				15E19CB21ECCBC0B006520C8 /* Settings.cpp in Sources */,
+				41F313CC1ECE0DD000621AB7 /* Manager.cpp in Sources */,
+				411FE8F31ED3AC7700595C7A /* EigenUtils.cpp in Sources */,
 				41EB6D921DE057A300208099 /* TWMC_evolve.cpp in Sources */,
 				15E2003B1ECCD020009B01A8 /* FsUtils.cpp in Sources */,
-				157040721E2FB737000A1C52 /* IniPrefReader.cpp in Sources */,
+				411FE8F21ED3AC5E00595C7A /* TWMCSimulation.cpp in Sources */,
+				41F313CF1ECE4CDF00621AB7 /* WorkerThread.cpp in Sources */,
+				411FE8F01ED39B2C00595C7A /* ManagerFactory.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -10,24 +10,26 @@
 #define TWMCSimulation_hpp
 
 // Project Includes
-#include "Simulation.hpp"
+#include "Task.hpp"
 
-#include "TWMCSimulation.hpp"
 #include "TWMCSimData.hpp"
 #include "TWMCTypes.h"
 // Library Includes
 #include <stdio.h>
 
-class TWMCSimulation : public Simulation
+class Settings;
+
+class TWMCSimulation : public Task
 {
     
 public:
-    void Compute();
-
+    TWMCSimulation(const Settings* settings);
+    
     TWMCSimData* data;
+    virtual void Setup(SimData* simData);
 
 protected:
-    
+    virtual void Compute();
 private:
     TWMC_FFTW_plans* plan;
     TWMC_Results* res;

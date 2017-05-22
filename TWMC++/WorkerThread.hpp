@@ -11,32 +11,36 @@
 
 #include <stdio.h>
 #include <atomic>
-#include <mutex>
+#include <queue>
 
-#include "Simulation.hpp"
+#include "Task.hpp"
+#include "concurrentqueue.h"
+class ThreadManager;
+
+using namespace moodycamel;
 
 class WorkerThread
 {
 public:
-    WorkerThread(int id);
+    WorkerThread(size_t id, ThreadManager* manager);
     ~WorkerThread();
     void Terminate();
     void WorkerLoop();
     
-    void AssignSimulation(Simulation* simulation);
+    void AssignTask(Task* task);
     void ClearSimulation();
     
     bool IsFinished();
     
-    int id;
+    size_t id;
     
 protected:
-    Simulation* simulation;
+    ThreadManager* manager;
+    Task* currentTask;
     
-    std::atomic<bool> gotSimulation;
-    std::atomic<bool> finished;
-    std::atomic<bool> terminate;
-    std::mutex threadMutex;
+    bool gotSimulation;
+    bool finished;
+    bool terminate;
     
     void ClearPlan();
 };

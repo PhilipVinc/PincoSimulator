@@ -9,11 +9,13 @@
 #include <iostream>
 
 #include "WorkerThread.hpp"
-#include "TWMC_evolve.hpp"
+#include "ThreadManager.hpp"
 
-WorkerThread::WorkerThread(int _id)
+WorkerThread::WorkerThread(size_t _id, ThreadManager* _manager)
 {
     id = _id;
+    manager = _manager;
+    
     gotSimulation = false;
     finished = false;
     terminate = false;
@@ -21,43 +23,30 @@ WorkerThread::WorkerThread(int _id)
 
 WorkerThread::~WorkerThread()
 {
-}
-
-void WorkerThread::AssignSimulation(Simulation* _simulation)
-{
-    threadMutex.lock();
-    finished = false;
-    simulation = _simulation;
-    gotSimulation = true;
-    threadMutex.unlock();
+    
 }
 
 void WorkerThread::ClearSimulation()
 {
-    threadMutex.lock();
-    simulation = nullptr;
-    gotSimulation = false;
-    threadMutex.unlock();
 }
 
 void WorkerThread::WorkerLoop()
 {
     while (!terminate)
     {
-        if (gotSimulation && (simulation != nullptr))
+        currentTask = manager->GetTask(id);
+        if (currentTask != NULL)
         {
-            simulation->PreCompute();
-            simulation->Compute();
-            simulation->PostCompute();
+            currentTask->Execute();
+            manager->GiveResults(id, currentTask);
             ClearSimulation();
         }
     }
-    ClearPlan();
-    delete this;
+    manager->ReportThreadTermination(id);
 }
 
-
-bool WorkerThread::IsFinished() {
+bool WorkerThread::IsFinished()
+{
     return (!gotSimulation);
 }
 

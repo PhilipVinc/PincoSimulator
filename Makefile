@@ -1,6 +1,6 @@
-CC = g++
+CC = g++ -v -Wall
 INCLUDES = -I. -I/usr/local/include -I/usr/local/include/eigen3
-LIBRARIES = -L/usr/local/lib -lfftw3 -lm -static-libstdc++ 
+LIBRARIES = -L/usr/local/lib -lfftw3 -lboost_filesystem -lboost_system -lboost_program_options -lm -static-libstdc++ 
 FLAGS = -g -pthread -std=c++11  -D_GLIBCXX_USE_NANOSLEEP  -O3 -static-libstdc++ -march=native
 #
 

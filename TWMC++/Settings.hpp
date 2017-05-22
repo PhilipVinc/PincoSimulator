@@ -27,7 +27,7 @@ public:
     enum Status { invalid, firstRun, subsequentRun };
     Status status = Status::invalid;
     
-    template<typename T> T get(std::string value);
+    template<class T> T get(string value) const;
     
 protected:
     void SetupOutputFolder();
