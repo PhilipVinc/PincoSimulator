@@ -7,6 +7,8 @@
 //
 
 #include "TWMCSimulation.hpp"
+#include "TWMCSimData.hpp"
+#include "TWMCResults.hpp"
 #include "Settings.hpp"
 
 #include <iostream>
@@ -21,32 +23,57 @@ using namespace std;
 inline void randCMat(MatrixCXd *mat, std::mt19937 &gen, std::normal_distribution<> norm);
 inline complex_p randC(std::mt19937 &gen, std::normal_distribution<> norm);
 
-
-TWMCSimulation::TWMCSimulation(const Settings* settings)
+TWMCSimulation::TWMCSimulation(const TWMCSimData* TaskData)
 {
+    data = TaskData;
+    nx = data->nx;
+    ny = data->ny;
     
-}
-
-void TWMCSimulation::Setup(SimData* simData)
-{
-}
-
-//
-// The Truncated Wigner Evolution Method.
-//
-void TWMCSimulation::Compute()
-{
-    // Prepare the output
-    res->n = data->n_frames;
-    // Setup the random number generation
-    std::mt19937 gen(seed);
-    std::normal_distribution<> normal(0,1); // mean = 0, std = 1;
-    MatrixCXd tmpRand = MatrixCXd::Zero(data->nx, data->ny);
+    plan = new TWMC_FFTW_plans;
+    plan->fft_f_in = MatrixCXd::Zero(nx, ny);
+    plan->fft_f_out = MatrixCXd::Zero(nx, ny);
+    plan->fft_i_in = MatrixCXd::Zero(nx, ny);
+    plan->fft_i_out = MatrixCXd::Zero(nx, ny);
     
-    // Precompute the  Fourier Space evolution term.
-    MatrixCXd k_step_linear = MatrixCXd::Zero(data->nx, data->ny);
-    MatrixCXd real_step_linear = (-ij*data->omega - data->gamma/2.0);
+    complex_p* f_in_ptr = plan->fft_f_in.data();
+    complex_p* f_out_ptr = plan->fft_f_out.data();
+    complex_p* i_in_ptr = plan->fft_i_in.data();
+    complex_p* i_out_ptr = plan->fft_i_out.data();
     
+    if (TaskData->dimension == TWMCSimData::Dimension::D1 || TaskData->dimension == TWMCSimData::Dimension::D0 )
+    {
+        plan->forward_fft = fftw_plan_dft_1d(int(nx*ny),
+                                                      reinterpret_cast<fftw_complex*>(f_in_ptr),
+                                                      reinterpret_cast<fftw_complex*>(f_out_ptr),
+                                                      FFTW_FORWARD,
+                                                      FFTW_MEASURE);
+        plan->inverse_fft = fftw_plan_dft_1d(int(nx*ny),
+                                                      reinterpret_cast<fftw_complex*>(i_in_ptr),
+                                                      reinterpret_cast<fftw_complex*>(i_out_ptr),
+                                                      FFTW_BACKWARD,
+                                                      FFTW_MEASURE);
+    }
+    else if (TaskData->dimension == TWMCSimData::Dimension::D2)
+    {
+        plan->forward_fft = fftw_plan_dft_2d(int(nx), int(ny),
+                                                      reinterpret_cast<fftw_complex*>(f_in_ptr),
+                                                      reinterpret_cast<fftw_complex*>(f_out_ptr),
+                                                      FFTW_FORWARD,
+                                                      FFTW_MEASURE);
+        plan->inverse_fft = fftw_plan_dft_2d(int(nx), int(ny),
+                                                      reinterpret_cast<fftw_complex*>(i_in_ptr),
+                                                      reinterpret_cast<fftw_complex*>(i_out_ptr),
+                                                      FFTW_BACKWARD,
+                                                      FFTW_MEASURE);
+    }
+    
+    // Temporary variables
+    temp_gamma = sqrt(data->gamma_val*data->dt/4.0);
+    tmpRand = MatrixCXd::Zero(data->nx, data->ny);
+    kai_t = MatrixCXd::Zero(data->nx, data->ny);
+    a_t = MatrixCXd::Zero(data->nx, data->ny);
+    k_step_linear = MatrixCXd::Zero(data->nx, data->ny);
+    real_step_linear = (-ij*data->omega - data->gamma/2.0);
     // If we have a 1D system, then we put to 0 it's contribution of the cosinus (1D/2D) code.
     double flag1DNx = (data->nx==1) ? 0.0 : 1.0;
     double flag1DNy = (data->ny==1) ? 0.0 : 1.0;
@@ -57,38 +84,78 @@ void TWMCSimulation::Compute()
             k_step_linear(i,j) = -ij*2.0*data->J_val*(flag1DNx*cos(2.0*M_PI/double(data->nx)*double(i)) + flag1DNy*cos(2.0*M_PI/double(data->ny)*double(j)));
         }
     }
+    // If we are 1D then do not normalize, if we are 2D then normalize by nx*ny after each FFT cycle.
+    fft_norm_factor = data->nxy;
+    res = new TWMCResults(data);
+}
+
+TWMCSimulation::~TWMCSimulation()
+{
+    delete plan;
+    delete res;
+}
+
+void TWMCSimulation::Setup(TaskData* TaskData)
+{
     
-    complex_p temp_gamma = sqrt(data->gamma_val*data->dt/4.0);
+}
+
+void TWMCSimulation::Initialize(unsigned int _seed, size_t resultId)
+{
+    seed = _seed;
+    res->SetId(resultId);
+    initialCondition = InitialConditions::ReadFromSettings;
+}
+
+void TWMCSimulation::Initialize(unsigned int _seed, MatrixCXd beta_init, float_p t0, size_t resultId)
+{
+    seed = _seed;
+    res->SetId(resultId);
+    initialCondition = InitialConditions::FixedPoint;
+    beta_t_init = beta_init;
+    t = t0;
+}
+
+
+//
+// The Truncated Wigner Evolution Method.
+//
+void TWMCSimulation::Compute()
+{
+    // Setup the random number generation
+    std::mt19937 gen(seed);
+    std::normal_distribution<> normal(0,1); // mean = 0, std = 1;
     
-    // Initial iteration values
-    float_p t = 0;
+    MatrixCXd beta_t;
+    switch (initialCondition)
+    {
+        case ReadFromSettings:
+            beta_t = data->beta_init;
+            randCMat(&tmpRand, gen, normal);
+            if (data->beta_init_sigma_val != 0)
+            {
+                beta_t += data->beta_init_sigma_val*tmpRand;
+            }
+            else
+            {
+                beta_t += temp_gamma*tmpRand;
+            }
+            t = data->t_start;
+            break;
+        case FixedPoint:
+            beta_t = beta_t_init;
+            break;
+        default:
+            break;
+    }
+    
     int i_step = 0;
     int i_frame = 0;
     int frame_steps = floor(data->dt_obs/data->dt);
     
     // Initialize the beta value to the starting value.
-    MatrixCXd beta_t = data->beta_init;
-    
-    randCMat(&tmpRand, gen, normal);
-    if (data->beta_init_sigma_val != 0)
-    {
-        beta_t += data->beta_init_sigma_val*tmpRand;
-    }
-    else
-    {
-        beta_t = beta_t + temp_gamma*tmpRand;
-    }
-    
-    
-    // If we are 1D then do not normalize, if we are 2D then normalize by nx*ny after each FFT cycle.
-    float_p fft_norm_factor = data->nxy; //(data->nx == data->nxy || data->ny == data->nxy) ? 1.0 : data->nxy;
-    //bool is2D = (data->nx == data->nxy || data->ny == data->nxy) ? false : true;
     
     plan->fft_i_out = beta_t;
-    
-    MatrixCXd kai_t = MatrixCXd::Zero(data->nx, data->ny);
-    MatrixCXd a_t = MatrixCXd::Zero(data->nx, data->ny);
-    MatrixCXd a_kai_t = MatrixCXd::Zero(data->nx, data->ny);
     
     while (t<data->t_end)
     {
@@ -127,9 +194,19 @@ void TWMCSimulation::Compute()
     }
 };
 
+TaskResults* TWMCSimulation::GetResults()
+{
+    return res;
+}
 
+float TWMCSimulation::ApproximateComputationProgress()
+{
+    return (t-data->t_end)/(data->t_end-data->t_start)*100.0;
+}
 
-
+// ************************************* //
+// ****** Local Utilituy Methods  ****** //
+// ************************************* //
 
 complex_p randC(std::mt19937 &gen, std::normal_distribution<> norm)
 {

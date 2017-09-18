@@ -17,13 +17,9 @@
 #pragma clang pop
 
 #include <fftw3.h>
+#include "CustomTypes.h"
 
 typedef double float_p;
-typedef std::complex<float_p> complex_p;
-typedef Eigen::Matrix<complex_p, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatrixCXd;
-typedef Eigen::Matrix<complex_p, Eigen::Dynamic, 1> VectorCdCol;
-typedef Eigen::Matrix<complex_p, 1, Eigen::Dynamic> VectorCdRow;
-const complex_p ij(0.0,1.0);
 
 
 struct TWMC_FFTW_plans
@@ -35,16 +31,6 @@ struct TWMC_FFTW_plans
     
     fftw_plan forward_fft;
     fftw_plan inverse_fft;
-};
-
-struct TWMC_Results
-{
-    complex_p* beta_t;
-    size_t id;
-    size_t n;
-    size_t nx;
-    size_t ny;
-    unsigned int seed;
 };
 
 #endif /* TWMCTypes_h */

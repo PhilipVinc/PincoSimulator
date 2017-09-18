@@ -11,6 +11,8 @@
 
 #include <stdio.h>
 class Settings;
+class DataSaver;
+class Task;
 
 class Manager
 {
@@ -21,6 +23,10 @@ public:
     virtual void ManagerLoop() = 0;
 protected:
     const Settings * settings;
+    DataSaver* saver;
+    
+    virtual void SaveTask(Task* task);
+
 private:
     
 };

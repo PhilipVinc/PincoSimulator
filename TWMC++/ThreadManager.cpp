@@ -7,18 +7,22 @@
 //
 
 #include "ThreadManager.hpp"
+#include "DataSaver.hpp"
 
 #include <thread>
 #include <vector>
+#include <algorithm>
+#include <iostream>
 
 using namespace std;
 using namespace moodycamel;
 
 ThreadManager::ThreadManager(const Settings* settings) : Manager(settings), dispatchToken(dispatchedTasks), elaboratedToken(elaboratedTasks)
 {
-    unsigned int n = std::thread::hardware_concurrency();
-    nThreads = (n == 0 ? 20 : n );
-    
+    size_t n = std::thread::hardware_concurrency();
+    size_t nset = settings->get<size_t>("processes");
+    nset = nset == 0? 20 : nset;
+    nThreads = (n == 0 ? 20 : std::min(n, nset) );
 }
 
 ThreadManager::~ThreadManager()
@@ -35,6 +39,7 @@ void ThreadManager::Setup()
     {
         CreateWorker();
     }
+    nTasksFillCapacity = nThreads*3;
 }
 
 void ThreadManager::ManagerLoop()
@@ -69,7 +74,7 @@ void ThreadManager::Update()
     size_t nTasksInQueue = dispatchedTasks.size_approx();
     if (nTasksInQueue < nTasksFillCapacity)
     {
-        EnqueueTask(nTasksFillCapacity-nTasksInQueue);
+        EnqueueTask(min(nTasksFillCapacity-nTasksInQueue, nTasksLeftToEnqueue));
     }
 }
 
@@ -81,6 +86,7 @@ void ThreadManager::ProcessElaboratedTasks()
     {
         SaveTask(_task);
         nTasksToSave--;
+        voidTaskPool.push(_task);
     }
 }
 
@@ -105,6 +111,7 @@ void ThreadManager::EnqueueTask(size_t nTasks)
         {
             dispatchedTasks.enqueue(dispatchToken, _task);
             nTasksToSave++;
+            nTasksLeftToEnqueue--;
         }
         else
         {
@@ -152,6 +159,7 @@ void ThreadManager::ReportThreadTermination(size_t th_id)
     delete workers[th_id];
     unactivatedThreadPool.push(th_id);
     activeThreads.erase(std::remove(activeThreads.begin(), activeThreads.end(), th_id), activeThreads.end());
+    
 }
 
 // Methods called from other threads

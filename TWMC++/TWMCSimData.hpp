@@ -10,17 +10,23 @@
 #define TWMCSimData_hpp
 
 // Project Includes
-#include "SimData.hpp"
-
+#include "TaskData.hpp"
 #include "TWMCTypes.h"
+class Settings;
+
 // Library Includes
 #include <stdio.h>
+#include <string>
 
 
-class TWMCSimData : public SimData
+class TWMCSimData : public TaskData
 {
     
 public:
+    
+    TWMCSimData(const Settings* settings);
+    ~TWMCSimData();
+    
     MatrixCXd U;
     MatrixCXd J;
     MatrixCXd F;
@@ -46,8 +52,9 @@ public:
     size_t nx;
     size_t ny;
     size_t nxy;
-
     
+    enum Dimension { D0, D1, D2 };
+    Dimension dimension;
 };
 
 #endif /* TWMCSimData_hpp */

@@ -4,7 +4,7 @@ LIBRARIES = -L/usr/local/lib -lfftw3 -lboost_filesystem -lboost_system -lboost_p
 FLAGS = -g -pthread -std=c++11  -D_GLIBCXX_USE_NANOSLEEP  -O3 -static-libstdc++ -march=native
 #
 
-EXECUTABLE_NAME = twmc
+EXECUTABLE_NAME = twnew
 INSTALL_DIR = $(HOME)/bin/
 
 SOURCEDIR = ./TWMC++

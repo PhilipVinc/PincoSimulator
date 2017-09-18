@@ -7,7 +7,6 @@
 //
 
 #include "EigenUtils.hpp"
-const complex_p ij(0.0,1.0);
 
 MatrixCXd InitDiagMatrix(size_t dim, size_t diag, complex_p value)
 {
@@ -100,13 +99,6 @@ MatrixCXd MatExp(MatrixCXd mat)
         }
     }
     return expmat;
-}
-
-void DebugCheck(TWMC_Results* res, float time)
-{
-    // Assert(check_boundaries(res))
-    // Pause for syncing threads
-    
 }
 
 MatrixCXd vecSqrt(MatrixCXd mat)

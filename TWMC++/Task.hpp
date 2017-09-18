@@ -9,9 +9,11 @@
 #ifndef Simulation_hpp
 #define Simulation_hpp
 
+#include "TaskData.hpp"
+class TaskResults;
+
 #include <stdio.h>
 
-#include "SimData.hpp"
 
 class Task
 {
@@ -20,13 +22,14 @@ public:
     Task(size_t id);
     ~Task();
     
-    virtual void Setup(SimData* simData) = 0;
+    virtual void Setup(TaskData* TaskData) = 0;
+    virtual TaskResults* GetResults() = 0;
     virtual void Save();
+    virtual float ApproximateComputationProgress();
     
     void Execute();
     
     size_t task_id;
-    
     unsigned int seed;
 
 protected:

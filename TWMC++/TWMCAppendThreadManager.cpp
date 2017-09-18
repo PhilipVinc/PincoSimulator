@@ -1,14 +1,15 @@
 //
-//  TWMCThreadManager.cpp
+//  TWMCAppendThreadManager.cpp
 //  TWMC++
 //
-//  Created by Filippo Vicentini on 18/05/17.
+//  Created by Filippo Vicentini on 31/05/2017.
 //  Copyright © 2017 Filippo Vicentini. All rights reserved.
 //
 
+#include "TWMCAppendThreadManager.hpp"
+
 #include "ManagerFactory.hpp"
 #include "Settings.hpp"
-#include "TWMCThreadManager.hpp"
 #include "TWMCSimulation.hpp"
 #include "TWMCSimData.hpp"
 
@@ -17,7 +18,7 @@
 using namespace std;
 
 
-TWMCThreadManager::TWMCThreadManager(const Settings* settings) : ThreadManager(settings)
+TWMCAppendThreadManager::TWMCAppendThreadManager(const Settings* settings) : ThreadManager(settings)
 {
     sharedTaskData = new TWMCSimData(settings);
     
@@ -26,12 +27,12 @@ TWMCThreadManager::TWMCThreadManager(const Settings* settings) : ThreadManager(s
     nTasksLeftToEnqueue = settings->get<size_t>("n_traj");
 }
 
-TWMCThreadManager::~TWMCThreadManager()
+TWMCAppendThreadManager::~TWMCAppendThreadManager()
 {
     
 }
 
-Task* TWMCThreadManager::PrepareTask(Task* _task)
+Task* TWMCAppendThreadManager::PrepareTask(Task* _task)
 {
     TWMCSimulation* sim = dynamic_cast<TWMCSimulation*>(_task);
     
@@ -39,14 +40,14 @@ Task* TWMCThreadManager::PrepareTask(Task* _task)
     return sim;
 }
 
-Task* TWMCThreadManager::PrepareTask()
+Task* TWMCAppendThreadManager::PrepareTask()
 {
     TWMCSimulation* task = new TWMCSimulation(sharedTaskData);
     
     return PrepareTask(task);
 }
 
-void TWMCThreadManager::PostUpdate()
+void TWMCAppendThreadManager::PostUpdate()
 {
     if (nTasksLeftToEnqueue == 0)
     {
@@ -54,11 +55,11 @@ void TWMCThreadManager::PostUpdate()
     }
 }
 
-class TWMCThreadManagerBuilder: public ManagerFactory::Builder {
+class TWMCAppendThreadManagerBuilder: public ManagerFactory::Builder {
 public:
-    TWMCThreadManagerBuilder(): ManagerFactory::Builder( "TWMCThread" ) {}
+    TWMCAppendThreadManagerBuilder(): ManagerFactory::Builder( "AppendTWMCThread" ) {}
     virtual Manager* build( const Settings* settings ) {
-        return new TWMCThreadManager( settings );
+        return new TWMCAppendThreadManager( settings );
     }
 };
-static TWMCThreadManagerBuilder TWMCBuild;
+static TWMCAppendThreadManagerBuilder TWMCAppendBuild;

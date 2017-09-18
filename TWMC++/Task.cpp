@@ -35,3 +35,8 @@ void Task::PostCompute()
 
 void Task::Save()
 {}
+
+float Task::ApproximateComputationProgress()
+{
+    return 0;
+}

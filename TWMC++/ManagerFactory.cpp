@@ -25,7 +25,8 @@ ManagerFactory::~ManagerFactory() {
 
 
 // create event source
-Manager* ManagerFactory::create( const Settings* info ) {
+Manager* ManagerFactory::create( const Settings* info )
+{
     // loop over data source builders
     static map<string,Builder*>* bm = builderMap();
     map<string,Builder*>::iterator iter = bm->begin();

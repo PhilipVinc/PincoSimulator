@@ -46,14 +46,13 @@ public:
 protected:
     queue<Task*> voidTaskPool;
     
-    size_t nTasksLeft = 0;
+    size_t nTasksLeftToEnqueue = 0;
     size_t nTasksToSave = 0;
     size_t nThreads = 1;
     size_t nTasksFillCapacity = 1;
     
     virtual Task* PrepareTask(Task* _task) = 0;
     virtual Task* PrepareTask() = 0;
-    virtual void SaveTask(Task* task) = 0;
     
     virtual void ManagerLoop();
     virtual void PreUpdate();

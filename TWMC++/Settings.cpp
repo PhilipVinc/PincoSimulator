@@ -6,42 +6,42 @@
 //  Copyright © 2017 Filippo Vicentini. All rights reserved.
 //
 
+#include "Settings.hpp"
+#include "CustomTypes.h"
+#include "FsUtils.hpp"
+
+
 #include <iostream>
 #include <string>
 #include <complex>
-
-
+#include <time.h>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdocumentation"
 #include "boost/program_options.hpp"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/filesystem.hpp>
+#pragma clang pop
 
-#include "Settings.hpp"
-#include "FsUtils.hpp"
-#include "CustomTypes.h"
 
 namespace po = boost::program_options;
 namespace pt = boost::property_tree;
 namespace fs = boost::filesystem;
-
 using namespace std;
-const string paramsFileName = "_sim.ini";
-const string trajectoryFolderBaseName = "trajectories";
 
 Settings::Settings(int argc, char* argv[])
 {
     po::options_description desc("Allowed options");
        desc.add_options()
         ("help", "Print help messages")
-        ("input", po::value<string>(), "additional options")
-        ("output", po::value<string>(), "this");
+        ("input", po::value<string>(), "Required folder with _sim.ini or ini file.")
+        ("output", po::value<string>(), "Output folder [optional]");
         po::variables_map vm;
     fs::path inputPath;
     fs::path outputPath;
-
+    bool append = false;
     try
     {
-
         po::store(po::command_line_parser(argc, argv).options(desc)
                   .style(boost::program_options::command_line_style::unix_style |
                          boost::program_options::command_line_style::allow_long_disguise)
@@ -51,7 +51,7 @@ Settings::Settings(int argc, char* argv[])
         if (vm.count("help"))
         {
             std::cout << desc << std::endl;
-            return;
+            exit(0);
         }
         
         if (vm.count("input"))
@@ -62,13 +62,19 @@ Settings::Settings(int argc, char* argv[])
         if (vm.count("output"))
         {
             outputPath = vm["output"].as<std::string>();
+            outputFolderIsSet = true;
+        }
+        
+        if (vm.count("append"))
+        {
+            append = true;
         }
     }
     catch (std::exception& exc)
     {
         std::cerr << "ERROR: " << exc.what() << std::endl << std::endl;
         std::cerr << desc << std::endl;
-        return;
+        exit(0);
         
     }
     cout << "Will be looking at path: " << inputPath << endl;
@@ -90,6 +96,7 @@ Settings::Settings(int argc, char* argv[])
     }
     else if (fs::exists(inputPath))
     {
+        inputParentPathStr = inputPath.parent_path().string();
         status = Status::firstRun;
     }
     
@@ -99,21 +106,24 @@ Settings::Settings(int argc, char* argv[])
         basePath = inputPath.parent_path().string();
         if (basePath == "")
             basePath = ".";
-        auto trajectoryFoldersN = findFoldersContainingString(basePath, trajectoryFolderBaseName).size()+1;
-        outputPath = inputPath.parent_path()  / (trajectoryFolderBaseName + to_string(trajectoryFoldersN));
         
         cout << "Setting output path to " << outputPath << endl;
         tree = new pt::ptree;
         pt::ini_parser::read_ini(inputPath.string(), *tree);
         
-        std::vector< std::pair<std::string, std::string> > animals;
-        for (pt::ptree::value_type &animal : tree->get_child("") )
+        std::vector<std::pair<std::string, std::string>> keyval_pairs;
+        for (pt::ptree::value_type &keyval : tree->get_child("") )
         {
-            std::string name = animal.first;
-            std::string color = animal.second.data();
-            animals.push_back(std::make_pair(name, color));
+            std::string name = keyval.first;
+            std::string color = keyval.second.data();
+            keyval_pairs.push_back(std::make_pair(name, color));
             cout << name << "  =  " << color << endl;
         }
+    }
+    else
+    {
+        std::cerr << desc << std::endl;
+        exit(0);
     }
 
     // Now I should parse the ini file at the input path
@@ -123,7 +133,6 @@ Settings::Settings(int argc, char* argv[])
     ////////////////////
     inputPathStr = inputPath.string();
     outputPathStr = outputPath.string();
-    SetupOutputFolder();
 }
 
 Settings::~Settings()
@@ -131,15 +140,36 @@ Settings::~Settings()
     
 }
 
-void Settings::SetupOutputFolder()
+string Settings::GetOutputFolder() const
 {
-    CheckCreateFolder(outputPathStr);
+    return outputPathStr;
+}
+
+string Settings::GetRootFolder() const
+{
+    string rootFolder;
+    switch (status) {
+        case subsequentRun:
+            rootFolder = basePath;
+            break;
+            
+        default:
+            rootFolder = tree->get<string>("rootFolder", inputParentPathStr);
+            if (rootFolder == "")
+                rootFolder = ".";
+            
+            break;
+    }
+    return rootFolder;
+}
+
+bool Settings::IsOutputFolderSet() const
+{
+    return outputFolderIsSet;
 }
 
 
-
-
-template <class T> T Settings::get(string path) const
+template <class T> inline T Settings::get(string path) const
 {
     T result;
     try
@@ -153,19 +183,37 @@ template <class T> T Settings::get(string path) const
     return result;
 }
 
-template<> string Settings::get<string>(string path) const
+inline template<>  string Settings::get<string>(string path) const
 {
     string result = tree->get<string>(path, "");
     return result;
 }
 
-template<> bool Settings::get<bool>(string path) const
+inline template<>  size_t Settings::get<size_t>(string path) const
+{
+    size_t result = tree->get<size_t>(path, 0);
+    return result;
+}
+
+inline template<>  int Settings::get<int>(string path) const
+{
+    int result = tree->get<int>(path, 0);
+    return result;
+}
+
+inline template<>  float_p Settings::get<float_p>(string path) const
+{
+    float_p result = tree->get<float_p>(path, 0);
+    return result;
+}
+
+inline template<>  bool Settings::get<bool>(string path) const
 {
     bool result = tree->get<bool>(path, false);
     return result;
 }
 
-template<> complex<float> Settings::get<complex<float>>(string path) const
+inline template<>  complex<float> Settings::get<complex<float>>(string path) const
 {
     complex<float> result;
     try
@@ -182,7 +230,7 @@ template<> complex<float> Settings::get<complex<float>>(string path) const
     return result;
 }
 
-template<> complex<double> Settings::get<complex<double>>(string path) const
+inline template<>  complex<double> Settings::get<complex<double>>(string path) const
 {
     complex<double> result;
     try
@@ -197,6 +245,11 @@ template<> complex<double> Settings::get<complex<double>>(string path) const
     }
     
     return result;
+}
+
+unsigned int Settings::GlobalSeed() const
+{
+    return tree->get<unsigned int>("SEED", 0) + (unsigned int) time(0);
 }
 
 

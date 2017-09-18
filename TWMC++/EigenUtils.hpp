@@ -10,7 +10,7 @@
 #define EigenUtils_hpp
 
 #include <stdio.h>
-#include "TWMC_structures.h"
+#include "TWMCTypes.h"
 
 MatrixCXd InitDiagMatrix(size_t dim, size_t diag, complex_p value);
 
@@ -23,6 +23,4 @@ MatrixCXd InitMatrix(size_t nx,size_t ny ,float_p* value);
 
 MatrixCXd MatExp(MatrixCXd mat);
 MatrixCXd vecSqrt(MatrixCXd mat);
-
-void DebugCheck(TWMC_Results* res, float time);
 #endif /* EigenUtils_hpp */
