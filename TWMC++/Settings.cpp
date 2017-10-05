@@ -9,7 +9,7 @@
 #include "Settings.hpp"
 #include "CustomTypes.h"
 #include "FsUtils.hpp"
-
+#include "NoisyMatrix.hpp"
 
 #include <iostream>
 #include <string>
@@ -34,18 +34,20 @@ Settings::Settings(int argc, char* argv[])
     po::options_description desc("Allowed options");
        desc.add_options()
         ("help", "Print help messages")
-        ("input", po::value<string>(), "Required folder with _sim.ini or ini file.")
-        ("output", po::value<string>(), "Output folder [optional]");
+        ("input,i", po::value<string>(), "Required folder with _sim.ini or ini file.")
+        ("output,o", po::value<string>(), "Output folder [optional]");
         po::variables_map vm;
     fs::path inputPath;
     fs::path outputPath;
     bool append = false;
+    vector<string> parameters_override;
     try
     {
-        po::store(po::command_line_parser(argc, argv).options(desc)
-                  .style(boost::program_options::command_line_style::unix_style |
-                         boost::program_options::command_line_style::allow_long_disguise)
-                  .run(),vm);
+        auto parsed = po::command_line_parser(argc, argv).options(desc)
+        .style(boost::program_options::command_line_style::unix_style |
+               boost::program_options::command_line_style::allow_long_disguise)
+        .allow_unregistered().run();
+        po::store(parsed, vm);
         
         
         if (vm.count("help"))
@@ -69,6 +71,40 @@ Settings::Settings(int argc, char* argv[])
         {
             append = true;
         }
+        
+        parameters_override = po::collect_unrecognized(parsed.options, po::include_positional);
+        
+        
+        // overriden parameters are key, val pairs, therefore if they are not
+        // even, they are not valid.
+        if (!(parameters_override.size() % 2 == 0))
+        {
+            cerr << "overridden parameters must have argument!" << endl;
+            exit(0);
+        }
+        else
+        {
+            cout << "Overriding from command line "<< parameters_override.size()/2 <<" parameters " << endl;
+            for (int i=0; i< parameters_override.size(); i+= 2)
+            {
+                string key = parameters_override[i];
+                if (key.size() > 2 && key.at(0) == '-' && key.at(1) == '-')
+                {
+                    key.erase(0,2);
+                    cout << key << " = " << parameters_override[i+1] << endl;
+                    parameters_override[i] = key;
+                }
+                else
+                {
+                    cerr << "Ignoring " <<  key << " = " <<
+                                            parameters_override[i+1] << endl;
+                    parameters_override.erase(parameters_override.begin()+i,
+                                              parameters_override.end()+i+1);
+                }
+            }
+            cout <<"-------------"<<endl;
+        }
+        
     }
     catch (std::exception& exc)
     {
@@ -112,6 +148,14 @@ Settings::Settings(int argc, char* argv[])
         pt::ini_parser::read_ini(inputPath.string(), *tree);
         
         std::vector<std::pair<std::string, std::string>> keyval_pairs;
+        
+        for (size_t i = 0; i<parameters_override.size(); i+= 2)
+        {
+            string key = parameters_override[i];
+            string val = parameters_override[i+1];
+            tree->put(key, val);
+        }
+        
         for (pt::ptree::value_type &keyval : tree->get_child("") )
         {
             std::string name = keyval.first;
@@ -252,13 +296,79 @@ unsigned int Settings::GlobalSeed() const
     return tree->get<unsigned int>("SEED", 0) + (unsigned int) time(0);
 }
 
+vector<float_p> ReadCharFile(string path);
+
+NoisyMatrix* Settings::GetMatrix(string path, size_t nx, size_t ny) const
+{
+    NoisyMatrix* result = new NoisyMatrix(nx, ny);
+    
+    string matPath = tree->get<string>(path, "xxx");
+    // If the key exist, check wether it's not a file
+    if (matPath != "xxx")
+    {
+        // check if it's  a file path, and import it if it is so:
+        if (fs::exists(GetRootFolder()+matPath))
+        {
+            vector<float_p> values = ReadCharFile(GetRootFolder()+matPath);
+            result->SetValue(values);
+        }
+        else
+        {
+            // else it's not a file. might as well convert it to a real number
+            complex_p val = tree->get<complex_p>(path);
+            result->SetValue(val);
+        }
+    }
+    else if (tree->get<string>(path+"_real", "xxx") != "xxx")
+    {
+        // _real and _imag parts
+        complex_p val = tree->get<complex_p>(path);
+        result->SetValue(val);
+    }
+    else
+    {
+        cerr << "ERROR READING MATRIX" << endl;
+    }
+    
+    string noiseType = tree->get<string>(path+"_Noise_Type", "xxx");
+    if (noiseType != "xxx")
+    {
+        result->SetNoiseType(noiseType);
+    }
+    size_t numOfNoiseVars = result->GetNoiseVariables();
+    for (size_t i = 0; i != numOfNoiseVars; i++)
+    {
+        string noiseValPath = tree->get<string>(path+"_Noise_Val_"+to_string(i), "xxx");
+        if (fs::exists(GetRootFolder()+noiseValPath))
+        {
+            vector<float_p> values = ReadCharFile(GetRootFolder()+matPath);
+            result->SetNoiseVal(i, values);
+        }
+        else
+        {
+            // else it's not a file. might as well convert it to a real number
+            complex_p val = tree->get<complex_p>(path+"_Noise_Val_"+to_string(i));
+            result->SetNoiseVal(i, val);
+        }
+    }
+    return result;
+}
 
 
-//template<> MatrixCXd Settings::get<MatrixCXd>(string path)
-//{
-//
-//}
-
+vector<float_p> ReadCharFile(string path)
+{
+    ifstream file;
+    file.open(path, ios::in);
+    vector<float_p> vec;
+    float_p tmp;
+    if (file.is_open())
+    {
+        while(file >> tmp)
+            vec.push_back(tmp);
+        file.close();
+    }
+    return vec;
+}
 
 
 

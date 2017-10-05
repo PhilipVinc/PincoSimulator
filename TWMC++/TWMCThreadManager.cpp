@@ -11,6 +11,8 @@
 #include "TWMCThreadManager.hpp"
 #include "TWMCSimulation.hpp"
 #include "TWMCSimData.hpp"
+#include "TWMCResults.hpp"
+#include "DataSaver.hpp"
 
 #include <iostream>
 
@@ -24,6 +26,9 @@ TWMCThreadManager::TWMCThreadManager(const Settings* settings) : ThreadManager(s
     // Global Seed generator
     seedGenerator = mt19937(settings->GlobalSeed());
     nTasksLeftToEnqueue = settings->get<size_t>("n_traj");
+    
+    // TODO: THIS IS SHIT
+    saver->ProvideDatasetNames(SampleTaskResult()->NamesOfDatasets());
 }
 
 TWMCThreadManager::~TWMCThreadManager()
@@ -53,6 +58,17 @@ void TWMCThreadManager::PostUpdate()
         Terminate();
     }
 }
+
+TaskData* TWMCThreadManager::SimulationData()
+{
+    return sharedTaskData;
+}
+
+TaskResults* TWMCThreadManager::SampleTaskResult()
+{
+    return new TWMCResults(sharedTaskData);
+}
+
 
 class TWMCThreadManagerBuilder: public ManagerFactory::Builder {
 public:

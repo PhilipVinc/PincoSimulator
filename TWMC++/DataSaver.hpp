@@ -13,9 +13,11 @@
 class TaskResults;
 class ChunkRegister;
 class ChunkFileSet;
+class DataStore;
 
 #include <stdio.h>
 #include <string>
+#include <vector>
 
 
 using namespace std;
@@ -27,25 +29,19 @@ public:
     ~DataSaver();
     
     virtual void SaveData(TaskResults* results);
+    void ProvideDatasetNames(vector<string> names);
 
 protected:
     string saveBasePath;
     string fileNamePrepend;
     string fileNameAppend;
     Settings::SaveSettings saveStatus;
-    void CloseFile(FILE* file);
     
-    void CreateFolder(string folder);
-
     // Root Folder containing all trajectory folders.
     string rootFolder;
-    const string trajectoryFolderBaseName = "trajectories";
-    std::string chunkRegisterFileName;
-private:
-    ChunkRegister* chunkRegister;
-    size_t currentChunkId = 0;
-    ChunkFileSet* chunkCache = NULL;
     
+private:
+    DataStore* dataStore;
 };
 
 #endif /* DataSaver_hpp */

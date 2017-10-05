@@ -9,26 +9,54 @@
 #include "ChunkFileSet.hpp"
 #include "TaskResults.hpp"
 
+#include <iostream>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdocumentation"
+#include <boost/filesystem.hpp>
+#pragma clang pop
+
 using namespace std;
+namespace fs = boost::filesystem;
+
 
 ChunkFileSet::ChunkFileSet(std::string basePath,
              const std::vector<std::string>& datasetNames,
              size_t chunkId)
 {
+    id = chunkId;
     N = datasetNames.size();
     files.reserve(N); fileOffsets.reserve(N); fileSizes.reserve(N);
     fileNames.reserve(N);
     for (size_t i =0; i != N; i++)
     {
         fileNames.push_back(basePath + datasetNames[i] + "_" + to_string(chunkId) + ".cnk");
-        files.push_back(fopen(fileNames[i].c_str(), "w+"));
+        
+        // if the file exists alredy
+        if (fs::exists(fileNames[i]))
+        {
+            cout << "Opening File " << fileNames[i] << endl;
+            files.push_back(fopen(fileNames[i].c_str(), "a+"));
+        }
+        else // If it does not, let's create it
+        {
+            files.push_back(fopen(fileNames[i].c_str(), "w+"));
+            fileSizes.push_back(0);
+        }
         fileSizes.push_back(0);
     }
     
     registerFileName = basePath + "index_" + to_string(chunkId) + ".bin";
-    registerFile = fopen(registerFileName.c_str(), "w+");
     registerTrajSize = sizeof(size_t)*(1+2*N);
     buffer = new size_t[(1+2*N)];
+
+    if (fs::exists(registerFileName))
+    {
+        registerFile = fopen(registerFileName.c_str(), "a+");
+    }
+    else
+    {
+        registerFile = fopen(registerFileName.c_str(), "w+");
+    }
 }
 
 ChunkFileSet::~ChunkFileSet()
@@ -58,6 +86,7 @@ FILE* ChunkFileSet::GetFile(size_t datasetId)
     return files[datasetId];
 }
 
+// To delete
 size_t ChunkFileSet::WriteToChunk(TaskResults* results)
 {
     buffer[0] = results->GetId();
@@ -68,11 +97,11 @@ size_t ChunkFileSet::WriteToChunk(TaskResults* results)
                                        results->DataSetSize(i));
     }
     fwrite(buffer, 1, registerTrajSize, registerFile);
+    fflush(registerFile);
     nTrajWritten ++;
     
     return (nTrajWritten-1) ;
-}
-
+} // End to remove
 
 size_t ChunkFileSet::WriteToChunk(size_t datasetId, const void * ptr, size_t dataSize)
 {
@@ -96,4 +125,9 @@ void ChunkFileSet::FlushData()
 bool ChunkFileSet::IsChunkBig()
 {
     return (fileSizes[0] > minChunkSize);
+}
+
+size_t ChunkFileSet::GetId()
+{
+    return id;
 }

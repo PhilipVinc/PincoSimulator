@@ -1,43 +1,44 @@
 //
-//  TWMCThreadManager.hpp
+//  TWMCThermoThreadManager.hpp
 //  TWMC++
 //
-//  Created by Filippo Vicentini on 18/05/17.
+//  Created by Filippo Vicentini on 25/09/2017.
 //  Copyright © 2017 Filippo Vicentini. All rights reserved.
 //
 
-#ifndef TWMCThreadManager_hpp
-#define TWMCThreadManager_hpp
+#ifndef TWMCThermoThreadManager_hpp
+#define TWMCThermoThreadManager_hpp
 
 #include "ThreadManager.hpp"
 class Settings;
 class TWMCSimData;
-class TaskData;
 
 #include <stdio.h>
-#include <random> 
+#include <random>
 
 
-class TWMCThreadManager : public ThreadManager
+class TWMCThermoThreadManager : public ThreadManager
 {
 public:
-    TWMCThreadManager(const Settings* settings);
+    TWMCThermoThreadManager(const Settings* settings);
     
-    ~TWMCThreadManager();
+    ~TWMCThermoThreadManager();
     
     // Get the simulation Task Data;
     virtual TaskData* SimulationData();
     virtual TaskResults* SampleTaskResult();
 
+    
 protected:
     virtual Task* PrepareTask(Task* _task);
     virtual Task* PrepareTask();
     //virtual void SaveTask(Task* task);
     virtual void PostUpdate();
-
+    
 private:
     
     TWMCSimData* sharedTaskData;
     std::mt19937 seedGenerator;
+    
 };
-#endif /* TWMCThreadManager_hpp */
+#endif /* TWMCThermoThreadManager_hpp */

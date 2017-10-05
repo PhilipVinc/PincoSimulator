@@ -14,6 +14,7 @@
 #include <vector>
 #include <boost/property_tree/ptree_fwd.hpp>
 
+class NoisyMatrix;
 namespace pt = boost::property_tree;
 using namespace std;
 
@@ -30,6 +31,8 @@ public:
     ~Settings();
     
     template<class T> T get(string value) const;
+    //NoisyMatrix* GetMatrix(string value, vector<size_t> dims) const;
+    NoisyMatrix* GetMatrix(string value, size_t nx, size_t ny) const;
     unsigned int GlobalSeed() const;
     string GetOutputFolder() const;
     string GetRootFolder() const;
@@ -39,7 +42,7 @@ public:
     /// @discussion invalid - indicates that the data provided is invalid and execution wil soon abort;
     ///             firstRun - indicates that there was no data prior to this execution;
     ///             subsequentRun - indicates that we are resuming a previous run;
-    enum Status { invalid, firstRun, subsequentRun, appendRun };
+    enum Status { invalid, firstRun, subsequentRun, appendRun, elaborateRun};
     enum SaveSettings {dontSave, saveSingleFile, saveIdFiles, appendIdFiles};
     
     Status status = Status::invalid;

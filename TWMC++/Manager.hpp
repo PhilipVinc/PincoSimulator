@@ -12,6 +12,8 @@
 #include <stdio.h>
 class Settings;
 class DataSaver;
+class TaskData;
+class TaskResults;
 class Task;
 
 class Manager
@@ -21,6 +23,11 @@ public:
     ~Manager();
     
     virtual void ManagerLoop() = 0;
+    
+    // Get the simulation Task Data;
+    virtual TaskData* SimulationData() = 0;
+    virtual TaskResults* SampleTaskResult() = 0;
+
 protected:
     const Settings * settings;
     DataSaver* saver;

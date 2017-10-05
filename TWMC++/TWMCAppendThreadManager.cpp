@@ -12,6 +12,7 @@
 #include "Settings.hpp"
 #include "TWMCSimulation.hpp"
 #include "TWMCSimData.hpp"
+#include "TWMCResults.hpp"
 
 #include <iostream>
 
@@ -54,6 +55,17 @@ void TWMCAppendThreadManager::PostUpdate()
         Terminate();
     }
 }
+
+TaskData* TWMCAppendThreadManager::SimulationData()
+{
+    return sharedTaskData;
+}
+
+TaskResults* TWMCAppendThreadManager::SampleTaskResult()
+{
+    return new TWMCResults(sharedTaskData);
+}
+
 
 class TWMCAppendThreadManagerBuilder: public ManagerFactory::Builder {
 public:

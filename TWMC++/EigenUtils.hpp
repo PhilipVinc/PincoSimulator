@@ -20,6 +20,7 @@ MatrixCXd InitMatrix(size_t nx,size_t ny ,complex_p value);
 // Initialize with value[i] at site i
 MatrixCXd InitMatrix(size_t nx,size_t ny ,complex_p* value);
 MatrixCXd InitMatrix(size_t nx,size_t ny ,float_p* value);
+MatrixCXd InitMatrix(size_t nx,size_t ny ,std::vector<float_p>& values);
 
 MatrixCXd MatExp(MatrixCXd mat);
 MatrixCXd vecSqrt(MatrixCXd mat);

@@ -33,17 +33,32 @@ public:
     
     void Setup();
     
+    // Queue of tasks that are waiting to be executed by a worker.
+    // Fed by Manager, Eaten by Workers
     moodycamel::ConcurrentQueue<Task*> dispatchedTasks;
-    moodycamel::ProducerToken dispatchToken;
+    // Queue of tasks completed by workers. Fed by Workers, eaten by manager
     moodycamel::ConcurrentQueue<Task*> elaboratedTasks;
+    
+    // Tokens to speed up queue usage.
+    moodycamel::ProducerToken dispatchToken;
     moodycamel::ConsumerToken elaboratedToken;
-
+    
+    // Take a task from dispatchedTasks to execute it (called by a worker)
     Task* GetTask(size_t th_id);
+    // Return a completed task, to add it to elaboratedTasks
     void GiveResults(size_t th_id, Task* task);
+    // Method called by a thread to inform the manager that he is now dead
+    // and can be joined.
     void ReportThreadTermination(size_t th_id);
     
     void Terminate();
+    
+    // Get the simulation Task Data;
+    virtual TaskData* SimulationData() = 0;
+    virtual TaskResults* SampleTaskResult() = 0;
+
 protected:
+    // Pool of tasks to be reused.
     queue<Task*> voidTaskPool;
     
     size_t nTasksLeftToEnqueue = 0;
@@ -64,6 +79,8 @@ private:
     size_t nextWorkerId = 0;
     vector<size_t> activeThreads;
     queue<size_t> unactivatedThreadPool;
+    moodycamel::ConcurrentQueue<size_t> threadsToJoin;
+
     
     vector<thread> threads;
     vector<WorkerThread*> workers;
@@ -76,6 +93,8 @@ private:
     void TerminateAllWorkers();
     void AssignTaskToWorker();
     void EnqueueTask(size_t nTasks = 1);
+    void JoinThread(size_t th_id);
+
 };
 
 #endif /* ThreadManager_hpp */

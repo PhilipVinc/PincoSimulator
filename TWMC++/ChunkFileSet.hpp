@@ -29,6 +29,8 @@ public:
     size_t WriteToChunk(TaskResults* results);
     void FlushData();
     bool IsChunkBig();
+    
+    size_t GetId();
 protected:
     size_t WriteToChunk(size_t datasetId, const void * ptr, size_t dataSize);
 
@@ -44,6 +46,7 @@ private:
     size_t N;
     
     size_t* buffer;
+    size_t id;
     size_t nTrajWritten = 0;
 };
 

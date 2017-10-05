@@ -7,6 +7,8 @@
 //
 
 #include "EigenUtils.hpp"
+#include <vector>
+#include <iostream>
 
 MatrixCXd InitDiagMatrix(size_t dim, size_t diag, complex_p value)
 {
@@ -37,6 +39,43 @@ MatrixCXd InitMatrix(size_t nx,size_t ny ,complex_p value)
         vec(i) = value;
     }
     return vec;
+}
+
+MatrixCXd InitMatrix(size_t nx,size_t ny ,std::vector<float_p>& values)
+{
+    size_t nxy = nx*ny;
+    size_t valSize = values.size();
+    MatrixCXd mat = MatrixCXd(nx,ny);
+    
+    // then it is real
+    if (valSize==nxy)
+    {
+        for (size_t i = 0, nRows = mat.rows(), nCols = mat.cols(); i < nRows; ++i)
+        {
+            for (size_t j = 0; j < nCols; ++j)
+            {
+                mat(i,j) = values[j*nRows+i];
+            }
+        }
+    }
+    else if (valSize == 2*nxy)
+    {
+        for (size_t i = 0, nRows = mat.rows(), nCols = mat.cols(); i < nRows; ++i)
+        {
+            for (size_t j = 0; j < nCols; ++j)
+            {
+                mat(i,j) = values[2*(j*nRows+i)] +ij*values[2*(j*nRows+i)+1];
+            }
+        }
+    }
+    else
+    {
+        std::cerr << "Exception occured in InitMatrix("<<nx<<", "<<ny<<", std::vector<float_p>& values)" << std::endl;
+        std::cerr<<"Total number of matrix elements is: " << nxy <<  std::endl;
+        std::cerr << " but array has " << valSize << "elements." << std::endl;
+    }
+
+    return mat;
 }
 
 MatrixCXd InitMatrix(size_t nx,size_t ny ,complex_p* value)

@@ -7,11 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		156BE7F41F7925D000B0EBB1 /* TWMCThermoSimulation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 156BE7F21F7925D000B0EBB1 /* TWMCThermoSimulation.cpp */; };
+		156BE7F71F7925E100B0EBB1 /* TWMCThermoThreadManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 156BE7F51F7925E100B0EBB1 /* TWMCThermoThreadManager.cpp */; };
+		156BE7FA1F79267600B0EBB1 /* TWMCThermoResults.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 156BE7F81F79267600B0EBB1 /* TWMCThermoResults.cpp */; };
 		158926D01EDDB1D900ACB233 /* TaskResults.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 158926CE1EDDB1D900ACB233 /* TaskResults.cpp */; };
 		158926D41EDDB45A00ACB233 /* TaskData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 158926D21EDDB45A00ACB233 /* TaskData.cpp */; };
 		158926D81EDED27F00ACB233 /* TWMCAppendThreadManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 158926D61EDED27F00ACB233 /* TWMCAppendThreadManager.cpp */; };
 		158C2E511F6BD56B0081B2BC /* ChunkRegister.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 158C2E4F1F6BD56B0081B2BC /* ChunkRegister.cpp */; };
 		158C2E571F6C02D10081B2BC /* ChunkFileSet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 158C2E551F6C02D10081B2BC /* ChunkFileSet.cpp */; };
+		15CC1C691F84F261002E6118 /* NoisyMatrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15CC1C671F84F261002E6118 /* NoisyMatrix.cpp */; };
 		15E19CB21ECCBC0B006520C8 /* Settings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15E19CB01ECCBC0B006520C8 /* Settings.cpp */; };
 		15E2003B1ECCD020009B01A8 /* FsUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15E200391ECCD020009B01A8 /* FsUtils.cpp */; };
 		15E28E2A1ECC987E00DEAF3F /* Task.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15E28E281ECC987E00DEAF3F /* Task.cpp */; };
@@ -21,6 +25,9 @@
 		411FE8F21ED3AC5E00595C7A /* TWMCSimulation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15E28E331ECC9C2B00DEAF3F /* TWMCSimulation.cpp */; };
 		411FE8F31ED3AC7700595C7A /* EigenUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 157040731E2FCB12000A1C52 /* EigenUtils.cpp */; };
 		413E077F1EDD4DAA000B8096 /* TWMCResults.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 413E077D1EDD4DAA000B8096 /* TWMCResults.cpp */; };
+		41887DD31F752FB800B2B819 /* DataStore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41887DD11F752FB800B2B819 /* DataStore.cpp */; };
+		41887DD61F75301E00B2B819 /* PincoFormatDataStore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41887DD41F75301E00B2B819 /* PincoFormatDataStore.cpp */; };
+		41887DD91F75494F00B2B819 /* TaskResultsFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41887DD71F75494F00B2B819 /* TaskResultsFactory.cpp */; };
 		41AC28E61ED6EBAD00483D1F /* DataSaver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41AC28E41ED6EBAD00483D1F /* DataSaver.cpp */; };
 		41AC28E91ED6EC2C00483D1F /* TrajectorySaver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41AC28E71ED6EC2C00483D1F /* TrajectorySaver.cpp */; };
 		41EB6D8A1DE0578400208099 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 41EB6D891DE0578400208099 /* main.cpp */; };
@@ -44,6 +51,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		156BE7F21F7925D000B0EBB1 /* TWMCThermoSimulation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TWMCThermoSimulation.cpp; sourceTree = "<group>"; };
+		156BE7F31F7925D000B0EBB1 /* TWMCThermoSimulation.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TWMCThermoSimulation.hpp; sourceTree = "<group>"; };
+		156BE7F51F7925E100B0EBB1 /* TWMCThermoThreadManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TWMCThermoThreadManager.cpp; sourceTree = "<group>"; };
+		156BE7F61F7925E100B0EBB1 /* TWMCThermoThreadManager.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TWMCThermoThreadManager.hpp; sourceTree = "<group>"; };
+		156BE7F81F79267600B0EBB1 /* TWMCThermoResults.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TWMCThermoResults.cpp; sourceTree = "<group>"; };
+		156BE7F91F79267600B0EBB1 /* TWMCThermoResults.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TWMCThermoResults.hpp; sourceTree = "<group>"; };
 		156DF41E1E5F4EF100AACA63 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		157040731E2FCB12000A1C52 /* EigenUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EigenUtils.cpp; sourceTree = "<group>"; };
 		157040741E2FCB12000A1C52 /* EigenUtils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = EigenUtils.hpp; sourceTree = "<group>"; };
@@ -57,6 +70,10 @@
 		158C2E501F6BD56B0081B2BC /* ChunkRegister.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ChunkRegister.hpp; path = "TWMC++/ChunkRegister.hpp"; sourceTree = "<group>"; };
 		158C2E551F6C02D10081B2BC /* ChunkFileSet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ChunkFileSet.cpp; path = "TWMC++/ChunkFileSet.cpp"; sourceTree = "<group>"; };
 		158C2E561F6C02D10081B2BC /* ChunkFileSet.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ChunkFileSet.hpp; path = "TWMC++/ChunkFileSet.hpp"; sourceTree = "<group>"; };
+		15CC1C671F84F261002E6118 /* NoisyMatrix.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = NoisyMatrix.cpp; path = "TWMC++/NoisyMatrix.cpp"; sourceTree = "<group>"; };
+		15CC1C681F84F261002E6118 /* NoisyMatrix.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = NoisyMatrix.hpp; path = "TWMC++/NoisyMatrix.hpp"; sourceTree = "<group>"; };
+		15CC1C6A1F8521A2002E6118 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		15CC1C6B1F852D24002E6118 /* FILE_Description.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = FILE_Description.md; sourceTree = "<group>"; };
 		15E19CB01ECCBC0B006520C8 /* Settings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Settings.cpp; path = "TWMC++/Settings.cpp"; sourceTree = "<group>"; };
 		15E19CB11ECCBC0B006520C8 /* Settings.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Settings.hpp; path = "TWMC++/Settings.hpp"; sourceTree = "<group>"; };
 		15E200391ECCD020009B01A8 /* FsUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FsUtils.cpp; sourceTree = "<group>"; };
@@ -74,6 +91,12 @@
 		411FE8EF1ED39B2C00595C7A /* ManagerFactory.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ManagerFactory.hpp; path = "TWMC++/ManagerFactory.hpp"; sourceTree = "<group>"; };
 		413E077D1EDD4DAA000B8096 /* TWMCResults.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = TWMCResults.cpp; path = "TWMC++/TWMCResults.cpp"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		413E077E1EDD4DAA000B8096 /* TWMCResults.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; name = TWMCResults.hpp; path = "TWMC++/TWMCResults.hpp"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		41887DD11F752FB800B2B819 /* DataStore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataStore.cpp; path = "TWMC++/FileFormats/DataStore.cpp"; sourceTree = "<group>"; };
+		41887DD21F752FB800B2B819 /* DataStore.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = DataStore.hpp; path = "TWMC++/FileFormats/DataStore.hpp"; sourceTree = "<group>"; };
+		41887DD41F75301E00B2B819 /* PincoFormatDataStore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PincoFormatDataStore.cpp; path = "TWMC++/FileFormats/PincoFormatDataStore.cpp"; sourceTree = "<group>"; };
+		41887DD51F75301E00B2B819 /* PincoFormatDataStore.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PincoFormatDataStore.hpp; path = "TWMC++/FileFormats/PincoFormatDataStore.hpp"; sourceTree = "<group>"; };
+		41887DD71F75494F00B2B819 /* TaskResultsFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TaskResultsFactory.cpp; path = "TWMC++/Factories/TaskResultsFactory.cpp"; sourceTree = "<group>"; };
+		41887DD81F75494F00B2B819 /* TaskResultsFactory.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = TaskResultsFactory.hpp; path = "TWMC++/Factories/TaskResultsFactory.hpp"; sourceTree = "<group>"; };
 		41AC28E41ED6EBAD00483D1F /* DataSaver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = DataSaver.cpp; path = "TWMC++/DataSaver.cpp"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		41AC28E51ED6EBAD00483D1F /* DataSaver.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; name = DataSaver.hpp; path = "TWMC++/DataSaver.hpp"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		41AC28E71ED6EC2C00483D1F /* TrajectorySaver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = TrajectorySaver.cpp; path = "TWMC++/TrajectorySaver.cpp"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
@@ -102,9 +125,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		156BE7F11F79258800B0EBB1 /* ThermoTWMC */ = {
+			isa = PBXGroup;
+			children = (
+				156BE7F81F79267600B0EBB1 /* TWMCThermoResults.cpp */,
+				156BE7F91F79267600B0EBB1 /* TWMCThermoResults.hpp */,
+				156BE7F21F7925D000B0EBB1 /* TWMCThermoSimulation.cpp */,
+				156BE7F31F7925D000B0EBB1 /* TWMCThermoSimulation.hpp */,
+				156BE7F51F7925E100B0EBB1 /* TWMCThermoThreadManager.cpp */,
+				156BE7F61F7925E100B0EBB1 /* TWMCThermoThreadManager.hpp */,
+			);
+			path = ThermoTWMC;
+			sourceTree = "<group>";
+		};
 		158926D11EDDB42700ACB233 /* Factories */ = {
 			isa = PBXGroup;
 			children = (
+				41887DD71F75494F00B2B819 /* TaskResultsFactory.cpp */,
+				41887DD81F75494F00B2B819 /* TaskResultsFactory.hpp */,
 				411FE8EE1ED39B2C00595C7A /* ManagerFactory.cpp */,
 				411FE8EF1ED39B2C00595C7A /* ManagerFactory.hpp */,
 			);
@@ -134,14 +172,13 @@
 				15E28E291ECC987E00DEAF3F /* Task.hpp */,
 				41F313CA1ECE0DD000621AB7 /* Manager.cpp */,
 				41F313CB1ECE0DD000621AB7 /* Manager.hpp */,
-				158C2E4F1F6BD56B0081B2BC /* ChunkRegister.cpp */,
-				158C2E501F6BD56B0081B2BC /* ChunkRegister.hpp */,
-				158C2E551F6C02D10081B2BC /* ChunkFileSet.cpp */,
-				158C2E561F6C02D10081B2BC /* ChunkFileSet.hpp */,
+				41887DD01F752F4000B2B819 /* File Formats */,
 				41AC28E41ED6EBAD00483D1F /* DataSaver.cpp */,
 				41AC28E51ED6EBAD00483D1F /* DataSaver.hpp */,
 				15E19CB01ECCBC0B006520C8 /* Settings.cpp */,
 				15E19CB11ECCBC0B006520C8 /* Settings.hpp */,
+				15CC1C671F84F261002E6118 /* NoisyMatrix.cpp */,
+				15CC1C681F84F261002E6118 /* NoisyMatrix.hpp */,
 			);
 			name = Base;
 			sourceTree = "<group>";
@@ -160,6 +197,7 @@
 				41F313C81ECE0DC600621AB7 /* TWMCThreadManager.hpp */,
 				41AC28E71ED6EC2C00483D1F /* TrajectorySaver.cpp */,
 				41AC28E81ED6EC2C00483D1F /* TrajectorySaver.hpp */,
+				156BE7F11F79258800B0EBB1 /* ThermoTWMC */,
 				4167ED161F6DA3D200B7E1CE /* Append */,
 			);
 			name = TWMC;
@@ -182,6 +220,22 @@
 			name = Append;
 			sourceTree = "<group>";
 		};
+		41887DD01F752F4000B2B819 /* File Formats */ = {
+			isa = PBXGroup;
+			children = (
+				15CC1C6B1F852D24002E6118 /* FILE_Description.md */,
+				41887DD11F752FB800B2B819 /* DataStore.cpp */,
+				41887DD21F752FB800B2B819 /* DataStore.hpp */,
+				41887DD41F75301E00B2B819 /* PincoFormatDataStore.cpp */,
+				41887DD51F75301E00B2B819 /* PincoFormatDataStore.hpp */,
+				158C2E4F1F6BD56B0081B2BC /* ChunkRegister.cpp */,
+				158C2E501F6BD56B0081B2BC /* ChunkRegister.hpp */,
+				158C2E551F6C02D10081B2BC /* ChunkFileSet.cpp */,
+				158C2E561F6C02D10081B2BC /* ChunkFileSet.hpp */,
+			);
+			name = "File Formats";
+			sourceTree = "<group>";
+		};
 		41EB6D7D1DE0578400208099 = {
 			isa = PBXGroup;
 			children = (
@@ -194,6 +248,7 @@
 				41EB6D881DE0578400208099 /* TWMC++ */,
 				15E28E3A1ECCA4CD00DEAF3F /* Delete */,
 				41EB6D871DE0578400208099 /* Products */,
+				15CC1C6A1F8521A2002E6118 /* README.md */,
 				41F313CD1ECE4CC900621AB7 /* Libraries */,
 			);
 			sourceTree = "<group>";
@@ -308,17 +363,24 @@
 				158926D81EDED27F00ACB233 /* TWMCAppendThreadManager.cpp in Sources */,
 				411FE8F11ED3AC5B00595C7A /* TWMCSimData.cpp in Sources */,
 				15E28E2A1ECC987E00DEAF3F /* Task.cpp in Sources */,
+				156BE7F41F7925D000B0EBB1 /* TWMCThermoSimulation.cpp in Sources */,
+				41887DD61F75301E00B2B819 /* PincoFormatDataStore.cpp in Sources */,
 				41EB6D8A1DE0578400208099 /* main.cpp in Sources */,
 				15E19CB21ECCBC0B006520C8 /* Settings.cpp in Sources */,
+				156BE7FA1F79267600B0EBB1 /* TWMCThermoResults.cpp in Sources */,
 				41F313CC1ECE0DD000621AB7 /* Manager.cpp in Sources */,
 				411FE8F31ED3AC7700595C7A /* EigenUtils.cpp in Sources */,
 				15E2003B1ECCD020009B01A8 /* FsUtils.cpp in Sources */,
+				15CC1C691F84F261002E6118 /* NoisyMatrix.cpp in Sources */,
 				158926D41EDDB45A00ACB233 /* TaskData.cpp in Sources */,
 				411FE8F21ED3AC5E00595C7A /* TWMCSimulation.cpp in Sources */,
 				41AC28E91ED6EC2C00483D1F /* TrajectorySaver.cpp in Sources */,
 				41F313CF1ECE4CDF00621AB7 /* WorkerThread.cpp in Sources */,
+				41887DD91F75494F00B2B819 /* TaskResultsFactory.cpp in Sources */,
+				156BE7F71F7925E100B0EBB1 /* TWMCThermoThreadManager.cpp in Sources */,
 				411FE8F01ED39B2C00595C7A /* ManagerFactory.cpp in Sources */,
 				158C2E571F6C02D10081B2BC /* ChunkFileSet.cpp in Sources */,
+				41887DD31F752FB800B2B819 /* DataStore.cpp in Sources */,
 				41AC28E61ED6EBAD00483D1F /* DataSaver.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

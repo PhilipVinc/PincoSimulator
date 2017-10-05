@@ -17,6 +17,8 @@
 #include <iostream>
 #include <stdio.h>
 
+#include "PincoFormatDataStore.hpp"
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdocumentation"
 #include <boost/filesystem.hpp>
@@ -27,81 +29,22 @@ namespace fs = boost::filesystem;
 
 DataSaver::DataSaver(const Settings* settings)
 {
-    fs::path rootPath;
-    if (settings->IsOutputFolderSet())
-        saveBasePath = settings->GetOutputFolder();
-    else
-    {
-        rootFolder = settings->GetRootFolder();
-        rootPath = rootFolder;
-        
-        auto trajectoryFoldersN = findFoldersContainingString(rootFolder, trajectoryFolderBaseName).size()+1;
-        saveBasePath = (rootPath  / (trajectoryFolderBaseName + to_string(trajectoryFoldersN))).string();
-
-    }
-    
-    CreateFolder(saveBasePath);
     saveStatus = settings->saveStatus;
-    
-    fileNamePrepend = saveBasePath + "/";
-    fileNameAppend = ".bin";
-    
-    chunkRegisterFileName = saveBasePath + "/_register.cnk";
-    chunkRegister = new ChunkRegister(settings, chunkRegisterFileName);
+    dataStore = new PincoFormatDataStore(settings, settings->GetRootFolder());
 }
 
 DataSaver::~DataSaver()
 {
-    
+    delete dataStore;
 }
 
 void DataSaver::SaveData(TaskResults *results)
 {
     cout << "Saving "<< results->GetId() << endl;
-    size_t N = results->NumberOfDataSets();
-    
-    std::vector<size_t> offsets(N);
-    
-    if (chunkCache==NULL)
-    {
-        chunkCache=new ChunkFileSet(fileNamePrepend, results->NamesOfDatasets(),
-                                    currentChunkId);
-    }
-    
-    size_t offset = chunkCache->WriteToChunk(results);
-    
-    chunkRegister->RegisterStoredData(results, currentChunkId, offset, saveStatus);
-    
-    if (chunkCache->IsChunkBig())
-    {
-        delete chunkCache;
-        chunkCache = NULL;
-        currentChunkId++;
-    }
+    dataStore->SaveTaskResults(results);
 }
 
-void DataSaver::CloseFile(FILE* file)
+void DataSaver::ProvideDatasetNames(vector<string> names)
 {
-    switch (saveStatus)
-    {
-        case Settings::SaveSettings::saveIdFiles:
-            fclose(file);
-            break;
-        case Settings::SaveSettings::appendIdFiles:
-            fclose(file);
-            break;
-        default:
-            break;
-    }
-
+    dataStore->ProvideDatasetNames(names);
 }
-
-void DataSaver::CreateFolder(string folder)
-{
-    boost::filesystem::path dir(folder);
-    if (boost::filesystem::create_directory(dir))
-        std::cout << "Success" << "\n";
-    else
-        std::cerr << "Error" << "\n";
-}
-

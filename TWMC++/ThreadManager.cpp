@@ -61,11 +61,17 @@ void ThreadManager::ManagerLoop()
 
 void ThreadManager::PreUpdate()
 {
-    
+
 }
 void ThreadManager::PostUpdate()
 {
-    
+    // Properly join unused threads
+    size_t th_id;
+    while (threadsToJoin.try_dequeue(th_id))
+    {
+        cout << "Deactivating thread #" << th_id << endl;
+        JoinThread(th_id);
+    }
 }
 
 void ThreadManager::Update()
@@ -155,13 +161,16 @@ void ThreadManager::TerminateWorker(size_t i)
 
 void ThreadManager::ReportThreadTermination(size_t th_id)
 {
+    threadsToJoin.enqueue(th_id);
+}
+
+void ThreadManager::JoinThread(size_t th_id)
+{
     threads[th_id].join();
     delete workers[th_id];
     unactivatedThreadPool.push(th_id);
     activeThreads.erase(std::remove(activeThreads.begin(), activeThreads.end(), th_id), activeThreads.end());
-    
 }
-
 // Methods called from other threads
 Task* ThreadManager::GetTask(size_t th_id)
 {

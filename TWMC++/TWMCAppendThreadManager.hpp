@@ -24,6 +24,10 @@ public:
     
     ~TWMCAppendThreadManager();
     
+    // Get the simulation Task Data;
+    virtual TaskData* SimulationData();
+    virtual TaskResults* SampleTaskResult();
+    
 protected:
     virtual Task* PrepareTask(Task* _task);
     virtual Task* PrepareTask();
