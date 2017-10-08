@@ -15,6 +15,8 @@
 #include <vector>
 #include <string>
 #include <random>
+#include <map>
+#include <tuple>
 
 using namespace std;
 
@@ -38,6 +40,9 @@ public:
     void SetNoiseVal(size_t id, float_p val);
     void SetNoiseVal(size_t id, complex_p val);
     void SetNoiseVal(size_t id, std::vector<float_p>& val);
+    void SetTemporalValue(std::map<float_p, std::vector<float_p>> data);
+    MatrixCXd GetAtTime(float_p t, size_t suggestedId = 0);
+    tuple<size_t,MatrixCXd> GetAtTimeWithSuggestion(float_p t, size_t suggestedId = 0);
 
     MatrixCXd GenerateNoNoise();
     MatrixCXd Generate(std::mt19937 &gen);
@@ -47,7 +52,12 @@ public:
 protected:
     
 private:
-    
+
+    std::vector<float_p> times;
+    std::vector<MatrixCXd> dVals;
+    std::vector<MatrixRXd> matRTimes;
+    std::vector<MatrixCXd> matCTimes;
+
     std::vector<float_p> values;
     MatrixCXd baseMat;
     
@@ -58,6 +68,7 @@ private:
     
     bool setup = false;
     bool noise = false;
+    bool timeDep = false;
     
     std::vector<MatrixCXd> noiseVars;
     std::normal_distribution<> normal;

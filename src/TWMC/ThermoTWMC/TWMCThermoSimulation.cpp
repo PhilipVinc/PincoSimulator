@@ -202,9 +202,16 @@ void TWMCThermoSimulation::Compute()
     // Initialize the beta value to the starting value.
     
     plan->fft_i_out = beta_t;
-    
+
+    size_t tCache = 0;
+
     while (t<data->t_end)
     {
+        // Compute F
+        auto Fdata = data->F->GetAtTimeWithSuggestion(t, tCache);
+        F = get<1>(Fdata);
+        tCache = get<0>(Fdata);
+
         // First compute the Fourier Transform of the previous state
         {
             plan->fft_f_in = beta_t;

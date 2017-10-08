@@ -70,8 +70,8 @@ set(SOURCE_FILES
         src/TWMC/ThermoTWMC/TWMCThermoThreadManager.hpp
         src/TWMC/TrajectorySaver.cpp
         src/TWMC/TrajectorySaver.hpp
-        src/TWMC/TWMCThreadManager.cpp
-        src/TWMC/TWMCThreadManager.hpp
+        src/TWMC/SimpleTWMC/TWMCThreadManager.cpp
+        src/TWMC/SimpleTWMC/TWMCThreadManager.hpp
         src/TWMC/TWMCTypes.h
         src/main.cpp)
 
@@ -89,3 +89,9 @@ target_link_libraries(sim m)
 target_link_libraries(sim boost_program_options)
 target_link_libraries(sim boost_filesystem)
 target_link_libraries(sim boost_system)
+
+# Copy file
+add_custom_command(TARGET sim
+                    POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/SampleData/ $<TARGET_FILE_DIR:sim>)
+#file(COPY Support Files/test-sim.ini DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

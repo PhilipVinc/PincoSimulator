@@ -11,6 +11,7 @@
 #include "TWMCResults.hpp"
 #include "Settings.hpp"
 #include "NoisyMatrix.hpp"
+#include "TaskData.hpp"
 
 #include <iostream>
 #include <random>
@@ -186,23 +187,28 @@ void TWMCSimulation::Compute()
     
     plan->fft_i_out = beta_t;
     
+    auto dt4 = sqrt(data->gamma_val*data->dt/4.0);
+    auto dt = data->dt;
+    
+    TWMC_FFTW_plans& _plan = *plan;
+    
     while (t<=data->t_end)
     {
         // First compute the Fourier Transform of the previous state
         {
-            plan->fft_f_in = beta_t;
-            fftw_execute(plan->forward_fft);
+            _plan.fft_f_in = beta_t;
+            fftw_execute(_plan.forward_fft);
             
             // Now in plan.fft_f_out I have the beta_t transformed.
             // I apply the J step
-            plan->fft_i_in = k_step_linear.array() * plan->fft_f_out.array();
-            fftw_execute(plan->inverse_fft);
-            plan->fft_i_out = plan->fft_i_out/fft_norm_factor;
+            _plan.fft_i_in = k_step_linear.array() * _plan.fft_f_out.array();
+            fftw_execute(_plan.inverse_fft);
+            _plan.fft_i_out = _plan.fft_i_out/fft_norm_factor;
         }
         // Compute the a_t, that is used for the kai in the heun scheme
-        a_t = ((real_step_linear.array() + ij*U.array()*(beta_t.array().abs2()-1.0) )*beta_t.array() + plan->fft_i_out.array() + ij*F.array())*data->dt;
+        a_t = ((real_step_linear.array() + ij*U.array()*(beta_t.array().abs2()-1.0) )*beta_t.array() + _plan.fft_i_out.array() + ij*F.array())*dt;
         randCMat(&tmpRand, gen, normal);
-        kai_t = beta_t.array() + a_t.array() + sqrt(data->gamma_val*data->dt/4.0)*tmpRand.array();
+        kai_t = beta_t.array() + a_t.array() + dt4*tmpRand.array();
         
         beta_t = kai_t;
         

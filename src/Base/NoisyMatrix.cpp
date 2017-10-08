@@ -10,6 +10,7 @@
 #include "EigenUtils.hpp"
 #include "CustomTypes.h"
 #include <iostream>
+#include <map>
 
 NoisyMatrix::NoisyMatrix(vector<size_t> dims) : normal(0.0, 1.0), uniform(-1.0, 1.0), poisson(1.0)
 {
@@ -189,3 +190,116 @@ MatrixCXd NoisyMatrix::EvaluateNoise(std::mt19937 &gen)
     return mat;
 }
 
+void NoisyMatrix::SetTemporalValue(std::map<float_p, std::vector<float_p>> data)
+{
+    for (auto pt =data.begin();  pt!=data.end() ; pt++)
+    {
+        float_p timePt = pt->first;
+        MatrixCXd mat_t = MatrixCXd(nx, ny);
+        complex_p* vals = mat_t.data();
+        size_t dim = nx*ny;
+
+        if (pt->second.size() == nx*ny)
+        {
+            for (int i = 0; i != dim; ++i)
+            {
+                vals[i] = pt->second[i];
+            }
+        }
+        else if (pt->second.size() == nx*ny*2)
+        {
+            for (int i = 0; i != dim; i+=2)
+            {
+                vals[i] = pt->second[i] + ij*pt->second[i+1];
+            }
+
+        } else {
+            cerr << "Error in parsing a time-dependent matrix. Invalid number of elements." << endl;
+        }
+
+        times.push_back(timePt);
+        matCTimes.push_back(mat_t);
+    }
+
+    // Now I have to complete and fix the matrices
+    for (int i = 0; i != nx; i++)
+    {
+        for (int j=0; j!= ny ; j++)
+        {
+            for (int pt = 0; pt != times.size(); pt++)
+            {
+                complex_p matVal = matCTimes[pt](i,j);
+                if (isnan(matVal.real()) || isnan(matVal.imag()) )
+                {
+                    complex_p previousVal = cNAN;  int tprev;
+                    for (tprev =pt-1; tprev >= 0 && isnan(previousVal.real()); tprev --)
+                    {
+                        previousVal = matCTimes[tprev](i,j);
+                    } tprev++;
+                    complex_p nextVal = cNAN; int tnext;
+                    for (tnext =pt+1; tnext < times.size() && isnan(nextVal.real()); tnext++)
+                    {
+                        nextVal = matCTimes[tnext](i,j);
+                    } tnext--;
+
+                    // Check boundaries
+                    if (isnan(previousVal.real()) && isnan(nextVal.real())) {
+                        cerr << "ERROR: The Time-dependent matrix element (" << i << ", " << j
+                             << ") has no known Elements!" << endl;
+                        break;
+                    }
+                    else if (isnan(nextVal.real()) && !isnan(previousVal.real()))
+                    {
+                        matCTimes[pt](i,j) = previousVal;
+                    }
+                    else if (!isnan(nextVal.real()) && isnan(previousVal.real()))
+                    {
+                        matCTimes[pt](i,j) = nextVal;
+                    } else
+                    {
+                        matCTimes[pt](i,j) = previousVal + (nextVal-previousVal)/(times[tnext]-times[tprev])*(times[pt]-times[tprev]);
+                    }
+                }
+            }
+        }
+    }
+
+    for (int i=1; i!=times.size(); i++)
+    {
+        dVals.push_back((matCTimes[i] - matCTimes[i - 1]) / (times[i] - times[i - 1]));
+    }
+    dVals.push_back(matCTimes[0]-matCTimes[0]);
+    dVals.push_back(matCTimes[0]-matCTimes[0]);
+    matCTimes.push_back(matCTimes[times.size()-1]);
+    times.push_back(numeric_limits<float_p>::max());
+    timeDep = true;
+
+    for (int k = 0; k < times.size() ; ++k) {
+        cout << "t = " << times[k] << endl;
+        cout << "F(t) = " << endl;
+        cout << matCTimes[k].real() << endl;
+        cout << "dF(t) = " << endl;
+        cout << dVals[k].real() << endl;
+        cout << "------------------------" << endl;
+    }
+}
+
+MatrixCXd NoisyMatrix::GetAtTime(float_p t, size_t suggestedId)
+{
+    return get<1>(GetAtTimeWithSuggestion(t, suggestedId));
+}
+
+tuple<size_t,MatrixCXd> NoisyMatrix::GetAtTimeWithSuggestion(float_p t, size_t suggestedId)
+{
+    if (t <= times[0])
+    {
+        return tuple<size_t, MatrixCXd>(0,matCTimes[0]);
+    } else  {
+        size_t id;
+        if (times[suggestedId+1] > t)
+            id = suggestedId;
+        else
+            id = lower_bound(times.begin(), times.end(), t) - times.begin()-1;
+        return  tuple<size_t, MatrixCXd>(id, matCTimes[id] + complex_p(t - times[id], 0)*dVals[id]);
+    }
+}

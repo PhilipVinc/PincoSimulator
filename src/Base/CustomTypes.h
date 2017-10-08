@@ -16,7 +16,7 @@
 #include <Eigen/Dense>
 #pragma clang pop
 
-#include <fftw3.h>
+//#include <fftw3.h>
 
 typedef double float_p;
 typedef std::complex<float_p> complex_p;
@@ -25,6 +25,7 @@ typedef Eigen::Matrix<float_p, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> 
 typedef Eigen::Matrix<complex_p, Eigen::Dynamic, 1> VectorCdCol;
 typedef Eigen::Matrix<complex_p, 1, Eigen::Dynamic> VectorCdRow;
 const complex_p ij(0.0,1.0);
+const complex_p cNAN(NAN, NAN);
 
 
 

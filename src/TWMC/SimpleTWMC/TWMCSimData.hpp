@@ -20,6 +20,7 @@ class NoisyMatrix;
 #include <string>
 #include <vector>
 
+using namespace std;
 
 class TWMCSimData : public TaskData
 {
@@ -59,8 +60,9 @@ public:
     
     enum Dimension { D0, D1, D2 };
     Dimension dimension;
-    
-    float_p* GetStoredTimes();
+
+    vector<float_p> GetStoredTimes();
+    vector<vector<float_p>> GetStoredVariableEvolution(NoisyMatrix* mat);
 };
 
 #endif /* TWMCSimData_hpp */

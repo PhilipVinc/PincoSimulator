@@ -32,8 +32,8 @@ TWMCThreadManager::TWMCThreadManager(const Settings* settings) : ThreadManager(s
     saver->ProvideDatasetNames(SampleTaskResult()->NamesOfDatasets());
     
     // Save the file with the times
-    float_p* times = sharedTaskData->GetStoredTimes();
-    saver->SaveFile("_times.dat", times, sharedTaskData->n_frames);
+    vector<float_p> times = sharedTaskData->GetStoredTimes();
+    saver->SaveFile("_times.dat", times);
 }
 
 TWMCThreadManager::~TWMCThreadManager()

@@ -60,20 +60,38 @@ void DataStore::CreateFolder(string folder)
         std::cerr << "Error creating Folder" << "\n";
 }
 
-void DataStore::SaveFile(string fileName, float_p* data, size_t length)
+void DataStore::SaveFile(string fileName, vector<float_p> data)
 {
     fs::path pp = dataStoreBasePath;
     pp = pp / fileName;
- 
-    
+
+
     //FILE* f = fopen(pp.string().c_str(), "w+");
     ofstream f;
     f.open(pp.string(), ofstream::out);
-    for(int i =0; i< length; i++)
+    for(int i =0; i< data.size(); i++)
     {
         f << data[i] << endl;
     }
     f.close();
     //fwrite(data, sizeof(data), length, f);
     //fclose(f);
+}
+
+void DataStore::SaveFile(string fileName, vector<vector<float_p>> data)
+{
+    fs::path pp = dataStoreBasePath;
+    pp = pp / fileName;
+
+    ofstream f;
+    f.open(pp.string(), ofstream::out);
+    size_t nxy = data[0].size();
+    for(size_t i =0; i< data.size(); i++)
+    {
+        for (size_t j = 0; j < nxy; j++ ) {
+            f << data[i][j] << "\t";
+        }
+        f << endl;
+    }
+    f.close();
 }

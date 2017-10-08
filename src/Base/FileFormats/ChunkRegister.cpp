@@ -28,7 +28,11 @@ ChunkRegister::ChunkRegister(std::string _path)
 {
     cout << "Creating ChunkRegister" << endl;
     registerFilePath = _path;
-    OpenRegister();
+
+    if (OpenRegisterFile())
+        ReadRegisterEntries();
+    else
+        CreateNewRegisterFile();
 }
 
 ChunkRegister::~ChunkRegister()
@@ -45,45 +49,88 @@ ChunkRegister::~ChunkRegister()
     }
 }
 
-void ChunkRegister::OpenRegister()
+bool ChunkRegister::ReadRegisterEntries()
 {
-    // Let's create the register
-    if (!fs::exists(registerFilePath))
+    if (registerFile)
     {
-        registerFile = fopen(registerFilePath.c_str(), "wb");
-        newRun = true;
-        registerInitialized = false;
+        ReadRegisterHeader();
+            
+        trajBuffer = new size_t[sizeOfTrajEntry/sizeof(size_t)];
+
+        while(fread(trajBuffer, 1, sizeOfTrajEntry, registerFile)==sizeOfTrajEntry)
+        {
+            registerEntry* entry = new registerEntry;
+            entry->traj_id = trajBuffer[0];
+            entry->chunk_id = trajBuffer[1];
+            entry->chunk_offset = trajBuffer[2];
+            entry->continuation_offset = trajBuffer[3];
+            entry->additionalData = new size_t[trajAdditionalDataSize/sizeof(size_t)];
+            memcpy(entry->additionalData, &trajBuffer[4], trajAdditionalDataSize);
+            entries.push_back(entry);
+            storedEntries++;
+        }
     }
     else
     {
-        registerFile = fopen(registerFilePath.c_str(), "rb+");
-        registerInitialized = true;
-        
-        
-        if (registerFile)
-        {
-            ReadRegisterHeader();
-            
-            trajBuffer = new size_t[sizeOfTrajEntry/sizeof(size_t)];
-
-            while(fread(trajBuffer, 1, sizeOfTrajEntry, registerFile)==sizeOfTrajEntry)
-            {
-                registerEntry* entry = new registerEntry;
-                entry->traj_id = trajBuffer[0];
-                entry->chunk_id = trajBuffer[1];
-                entry->chunk_offset = trajBuffer[2];
-                entry->continuation_offset = trajBuffer[3];
-                entry->additionalData = new size_t[trajAdditionalDataSize/sizeof(size_t)];
-                memcpy(entry->additionalData, &trajBuffer[4], trajAdditionalDataSize);
-                entries.push_back(entry);
-                storedEntries++;
-            }
-        }
-        else
-        {
-            cerr << "Error Reading Register File" << endl;
-        }
+        cerr << "Error Reading Register File" << endl;
     }
+    registerInitialized = true;
+
+    return true;
+}
+
+bool ChunkRegister::CreateNewRegisterFile()
+{
+    registerFile = fopen(registerFilePath.c_str(), "wb");
+    newRun = true;
+    registerInitialized = false;
+
+    return true;
+}
+
+bool ChunkRegister::OpenRegisterFile()
+{
+    if (!fs::exists(registerFilePath))
+        return false;
+
+    registerFile = fopen(registerFilePath.c_str(), "rb+");
+    size_t version = CheckRegisterVersion();
+
+    // File is invalid
+    if (version == 0) {
+        fclose(registerFile);
+        return false;
+    }
+
+    return true;
+}
+
+size_t ChunkRegister::CheckRegisterVersion()
+{
+    size_t oldPos = ftell(registerFile);
+    fseek(registerFile, 0, SEEK_SET);
+
+    unsigned char tmpBfr[8];
+    unsigned char fileVersion;
+    // Check magic byte & Version number
+    fread(&tmpBfr, 1, sizeof(magic8Byte), registerFile);
+    fread(&fileVersion, 1, sizeof(fileVersion), registerFile);
+
+    bool ok = true;
+    for (int i = 0; i<8 ; i++)
+    {
+        if (tmpBfr[i] != magic8Byte[i])
+            ok=false;
+    }
+    if (!ok)
+    {
+        cerr << "ERROR LOADING Register FILE. Creating new Register" << endl;
+        return 0;
+    }
+
+    fseek(registerFile, oldPos, SEEK_SET);
+
+    return fileVersion;
 }
 
 void ChunkRegister::InitializeRegisterHeader(TaskResults* results)
@@ -110,7 +157,7 @@ void ChunkRegister::InitializeRegisterHeader(TaskResults* results)
     
     for (int i =0; i!=datasetNames.size(); i++)
     {
-        auto D = results->DataSetDimension(i);
+        size_t D = results->DataSetDimension(i);
         dimBuffer[ji] = D;
         ji++;
         for (size_t j = 0; j!=D; j++)
@@ -154,14 +201,26 @@ void ChunkRegister::InitializeRegisterHeader(TaskResults* results)
     registerInitialized = true;
 }
 
-void ChunkRegister::ReadRegisterHeader()
+bool ChunkRegister::ReadRegisterHeader()
 {
     unsigned char tmpBfr[8];
     unsigned char fileVersion;
     // Check magic byte & Version number
     fread(&tmpBfr, 1, sizeof(magic8Byte), registerFile);
     fread(&fileVersion, 1, sizeof(fileVersion), registerFile);
-    
+
+    bool ok = true;
+    for (int i = 0; i<8 ; i++)
+    {
+        if (tmpBfr[i] != magic8Byte[i])
+            ok=false;
+    }
+    if (!ok)
+    {
+        cerr << "ERROR LOADING Register FILE. ABORTING" << endl;
+        return false;
+    }
+
     // Read Dataset Names
     int nOfVariables = fgetc(registerFile);
     vector<string> variableNames(nOfVariables);
@@ -191,6 +250,8 @@ void ChunkRegister::ReadRegisterHeader()
     sizeOfTrajEntry = 4*sizeof(size_t)+trajAdditionalDataSize;
     
     GoToTrajectoryDataBegin();
+
+    return true;
 }
 
 void ChunkRegister::GoToTrajectoryDataBegin()

@@ -16,6 +16,7 @@
 #include <string> 
 #include <iostream>
 #include <stdio.h>
+#include <vector>
 
 #include "PincoFormatDataStore.hpp"
 
@@ -49,8 +50,13 @@ void DataSaver::ProvideDatasetNames(vector<string> names)
     dataStore->ProvideDatasetNames(names);
 }
 
-void DataSaver::SaveFile(string fileName, float_p* data, size_t length)
+void DataSaver::SaveFile(string fileName, vector<float_p> data)
 {
-    dataStore->SaveFile(fileName, data, length);
+    dataStore->SaveFile(fileName, data);
+}
+
+void DataSaver::SaveFile(string fileName, vector<vector<float_p>> data)
+{
+    dataStore->SaveFile(fileName, data);
 }
 

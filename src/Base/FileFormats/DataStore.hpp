@@ -35,7 +35,8 @@ public:
 //                                            TaskResults *res = nullptr);
     
     virtual void ProvideDatasetNames(vector<string> names) = 0;
-    void SaveFile(string fileName, float_p* data, size_t length);
+    void SaveFile(string fileName, vector<float_p> data);
+    void SaveFile(string fileName, vector<vector<float_p>> data);
     // Another save
     
 protected:

@@ -41,9 +41,7 @@ public:
                             Settings::SaveSettings saveType =
                                         Settings::SaveSettings::saveIdFiles);
     
-    // Reading
-    void ReadRegisterHeader();
-    
+
     size_t GetNumberOfChunks();
     std::set<size_t> GetUsedChunkIds();
     size_t GetNumberOfSavedTasks();
@@ -53,7 +51,14 @@ protected:
     void GoToTrajectoryDataBegin();
 private:
 
-    void OpenRegister();
+    // Writing
+    bool CreateNewRegisterFile();
+    bool OpenRegisterFile();
+    size_t CheckRegisterVersion();
+
+    // Reading
+    bool ReadRegisterHeader();
+    bool ReadRegisterEntries();
     //void AppendToRegister(TaskResults* results);
     
     void AddContinuationToRegister(size_t traj_id, size_t chunk_id,

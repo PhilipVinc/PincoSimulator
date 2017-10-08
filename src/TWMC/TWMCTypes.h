@@ -9,18 +9,9 @@
 #ifndef TWMCTypes_h
 #define TWMCTypes_h
 
-#include <complex>
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdocumentation"
-#include <Eigen/Dense>
-#pragma clang pop
-
-#include <fftw3.h>
 #include "CustomTypes.h"
 
-typedef double float_p;
-
+#include <fftw3.h>
 
 struct TWMC_FFTW_plans
 {

@@ -22,7 +22,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/filesystem.hpp>
 #pragma clang pop
-
+#include <map>
 
 namespace po = boost::program_options;
 namespace pt = boost::property_tree;
@@ -297,16 +297,18 @@ unsigned int Settings::GlobalSeed() const
 }
 
 vector<float_p> ReadCharFile(const string &path);
+map<float_p,vector<float_p>> ReadTemporalCharFile(const string &path);
 
 NoisyMatrix* Settings::GetMatrix(string path, size_t nx, size_t ny) const
 {
-    NoisyMatrix* result = new NoisyMatrix(nx, ny);
-    
+    NoisyMatrix* result;
+    result = new NoisyMatrix(nx, ny);
+
+    fs::path root = GetRootFolder();
     string matPath = tree->get<string>(path, "xxx");
     // If the key exist, check wether it's not a file
     if (matPath != "xxx")
     {
-        fs::path root = GetRootFolder();
         fs::path pathToFile = root / matPath;
 
         // check if it's  a file path, and import it if it is so:
@@ -318,7 +320,12 @@ NoisyMatrix* Settings::GetMatrix(string path, size_t nx, size_t ny) const
         else
         {
             // else it's not a file. might as well convert it to a real number
-            complex_p val = tree->get<complex_p>(path);
+            complex_p val = tree->get<complex_p>(path, complex_p(NAN, NAN));
+            if (val == complex_p(NAN, NAN))
+            {
+                cerr << "ERROR: The variable " << path << "is not set correctly." <<endl;
+                cerr << "Probably you set a file, but the file does not exist." << endl;
+            }
             result->SetValue(val);
         }
     }
@@ -327,6 +334,14 @@ NoisyMatrix* Settings::GetMatrix(string path, size_t nx, size_t ny) const
         // _real and _imag parts
         complex_p val = get<complex_p>(path);
         result->SetValue(val);
+    }
+    else if((matPath = tree->get<string>(path+"_t", "xxx")) != "xxx")     // time dependence
+    {
+        if (fs::exists(root/matPath))
+        {
+            auto data = ReadTemporalCharFile((root/matPath).string());
+            result->SetTemporalValue(data);
+        }
     }
     else
     {
@@ -351,7 +366,6 @@ NoisyMatrix* Settings::GetMatrix(string path, size_t nx, size_t ny) const
         }
             
         
-        fs::path root = GetRootFolder();
         fs::path pathToFile = root / noiseValPath;
         
         if (fs::exists(pathToFile))
@@ -369,11 +383,48 @@ NoisyMatrix* Settings::GetMatrix(string path, size_t nx, size_t ny) const
     return result;
 }
 
+#include <sstream>
+
+map<float_p,vector<float_p>> ReadTemporalCharFile(const string &path)
+{
+    map<float_p, vector<float_p>> result;
+
+    ifstream infile(path);
+    string line; string st;
+
+    float_p time; float_p tmp;
+
+    while(getline(infile, line))
+    {
+        istringstream iss(line);
+        iss >> time;
+        vector<float_p> tmpArr;
+
+        while (getline(infile, line))
+        {
+            if (line == ""|| line == "-" || line == " " || line == "\t" || line == "\n")
+                break;
+            istringstream iss(line);
+            while (iss >> st)
+            {
+                if (st == "*" or st == "nan" or st == "NAN" or st == "NaN")
+                {
+                    tmpArr.push_back(NAN);
+                }
+                else
+                    tmpArr.push_back(stof(st));
+            }
+        }
+        result.emplace(time, tmpArr);
+    }
+
+    return result;
+}
 
 vector<float_p> ReadCharFile(const string &path)
 {
-    ifstream file;
-    file.open(path, ios::in);
+    ifstream file(path, ios::in);
+    //file.open(path, ios::in);
     vector<float_p> vec;
     float_p tmp;
     if (file.is_open())

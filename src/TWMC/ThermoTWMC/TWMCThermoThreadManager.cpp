@@ -11,7 +11,8 @@
 #include "TWMCThermoThreadManager.hpp"
 #include "TWMCThermoSimulation.hpp"
 #include "TWMCSimData.hpp"
-#include "TWMCResults.hpp"
+#include "TWMCThermoResults.hpp"
+#include "DataSaver.hpp"
 
 #include <iostream>
 
@@ -27,11 +28,21 @@ TWMCThermoThreadManager::TWMCThermoThreadManager(const Settings* settings) : Thr
     nTasksLeftToEnqueue = settings->get<size_t>("n_traj");
     nTotalTasks = nTasksLeftToEnqueue;
 
+    saver->ProvideDatasetNames(SampleTaskResult()->NamesOfDatasets());
+
+    // Save the file with the times
+    vector<float_p> times = sharedTaskData->GetStoredTimes();
+    saver->SaveFile("_times.dat", times);
+
+    // Save the time-dependent variables
+    vector<vector<float_p>> F_t = sharedTaskData->GetStoredVariableEvolution(sharedTaskData->F);
+    saver->SaveFile("_F_t.dat", F_t);
+
 }
 
 TWMCThermoThreadManager::~TWMCThermoThreadManager()
 {
-    
+
 }
 
 Task* TWMCThermoThreadManager::PrepareTask(Task* _task)
@@ -64,7 +75,7 @@ TaskData* TWMCThermoThreadManager::SimulationData()
 
 TaskResults* TWMCThermoThreadManager::SampleTaskResult()
 {
-    return new TWMCResults(sharedTaskData);
+    return new TWMCThermoResults(sharedTaskData);
 }
 
 

@@ -1,3 +1,15 @@
+#  Installation
+
+Prerequisites:
+FFTW3
+
+(on mac: brew install fftw )
+
+To run:
+./twmc -i INPUTFILE.ini
+
+check test-sim.ini for a sample input file
+
 #  Noise Instructions
 
 To define Specify a matrix U:

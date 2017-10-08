@@ -16,7 +16,7 @@ TWMCThermoResults::TWMCThermoResults(const TWMCSimData* taskData) :
     extraDataMemory[0] = taskData->t_start;
     extraDataMemory[1] = taskData->t_end;
     
-    dimensionsOfDatasets = {0};
+    dimensionsOfDatasets = {0,0,0};
     dimensionalityData = {};
 }
 
