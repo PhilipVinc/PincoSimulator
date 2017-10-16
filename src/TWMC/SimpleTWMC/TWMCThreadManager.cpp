@@ -33,7 +33,7 @@ TWMCThreadManager::TWMCThreadManager(const Settings* settings) : ThreadManager(s
     
     // Save the file with the times
     vector<float_p> times = sharedTaskData->GetStoredTimes();
-    saver->SaveFile("_times.dat", times);
+    saver->SaveFile("_t.dat", times);
 }
 
 TWMCThreadManager::~TWMCThreadManager()

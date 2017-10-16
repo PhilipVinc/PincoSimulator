@@ -32,7 +32,7 @@ TWMCThermoThreadManager::TWMCThermoThreadManager(const Settings* settings) : Thr
 
     // Save the file with the times
     vector<float_p> times = sharedTaskData->GetStoredTimes();
-    saver->SaveFile("_times.dat", times);
+    saver->SaveFile("_t.dat", times);
 
     // Save the time-dependent variables
     vector<vector<float_p>> F_t = sharedTaskData->GetStoredVariableEvolution(sharedTaskData->F);
