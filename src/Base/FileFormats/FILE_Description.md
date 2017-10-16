@@ -17,7 +17,12 @@ in Bytes
                                                 ( 0= scalar, 1= 1D array, 2=2D matrix...)
 	repeated Number of Dimensions times:
         dimension Length (1*N)  size_t          Length of each dimensions specified above
-
+    
+    
+    For each Dataset (ex: heat, traj...)
+        identifier of data type 
+            11 --> float_p
+            22 --> complex_p
 
 ---- K
 

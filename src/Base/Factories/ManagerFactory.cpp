@@ -31,13 +31,7 @@ Manager* ManagerFactory::create( const Settings* info )
     static map<string,Builder*>* bm = builderMap();
     map<string,Builder*>::iterator iter = bm->begin();
     map<string,Builder*>::iterator iend = bm->end();
-    /*while ( iter != iend ) {
-        const pair<string,Builder*>& element = *iter++;
-        // create analysis object if requested
-        if ( info->contains( element.first ) )
-            return element.second->build( info );
-    }*/
-    
+
     string mgrStr = info->get<string>("Manager");
     {
         while ( iter != iend )

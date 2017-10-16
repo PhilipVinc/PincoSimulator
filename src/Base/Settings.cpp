@@ -82,7 +82,7 @@ Settings::Settings(int argc, char* argv[])
             cerr << "overridden parameters must have argument!" << endl;
             exit(0);
         }
-        else
+        else if(!(parameters_override.size() == 0))
         {
             cout << "Overriding from command line "<< parameters_override.size()/2 <<" parameters " << endl;
             for (int i=0; i< parameters_override.size(); i+= 2)
@@ -227,37 +227,37 @@ template <class T> inline T Settings::get(string path) const
     return result;
 }
 
-inline template<>  string Settings::get<string>(string path) const
+template<>  string Settings::get<string>(string path) const
 {
     string result = tree->get<string>(path, "");
     return result;
 }
 
-inline template<>  size_t Settings::get<size_t>(string path) const
+template<>  size_t Settings::get<size_t>(string path) const
 {
     size_t result = tree->get<size_t>(path, 0);
     return result;
 }
 
-inline template<>  int Settings::get<int>(string path) const
+template<>  int Settings::get<int>(string path) const
 {
     int result = tree->get<int>(path, 0);
     return result;
 }
 
-inline template<>  float_p Settings::get<float_p>(string path) const
+template<>  float_p Settings::get<float_p>(string path) const
 {
     float_p result = tree->get<float_p>(path, 0);
     return result;
 }
 
-inline template<>  bool Settings::get<bool>(string path) const
+template<>  bool Settings::get<bool>(string path) const
 {
     bool result = tree->get<bool>(path, false);
     return result;
 }
 
-inline template<>  complex<float> Settings::get<complex<float>>(string path) const
+template<>  complex<float> Settings::get<complex<float>>(string path) const
 {
     complex<float> result;
     try
@@ -274,7 +274,7 @@ inline template<>  complex<float> Settings::get<complex<float>>(string path) con
     return result;
 }
 
-inline template<>  complex<double> Settings::get<complex<double>>(string path) const
+template<>  complex<double> Settings::get<complex<double>>(string path) const
 {
     complex<double> result;
     try

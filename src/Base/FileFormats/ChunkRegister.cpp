@@ -168,6 +168,11 @@ void ChunkRegister::InitializeRegisterHeader(TaskResults* results)
     }
     fwrite(dimBuffer, sizeof(size_t), ji, registerFile);
     delete[] dimBuffer;
+
+    for (int i=0; i!=datasetNames.size(); i++)
+    {
+        fputc(results->DataSetDataType(i), registerFile);
+    }
     
     // 5) WRite the Extra Data size for each entry
     long int offsetTraj = results->SerializingExtraDataOffset();
@@ -242,7 +247,16 @@ bool ChunkRegister::ReadRegisterHeader()
         }
         ik += dimBuffer[ik]+1;
     }
-    
+
+    int* varTypes = new int[nOfVariables];
+
+    for (int i=0; i!=nOfVariables; i++)
+    {
+        varTypes[i] = fgetc(registerFile);
+        cout << "var["<<i<<"] has typeId = "<<varTypes[i] << endl;
+    }
+
+
     fread(&trajAdditionalDataSize, 1, sizeof(trajAdditionalDataSize), registerFile);
     fread(&trajDataBegin, 1, sizeof(trajDataBegin), registerFile);
     

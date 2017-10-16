@@ -9,14 +9,21 @@
 #include "TaskResults.hpp"
 
 TaskResults::TaskResults(const size_t _nOfDatasets,
-                         const string* _namesOfDatasets)
+                         const string* _namesOfDatasets) : datasets(_nOfDatasets)
 {
     numberOfDatasets = _nOfDatasets;
-    namesOfDatasets.reserve(_nOfDatasets);
+    namesOfDatasets.reserve(_nOfDatasets+3);
     for (int i = 0; i != _nOfDatasets; i++)
     {
         namesOfDatasets.push_back(_namesOfDatasets[i]);
     }
+}
+
+void TaskResults::AddOptionalResult(const string name, void* memAddr)
+{
+    numberOfDatasets++;
+    namesOfDatasets.push_back(name);
+    datasets.push_back(memAddr);
 }
 
 
@@ -28,6 +35,11 @@ size_t TaskResults::GetId()
 void TaskResults::SetId(size_t _id)
 {
     id = _id;
+}
+
+void* TaskResults::GetDataSet(size_t id)
+{
+    return datasets[id];
 }
 
 const size_t TaskResults::NumberOfDataSets()const

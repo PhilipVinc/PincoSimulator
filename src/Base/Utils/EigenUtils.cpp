@@ -10,6 +10,8 @@
 #include <vector>
 #include <iostream>
 
+using namespace std;
+
 MatrixCXd InitDiagMatrix(size_t dim, size_t diag, complex_p value)
 {
     MatrixCXd mat = MatrixCXd::Zero(dim, dim);

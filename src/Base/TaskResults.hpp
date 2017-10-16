@@ -26,8 +26,11 @@ public:
     virtual size_t ElementsInDataSet(size_t id) = 0;
     const size_t DataSetDimension(size_t id)const;
     const vector<size_t>& DataSetsDimensionData()const;
-    virtual void* GetDataSet(size_t id) = 0;
-    
+    void* GetDataSet(size_t id);
+    virtual unsigned char DataSetDataType(size_t id) = 0;
+
+    void AddOptionalResult(const string name, void* memAddr);
+
     void SetId(size_t);
     size_t GetId();
     const size_t NumberOfDataSets()const;
@@ -46,6 +49,8 @@ protected:
     vector<string> namesOfDatasets;
     vector<size_t> dimensionsOfDatasets;
     vector<size_t> dimensionalityData;
+
+    vector<void*> datasets;
 private:
     size_t id = 0;
     
