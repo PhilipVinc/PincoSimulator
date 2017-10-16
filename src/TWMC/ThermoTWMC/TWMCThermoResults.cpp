@@ -16,17 +16,18 @@ TWMCThermoResults::TWMCThermoResults(const TWMCSimData* taskData) :
     extraDataMemory[0] = taskData->t_start;
     extraDataMemory[1] = taskData->t_end;
     
-    dimensionsOfDatasets = {0,0,0};
-    dimensionalityData = {};
+    dimensionsOfDatasets = {2,2,2};
+    dimensionalityData = {taskData->nx, taskData->ny, taskData->nx, taskData->ny, taskData->nx, taskData->ny};
 }
 
 TWMCThermoResults::TWMCThermoResults(size_t _nx, size_t _ny, size_t _frames) :
 TaskResults(nOfSets, nameOfSets), nx(_nx), ny(_ny), nxy(nx*ny), frames(_frames)
 {
     nxy = ny*nx;
-    beta_t = new complex_p[nxy*frames];
-    work_t = new float_p[nxy*frames];
-    area_t = new float_p[nxy*frames];
+    datasets[0] = beta_t = new complex_p[nxy*frames];
+    datasets[1] = work_t = new float_p[nxy*frames];
+    datasets[2] = area_t = new float_p[nxy*frames];
+    //energy_t = new float_p[nxy*frames];
 }
 
 TWMCThermoResults::~TWMCThermoResults()
@@ -48,29 +49,27 @@ size_t TWMCThermoResults::DataSetSize(size_t id)
     return 0;
 }
 
+
+unsigned char TWMCThermoResults::DataSetDataType(size_t id)
+{
+    switch(id)
+    {
+        case 0:
+            // Complex_p
+            return 22;
+        case 1:
+        case 2:
+            return 11;
+    }
+    return 0;
+}
+
 size_t TWMCThermoResults::ElementsInDataSet(size_t id)
 {
     return frames;
 }
 
-void* TWMCThermoResults::GetDataSet(size_t id)
-{
-    switch (id) {
-        case 0:
-            return beta_t;
-            break;
-        case 1:
-            return work_t;
-            break;
-        case 2:
-            return area_t;
-            break;
 
-        default:
-            break;
-    }
-    return nullptr;
-}
 
 
 // Serialization stuff

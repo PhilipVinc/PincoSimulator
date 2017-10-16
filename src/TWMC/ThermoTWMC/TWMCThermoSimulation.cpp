@@ -170,8 +170,8 @@ void TWMCThermoSimulation::Compute()
     {
         real_step_linear = (-ij*omega - data->gamma/2.0);
     }
-    // End handling of noist matrices
-    
+    // End handling of noise matrices
+
     MatrixCXd beta_t;
     switch (initialCondition)
     {
@@ -200,17 +200,27 @@ void TWMCThermoSimulation::Compute()
     int frame_steps = floor(data->dt_obs/data->dt);
     
     // Initialize the beta value to the starting value.
-    
+    deltaU = MatrixCXd::Zero(nx,ny);
+    deltaW = MatrixCXd::Zero(nx,ny);
+    deltaQ = MatrixCXd::Zero(nx,ny);
+
     plan->fft_i_out = beta_t;
 
     size_t tCache = 0;
+
+    MatrixCXd F_t;
+    MatrixCXd F_told = data->F->GetAtTime(t);
+    MatrixCXd F_der;
 
     while (t<data->t_end)
     {
         // Compute F
         auto Fdata = data->F->GetAtTimeWithSuggestion(t, tCache);
-        F = get<1>(Fdata);
         tCache = get<0>(Fdata);
+
+        F_t = get<1>(Fdata);
+
+        F_der = (F_t-F_told)/data->dt;
 
         // First compute the Fourier Transform of the previous state
         {
@@ -224,7 +234,7 @@ void TWMCThermoSimulation::Compute()
             plan->fft_i_out = plan->fft_i_out/fft_norm_factor;
         }
         // Compute the a_t, that is used for the kai in the heun scheme
-        a_t = ((real_step_linear.array() + ij*U.array()*(beta_t.array().abs2()-1.0) )*beta_t.array() + plan->fft_i_out.array() + (ij*F.array()))*data->dt;
+        a_t = ((real_step_linear.array() + ij*U.array()*(beta_t.array().abs2()-1.0) )*beta_t.array() + plan->fft_i_out.array() + (ij*F_t.array()))*data->dt;
         randCMat(&tmpRand, gen, normal);
         noise = sqrt(data->gamma_val*data->dt/4.0)*tmpRand.array();
         kai_t = beta_t.array() + a_t.array() + noise.array();
@@ -233,9 +243,11 @@ void TWMCThermoSimulation::Compute()
         
         // Thermo Stuff
         x = beta_t.real();  p = beta_t.imag();
+        dW_t = (2.0l*data->dt)*x.array()*F_der.array();
+        /*
         dWx = noise.real(); dWp = noise.imag();
         
-        dH_dt = x.array(); // F_der.array();
+        dH_dt = x.array()*F_der.array();
         dH_dx = -omega.array()*x.array() + U.array()*(x.array()*x.array()*x.array() +
                                                       x.array()*p.array()*p.array() -
                                                       x.array()); // -F_t.array();
@@ -250,18 +262,20 @@ void TWMCThermoSimulation::Compute()
                 data->dt*dH_dt.array() + dH_dx.array()*dWx.array() +
                 dH_dp.array()*dWp.array() - (data->dt*data->gamma_val/8.0l*(ddH_dxx + ddH_dpp)).array();
         //dQ_t = ;
-        dW_t = x.array();//*F_der*2.0l*data->dt;
-        
+        */
+
+        F_told = F_t;
+
         deltaU += dU_t;
         deltaQ += dQ_t;
         deltaW += dW_t;
-        
+
         // Print the data
         if((i_step % frame_steps ==0 ) && i_frame < data->n_frames)
         {
             size_t size = res->nx*res->ny;
             complex_p* dataBeta = beta_t.data();
-            complex_p* dataWork = beta_t.data();
+            complex_p* dataWork = deltaW.data();
 
             for (unsigned j= 0; j < size; j++)
             {
@@ -270,7 +284,12 @@ void TWMCThermoSimulation::Compute()
                 //res->energy_t[i_frame*size + j] = dataWork[j];
             }
             i_frame = i_frame + 1;
+
+            deltaU = MatrixCXd::Zero(nx,ny);
+            deltaW = MatrixCXd::Zero(nx,ny);
+            deltaQ = MatrixCXd::Zero(nx,ny);
         }
+
         t += data->dt;
         i_step++;
     }

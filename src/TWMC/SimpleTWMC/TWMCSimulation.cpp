@@ -134,7 +134,7 @@ void TWMCSimulation::Compute()
     std::normal_distribution<> normal(0,1); // mean = 0, std = 1;
     
     // Generate noisy Matrices
-    bool updateMats = false;
+    bool updateMats = false; size_t noiseN = 0;
     if (data->U->GetNoiseType() != NoisyMatrix::NoiseType::None)
     {
         updateMats=true;

@@ -32,8 +32,8 @@ public:
 
     virtual size_t ElementsInDataSet(size_t id);
     virtual size_t DataSetSize(size_t id);
-    virtual void* GetDataSet(size_t id);
-    
+    virtual unsigned char DataSetDataType(size_t id);
+
     // Serialization and deserialization
     const virtual unsigned int SerializingExtraDataOffset()const;
     const virtual void* SerializeExtraData()const;

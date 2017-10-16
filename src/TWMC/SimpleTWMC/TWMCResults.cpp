@@ -8,6 +8,7 @@
 
 #include "TWMCResults.hpp"
 #include "TWMCSimData.hpp"
+#include "NoisyMatrix.hpp"
 
 
 TWMCResults::TWMCResults(const TWMCSimData* taskData) : TWMCResults(taskData->nx, taskData->ny, taskData->n_frames)
@@ -15,14 +16,16 @@ TWMCResults::TWMCResults(const TWMCSimData* taskData) : TWMCResults(taskData->nx
     extraDataMemory[0] = taskData->t_start;
     extraDataMemory[1] = taskData->t_end;
     
-    dimensionsOfDatasets = {0};
-    dimensionalityData = {};
+    dimensionsOfDatasets = {2};
+    dimensionalityData = {taskData->nx, taskData->ny};
 }
 
 TWMCResults::TWMCResults(size_t _nx, size_t _ny, size_t _frames) : nx(_nx), ny(_ny), nxy(nx*ny), frames(_frames)
 {
     nxy = ny*nx;
     beta_t = new complex_p[nxy*frames];
+
+    datasets[0] = beta_t;
 }
 
 TWMCResults::~TWMCResults()
@@ -40,9 +43,9 @@ size_t TWMCResults::ElementsInDataSet(size_t id)
     return frames;
 }
 
-void* TWMCResults::GetDataSet(size_t id)
+unsigned char TWMCResults::DataSetDataType(size_t id)
 {
-    return beta_t;
+    return 22;
 }
 
 

@@ -49,7 +49,7 @@ TWMCSimData::TWMCSimData(const Settings* settings)
     gamma_val = settings->get<float_p>("gamma");
     
     // TODO: Use complex_p template specialization and add the case of a starting file distrubtion!
-    beta_init_val = complex_p(1,0)*double(settings->get<float_p>("beta_init_real"))+ ij*double(settings->get<float_p>("beta_init_imag"));
+    beta_init_val = settings->get<complex_p>("beta_init");
     beta_init_sigma_val = settings->get<float_p>("beta_init_sigma");
 
     // The 2D lattice is vectorized in a nx*ny line
