@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.8)
-project(TWMC__Heun_Ref)
+project(Simulator)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
 
 # Src Folders
 include_directories(src)
@@ -58,8 +60,8 @@ set(SOURCE_FILES
         src/TWMC/AppendTWMC/TWMCAppendThreadManager.hpp
         src/TWMC/SimpleTWMC/TWMCResults.cpp
         src/TWMC/SimpleTWMC/TWMCResults.hpp
-        src/TWMC/SimpleTWMC/TWMCSimData.cpp
-        src/TWMC/SimpleTWMC/TWMCSimData.hpp
+        src/TWMC/TWMCSimData.cpp
+        src/TWMC/TWMCSimData.hpp
         src/TWMC/SimpleTWMC/TWMCSimulation.cpp
         src/TWMC/SimpleTWMC/TWMCSimulation.hpp
         src/TWMC/ThermoTWMC/TWMCThermoResults.cpp
@@ -92,6 +94,10 @@ target_link_libraries(sim boost_system)
 
 # Copy file
 add_custom_command(TARGET sim
-                    POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/SampleData/ $<TARGET_FILE_DIR:sim>)
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:sim>/TestSimulation)
+
+add_custom_command(TARGET sim
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/SampleData/ $<TARGET_FILE_DIR:sim>/TestSimulation/)
 #file(COPY Support Files/test-sim.ini DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

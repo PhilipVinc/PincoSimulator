@@ -91,7 +91,6 @@
 		410770221ECCFA720004675C /* CustomTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CustomTypes.h; sourceTree = "<group>"; };
 		411FE8EE1ED39B2C00595C7A /* ManagerFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ManagerFactory.cpp; sourceTree = "<group>"; };
 		411FE8EF1ED39B2C00595C7A /* ManagerFactory.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ManagerFactory.hpp; sourceTree = "<group>"; };
-		412ED8391F896060008B1A19 /* runsims.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = runsims.m; sourceTree = "<group>"; };
 		412ED83A1F896060008B1A19 /* F_t.dat */ = {isa = PBXFileReference; lastKnownFileType = text; path = F_t.dat; sourceTree = "<group>"; };
 		412ED83B1F896060008B1A19 /* F.dat */ = {isa = PBXFileReference; lastKnownFileType = text; path = F.dat; sourceTree = "<group>"; };
 		412ED83C1F896060008B1A19 /* test-sim.ini */ = {isa = PBXFileReference; lastKnownFileType = text; path = "test-sim.ini"; sourceTree = "<group>"; };
@@ -221,8 +220,8 @@
 				150B41471F87C5F100A43247 /* ThermoTWMC */,
 				150B41461F87C5EC00A43247 /* AppendTWMC */,
 				15E28E391ECC9DD000DEAF3F /* TWMCTypes.h */,
-				41F313C71ECE0DC600621AB7 /* TWMCThreadManager.cpp */,
-				41F313C81ECE0DC600621AB7 /* TWMCThreadManager.hpp */,
+				15E28E361ECC9C3900DEAF3F /* TWMCSimData.cpp */,
+				15E28E371ECC9C3900DEAF3F /* TWMCSimData.hpp */,
 				41AC28E71ED6EC2C00483D1F /* TrajectorySaver.cpp */,
 				41AC28E81ED6EC2C00483D1F /* TrajectorySaver.hpp */,
 			);
@@ -232,12 +231,12 @@
 		150B41451F87C5E700A43247 /* SimpleTWMC */ = {
 			isa = PBXGroup;
 			children = (
-				413E077D1EDD4DAA000B8096 /* TWMCResults.cpp */,
-				413E077E1EDD4DAA000B8096 /* TWMCResults.hpp */,
-				15E28E361ECC9C3900DEAF3F /* TWMCSimData.cpp */,
-				15E28E371ECC9C3900DEAF3F /* TWMCSimData.hpp */,
+				41F313C71ECE0DC600621AB7 /* TWMCThreadManager.cpp */,
+				41F313C81ECE0DC600621AB7 /* TWMCThreadManager.hpp */,
 				15E28E331ECC9C2B00DEAF3F /* TWMCSimulation.cpp */,
 				15E28E341ECC9C2B00DEAF3F /* TWMCSimulation.hpp */,
+				413E077D1EDD4DAA000B8096 /* TWMCResults.cpp */,
+				413E077E1EDD4DAA000B8096 /* TWMCResults.hpp */,
 			);
 			path = SimpleTWMC;
 			sourceTree = "<group>";
@@ -280,7 +279,6 @@
 			children = (
 				412ED83A1F896060008B1A19 /* F_t.dat */,
 				412ED83B1F896060008B1A19 /* F.dat */,
-				412ED8391F896060008B1A19 /* runsims.m */,
 				412ED83C1F896060008B1A19 /* test-sim.ini */,
 			);
 			path = SampleData;
