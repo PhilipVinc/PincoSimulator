@@ -1,0 +1,19 @@
+{
+"TWMCReader":
+{
+	"inputs":
+	[
+		{"name":"filename", "kind":"required", "type":"folderpath"},
+		{"name":"varargin", "kind":"optional", "multiplicity":"append"}
+	]
+},
+"ThermoReader":
+{
+	"inputs":
+	[
+		{"name":"filename", "kind":"required", "type":"folderpath"},
+		{"name":"varargin", "kind":"optional", "multiplicity":"append"}
+	]
+}
+
+}
