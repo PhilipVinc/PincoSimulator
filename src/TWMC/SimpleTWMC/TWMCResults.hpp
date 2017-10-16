@@ -23,6 +23,7 @@ public:
     ~TWMCResults();
     
     complex_p* beta_t;
+    vector<complex_p*> noiseMatrices;
     size_t nx;
     size_t ny;
     size_t nxy;

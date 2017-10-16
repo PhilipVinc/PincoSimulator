@@ -139,16 +139,43 @@ void TWMCSimulation::Compute()
     {
         updateMats=true;
         U = data->U->Generate(gen);
+
+        // And now store this matrix in the results
+        complex_p* resData = res->noiseMatrices[noiseN]; noiseN++;
+        complex_p* matData = U.data();
+
+        for (unsigned j= 0; j < data->nxy; j++)
+        {
+            resData[j] = matData[j];
+        }
     }
     if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None)
     {
         updateMats=true;
         omega = data->omega->Generate(gen);
+
+        // And now store this matrix in the results
+        complex_p* resData = res->noiseMatrices[noiseN]; noiseN++;
+        complex_p* matData = omega.data();
+
+        for (unsigned j= 0; j < data->nxy; j++)
+        {
+            resData[j] = matData[j];
+        }
     }
     if (data->F->GetNoiseType() != NoisyMatrix::NoiseType::None)
     {
         updateMats=true;
         F = data->F->Generate(gen);
+
+        // And now store this matrix in the results
+        complex_p* resData = res->noiseMatrices[noiseN]; noiseN++;
+        complex_p* matData = F.data();
+
+        for (unsigned j= 0; j < data->nxy; j++)
+        {
+            resData[j] = matData[j];
+        }
     }
     if (updateMats)
     {
