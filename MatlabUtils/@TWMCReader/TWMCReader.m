@@ -27,5 +27,16 @@ classdef TWMCReader < SimReader
         data = AverageExtractData( obj, data, params ); 
     end
     
+    methods(Static)
+        function sims = ReadFolder(folderPath)
+            simFolds = dir(fullfile(folderPath, 'TWMC*'));
+            sims = cell(1, length(simFolds));
+
+            for i=1:length(simFolds)
+                sims{i}=TWMCReader(fullfile(parentPath, simFolds(i).name));
+            end
+        end
+    end
+    
 end
 

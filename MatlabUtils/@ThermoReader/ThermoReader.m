@@ -22,11 +22,22 @@ classdef ThermoReader < SimReader
         
         out = ComputeCrooks( obj, varargin );
         estimatedBinning = EstimateCrooksBinning( obj );    
+        CheckBinningConvergence(obj);
     end
     
     methods(Access = protected)
         data = AverageExtractData( obj, data, params ); 
     end
     
+    methods(Static)
+        function sims = ReadFolder(folderPath)
+            simFolds = dir(fullfile(folderPath, 'TWMC*'));
+            sims = cell(1, length(simFolds));
+
+            for i=1:length(simFolds)
+                sims{i}=ThermoReader(fullfile(folderPath, simFolds(i).name));
+            end
+        end
+    end
 end
 
