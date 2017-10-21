@@ -106,6 +106,10 @@
 		41AC28E51ED6EBAD00483D1F /* DataSaver.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; path = DataSaver.hpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		41AC28E71ED6EC2C00483D1F /* TrajectorySaver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = TrajectorySaver.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		41AC28E81ED6EC2C00483D1F /* TrajectorySaver.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; path = TrajectorySaver.hpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		41C63A5F1F9B918800C3B99E /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
+		41C63A611F9B91C800C3B99E /* memoize.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memoize.h; sourceTree = "<group>"; };
+		41C63A621F9B91C800C3B99E /* factory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = factory.h; sourceTree = "<group>"; };
+		41C63A631F9B91D600C3B99E /* FilesystemLibrary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FilesystemLibrary.h; sourceTree = "<group>"; };
 		41EB6D861DE0578400208099 /* TWMC++ */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "TWMC++"; sourceTree = BUILT_PRODUCTS_DIR; };
 		41EB6D891DE0578400208099 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		41F313C41ECE0DBA00621AB7 /* ThreadManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ThreadManager.cpp; sourceTree = "<group>"; };
@@ -208,6 +212,9 @@
 		150B41431F87C5DB00A43247 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				41C63A631F9B91D600C3B99E /* FilesystemLibrary.h */,
+				41C63A601F9B91AF00C3B99E /* dp14 */,
+				41C63A5E1F9B916B00C3B99E /* metacommon */,
 				41F313CE1ECE4CDA00621AB7 /* concurrentqueue.h */,
 			);
 			path = Libraries;
@@ -282,6 +289,23 @@
 				412ED83C1F896060008B1A19 /* test-sim.ini */,
 			);
 			path = SampleData;
+			sourceTree = "<group>";
+		};
+		41C63A5E1F9B916B00C3B99E /* metacommon */ = {
+			isa = PBXGroup;
+			children = (
+				41C63A5F1F9B918800C3B99E /* common.h */,
+			);
+			path = metacommon;
+			sourceTree = "<group>";
+		};
+		41C63A601F9B91AF00C3B99E /* dp14 */ = {
+			isa = PBXGroup;
+			children = (
+				41C63A621F9B91C800C3B99E /* factory.h */,
+				41C63A611F9B91C800C3B99E /* memoize.h */,
+			);
+			path = dp14;
 			sourceTree = "<group>";
 		};
 		41EB6D7D1DE0578400208099 = {
