@@ -9,15 +9,14 @@
 #ifndef TWMCThermoSimulation_hpp
 #define TWMCThermoSimulation_hpp
 
-// Project Includes
 #include "Task.hpp"
 #include "TWMCTypes.h"
+
+#include <stdio.h>
+
 class Settings;
 class TWMCSimData;
 class TWMCThermoResults;
-
-// Library Includes
-#include <stdio.h>
 
 
 class TWMCThermoSimulation : public Task
@@ -55,14 +54,16 @@ private:
     // Thermo stuff
     MatrixRXd x;        MatrixRXd p;
     MatrixRXd dWx;      MatrixRXd dWp;
-    MatrixCXd dU_t;     MatrixCXd deltaU;
-    MatrixCXd dQ_t;     MatrixCXd deltaQ;
+    //MatrixCXd dU_t;     MatrixCXd deltaU;
+    //MatrixCXd dQ_t;     MatrixCXd deltaQ;
     MatrixCXd dW_t;     MatrixCXd deltaW;
-    MatrixCXd dH_dt;
-    MatrixCXd dH_dx;
-    MatrixCXd dH_dp;
-    MatrixCXd ddH_dxx;
-    MatrixCXd ddH_dpp;
+    MatrixCXd dA_t;     MatrixCXd deltaA;
+
+//    MatrixCXd dH_dt;
+//    MatrixCXd dH_dx;
+//    MatrixCXd dH_dp;
+//    MatrixCXd ddH_dxx;
+//    MatrixCXd ddH_dpp;
     
     
     // Temp sim variables

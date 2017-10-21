@@ -7,22 +7,27 @@
 //
 
 #include "TWMCThermoSimulation.hpp"
+
+#include "NoisyMatrix.hpp"
+#include "Settings.hpp"
 #include "TWMCSimData.hpp"
 #include "TWMCThermoResults.hpp"
-#include "Settings.hpp"
-#include "NoisyMatrix.hpp"
-
-#include <iostream>
-#include <random>
-#include <algorithm>
-#include <functional>
 
 #include <fftw3.h>
+
+#include <algorithm>
+#include <functional>
+#include <iostream>
+#include <random>
+
+
 using namespace std;
 
-// Local Utilituy Methods
+
+// Local Utility Methods
 inline void randCMat(MatrixCXd *mat, std::mt19937 &gen, std::normal_distribution<> norm);
 inline complex_p randC(std::mt19937 &gen, std::normal_distribution<> norm);
+
 
 TWMCThermoSimulation::TWMCThermoSimulation(const TWMCSimData* TaskData)
 {
@@ -72,18 +77,22 @@ TWMCThermoSimulation::TWMCThermoSimulation(const TWMCSimData* TaskData)
     x = MatrixRXd(nx, ny);
     p = MatrixRXd(nx, ny);
 
-    dU_t = MatrixCXd(nx, ny);
-    deltaU = MatrixCXd(nx, ny);
-    dQ_t = MatrixCXd(nx, ny);
-    deltaQ = MatrixCXd(nx, ny);
+    // dU_t = MatrixCXd(nx, ny);
+    // deltaU = MatrixCXd(nx, ny);
+    // dQ_t = MatrixCXd(nx, ny);
+    // deltaQ = MatrixCXd(nx, ny);
+
     dW_t = MatrixCXd(nx, ny);
+    dA_t = MatrixCXd(nx, ny);
+
     deltaW = MatrixCXd(nx, ny);
-    
-    dH_dt = MatrixCXd(nx, ny);
-    dH_dx = MatrixCXd(nx, ny);
-    dH_dp = MatrixCXd(nx, ny);
-    ddH_dxx = MatrixCXd(nx, ny);
-    ddH_dpp = MatrixCXd(nx, ny);
+    deltaA = MatrixCXd(nx, ny);
+
+//    dH_dt = MatrixCXd(nx, ny);
+//    dH_dx = MatrixCXd(nx, ny);
+//    dH_dp = MatrixCXd(nx, ny);
+//    ddH_dxx = MatrixCXd(nx, ny);
+//    ddH_dpp = MatrixCXd(nx, ny);
 
     // Temporary variables
     temp_gamma = sqrt(data->gamma_val*data->dt/4.0);
@@ -200,9 +209,10 @@ void TWMCThermoSimulation::Compute()
     int frame_steps = floor(data->dt_obs/data->dt);
     
     // Initialize the beta value to the starting value.
-    deltaU = MatrixCXd::Zero(nx,ny);
+    // deltaU = MatrixCXd::Zero(nx,ny);
     deltaW = MatrixCXd::Zero(nx,ny);
-    deltaQ = MatrixCXd::Zero(nx,ny);
+    // deltaQ = MatrixCXd::Zero(nx,ny);
+    deltaA = MatrixCXd::Zero(nx,ny);
 
     plan->fft_i_out = beta_t;
 
@@ -244,6 +254,11 @@ void TWMCThermoSimulation::Compute()
         // Thermo Stuff
         x = beta_t.real();  p = beta_t.imag();
         dW_t = (2.0l*data->dt)*x.array()*F_der.array();
+        dA_t = (data->dt*F_der.array())*(beta_t.cwiseAbs2().array() - 0.5);
+
+        deltaW += dW_t;
+        deltaA += dA_t;
+
         /*
         dWx = noise.real(); dWp = noise.imag();
         
@@ -266,9 +281,8 @@ void TWMCThermoSimulation::Compute()
 
         F_told = F_t;
 
-        deltaU += dU_t;
-        deltaQ += dQ_t;
-        deltaW += dW_t;
+//        deltaU += dU_t;
+//        deltaQ += dQ_t;
 
         // Print the data
         if((i_step % frame_steps ==0 ) && i_frame < data->n_frames)
@@ -276,18 +290,20 @@ void TWMCThermoSimulation::Compute()
             size_t size = res->nx*res->ny;
             complex_p* dataBeta = beta_t.data();
             complex_p* dataWork = deltaW.data();
+            complex_p* dataArea = deltaA.data();
 
             for (unsigned j= 0; j < size; j++)
             {
                 res->beta_t[i_frame*size + j] = dataBeta[j];
                 res->work_t[i_frame*size + j] = real(dataWork[j]);
-                //res->energy_t[i_frame*size + j] = dataWork[j];
+                res->area_t[i_frame*size + j] = real(dataArea[j]);
             }
             i_frame = i_frame + 1;
 
-            deltaU = MatrixCXd::Zero(nx,ny);
             deltaW = MatrixCXd::Zero(nx,ny);
-            deltaQ = MatrixCXd::Zero(nx,ny);
+            deltaA = MatrixCXd::Zero(nx,ny);
+            //deltaQ = MatrixCXd::Zero(nx,ny);
+            //deltaU = MatrixCXd::Zero(nx,ny);
         }
 
         t += data->dt;
