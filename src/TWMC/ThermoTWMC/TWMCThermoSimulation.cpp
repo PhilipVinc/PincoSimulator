@@ -311,12 +311,12 @@ void TWMCThermoSimulation::Compute()
     }
 };
 
-TaskResults* TWMCThermoSimulation::GetResults()
+TaskResults* TWMCThermoSimulation::GetResults() const
 {
     return res;
 }
 
-float TWMCThermoSimulation::ApproximateComputationProgress()
+float TWMCThermoSimulation::ApproximateComputationProgress() const
 {
     return (t-data->t_end)/(data->t_end-data->t_start)*100.0;
 }

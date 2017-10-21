@@ -32,8 +32,8 @@ public:
     inline void Initialize(unsigned int seed) {Initialize(seed,seed);};
     inline void Initialize(unsigned int _seed, MatrixCXd beta_init, float_p t0){Initialize( _seed, beta_init, t0, _seed);};
     
-    virtual TaskResults* GetResults();
-    virtual float ApproximateComputationProgress();
+    virtual TaskResults* GetResults() const;
+    virtual float ApproximateComputationProgress() const;
 
     TWMCResults* res;
 

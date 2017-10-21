@@ -39,11 +39,8 @@ public:
     
     MatrixCXd beta_init;
     
-    //float_p U_val;
     float_p J_val;
-    //float_p F_val;
     float_p gamma_val;
-    //float_p omega_val;
     complex_p beta_init_val;
     float_p beta_init_sigma_val;
     float_p t_start;
@@ -62,8 +59,8 @@ public:
     enum Dimension { D0, D1, D2 };
     Dimension dimension;
 
-    vector<float_p> GetStoredTimes();
-    vector<vector<float_p>> GetStoredVariableEvolution(NoisyMatrix* mat);
+    vector<float_p> GetStoredTimes() const ;
+    vector<vector<float_p>> GetStoredVariableEvolution(const NoisyMatrix* mat) const;
 };
 
 #endif /* TWMCSimData_hpp */

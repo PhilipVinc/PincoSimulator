@@ -7,10 +7,16 @@
 //
 
 #include "NoisyMatrix.hpp"
+
 #include "EigenUtils.hpp"
 #include "CustomTypes.h"
+
 #include <iostream>
 #include <map>
+
+
+using namespace std;
+
 
 NoisyMatrix::NoisyMatrix(vector<size_t> dims) : normal(0.0, 1.0), uniform(-1.0, 1.0), poisson(1.0)
 {
@@ -80,7 +86,7 @@ void NoisyMatrix::SetNoiseType(string type)
     }
 }
 
-size_t NoisyMatrix::GetNoiseVariables()
+size_t NoisyMatrix::GetNoiseVariables() const
 {
     switch (noiseType) {
         case Gaussian:
@@ -130,7 +136,7 @@ MatrixCXd NoisyMatrix::GenerateNoNoise()
     return baseMat;
 }
 
-NoisyMatrix::NoiseType NoisyMatrix::GetNoiseType()
+NoisyMatrix::NoiseType NoisyMatrix::GetNoiseType() const
 {
     return noiseType;
 }
@@ -284,12 +290,12 @@ void NoisyMatrix::SetTemporalValue(std::map<float_p, std::vector<float_p>> data)
     }
 }
 
-MatrixCXd NoisyMatrix::GetAtTime(float_p t, size_t suggestedId)
+MatrixCXd NoisyMatrix::GetAtTime(float_p t, size_t suggestedId) const
 {
     return get<1>(GetAtTimeWithSuggestion(t, suggestedId));
 }
 
-tuple<size_t,MatrixCXd> NoisyMatrix::GetAtTimeWithSuggestion(float_p t, size_t suggestedId)
+tuple<size_t,MatrixCXd> NoisyMatrix::GetAtTimeWithSuggestion(float_p t, size_t suggestedId) const
 {
     if (t <= times[0])
     {

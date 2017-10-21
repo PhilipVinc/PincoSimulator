@@ -30,9 +30,9 @@ public:
 	 *
 	 */
     virtual void Setup(TaskData* TaskData) = 0;
-    virtual TaskResults* GetResults() = 0;
+    virtual TaskResults* GetResults() const = 0;
     virtual void Save();
-    virtual float ApproximateComputationProgress();
+    virtual float ApproximateComputationProgress() const;
     
     void Execute();
     

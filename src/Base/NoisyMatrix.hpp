@@ -9,22 +9,21 @@
 #ifndef NoisyMatrix_hpp
 #define NoisyMatrix_hpp
 
-#include <stdio.h>
 #include "CustomTypes.h"
-#include <random>
-#include <vector>
-#include <string>
-#include <random>
-#include <map>
-#include <tuple>
 
-using namespace std;
+#include <map>
+#include <random>
+#include <stdio.h>
+#include <string>
+#include <tuple>
+#include <vector>
+
 
 class NoisyMatrix
 {
 
 public:
-    NoisyMatrix(vector<size_t> dims);
+    NoisyMatrix(std::vector<size_t> dims);
     NoisyMatrix(size_t nx, size_t ny);
 
     void SetValue(complex_p val);
@@ -32,17 +31,17 @@ public:
     void SetValue(std::vector<float_p>& val);
     
     enum NoiseType { None, Uniform, Gaussian, Lorentzian, Poissonian};
-    void SetNoiseType(string type);
-    NoiseType GetNoiseType();
+    void SetNoiseType(std::string type);
+    NoiseType GetNoiseType() const;
 
-    size_t GetNoiseVariables();
+    size_t GetNoiseVariables() const;
     
     void SetNoiseVal(size_t id, float_p val);
     void SetNoiseVal(size_t id, complex_p val);
     void SetNoiseVal(size_t id, std::vector<float_p>& val);
     void SetTemporalValue(std::map<float_p, std::vector<float_p>> data);
-    MatrixCXd GetAtTime(float_p t, size_t suggestedId = 0);
-    tuple<size_t,MatrixCXd> GetAtTimeWithSuggestion(float_p t, size_t suggestedId = 0);
+    MatrixCXd GetAtTime(float_p t, size_t suggestedId = 0) const;
+	std::tuple<size_t,MatrixCXd> GetAtTimeWithSuggestion(float_p t, size_t suggestedId = 0) const;
 
     MatrixCXd GenerateNoNoise();
     MatrixCXd Generate(std::mt19937 &gen);

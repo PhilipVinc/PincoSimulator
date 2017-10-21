@@ -260,12 +260,12 @@ void TWMCSimulation::Compute()
     }
 };
 
-TaskResults* TWMCSimulation::GetResults()
+TaskResults* TWMCSimulation::GetResults() const
 {
     return res;
 }
 
-float TWMCSimulation::ApproximateComputationProgress()
+float TWMCSimulation::ApproximateComputationProgress() const
 {
     return (t-data->t_end)/(data->t_end-data->t_start);
 }

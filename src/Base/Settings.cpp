@@ -386,8 +386,6 @@ NoisyMatrix* Settings::GetMatrix(string path, size_t nx, size_t ny) const
     return result;
 }
 
-#include <sstream>
-
 map<float_p,vector<float_p>> ReadTemporalCharFile(const string &path)
 {
     map<float_p, vector<float_p>> result;

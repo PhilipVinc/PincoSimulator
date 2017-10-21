@@ -37,7 +37,7 @@ void Task::PostCompute()
 void Task::Save()
 {}
 
-float Task::ApproximateComputationProgress()
+float Task::ApproximateComputationProgress() const
 {
     return 0;
 }

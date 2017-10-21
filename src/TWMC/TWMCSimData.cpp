@@ -20,6 +20,7 @@ TWMCSimData::TWMCSimData(const Settings* settings)
     nx = settings->get<size_t>("nx");
     ny = settings->get<size_t>("ny");
     nxy = nx*ny;
+
     if (nx == 1 && ny == 1)
     {
         dimension = Dimension::D0;
@@ -27,7 +28,7 @@ TWMCSimData::TWMCSimData(const Settings* settings)
     else if(nx == 1 || ny == 1)
     {
         dimension = Dimension::D1;
-        // Always keep as vectors in case of 1D. It is faster.
+	    // if we have a 1xNy lattice convert it to a Ny x 1 lattice, because it's more efficient.
         if (ny == 1)
         {
             ny = nx;
@@ -44,11 +45,8 @@ TWMCSimData::TWMCSimData(const Settings* settings)
     omega = settings->GetMatrix("omega",  nx, ny);
     //gamma = settings->GetMatrix("gamma",  nx, ny);
 
-    // Read the predata
-    //U_val = settings->get<float_p>("U");
+    // Read the Uniform Values
     J_val = settings->get<float_p>("J");
-    //F_val = settings->get<float_p>("F");
-    //omega_val = settings->get<float_p>("omega");
     gamma_val = settings->get<float_p>("gamma");
     
     // TODO: Use complex_p template specialization and add the case of a starting file distrubtion!
@@ -56,23 +54,8 @@ TWMCSimData::TWMCSimData(const Settings* settings)
     beta_init_sigma_val = settings->get<float_p>("beta_init_sigma");
 
     // The 2D lattice is vectorized in a nx*ny line
-    //U = InitMatrix(nx, ny, U_val);
-    //F = InitMatrix(nx, ny, F_val);
-    //omega = InitMatrix(nx, ny, omega_val);
     gamma = InitMatrix(nx, ny, gamma_val);
-    
-    beta_init = InitMatrix(nx, ny, beta_init_val);
-    
-    //TODO: Read the 2D noise, if they exist;
-//    float_p* deltaUTmp = prefs->getValueOrMatrixReal("disorderU", nx, ny);
-//    float_p* deltaOmegaTmp = prefs->getValueOrMatrixReal("disorderOmega", nx, ny);
-//    float_p* deltaGammaTmp = prefs->getValueOrMatrixReal("disorderGamma", nx, ny);
-//    MatrixCXd deltaU = InitMatrix(nx, ny, deltaUTmp); delete[] deltaUTmp;
-//    MatrixCXd deltaOmega= InitMatrix(nx, ny, deltaOmegaTmp); delete[] deltaOmegaTmp;
-//    MatrixCXd deltaGamma = InitMatrix(nx, ny, deltaGammaTmp); delete[] deltaGammaTmp;
-//    U = U + deltaU;
-//    omega = omega + deltaOmega;
-//    gamma = gamma + deltaGamma;
+	beta_init = InitMatrix(nx, ny, beta_init_val);
 
     n_frames = settings->get<size_t>("n_frames");
     t_start = settings->get<float_p>("t_start");
@@ -82,8 +65,8 @@ TWMCSimData::TWMCSimData(const Settings* settings)
         std::cerr << "Must have a non-zero, integer number of frames! Exiting." << endl;
         exit(-1);
     }
+
     // Compute the timestep
-    
     float_p timestep = settings->get<float_p>("timestep");
     
     size_t n_times = 0; float_p t = t_start;
@@ -117,7 +100,7 @@ TWMCSimData::TWMCSimData(const Settings* settings)
 
 }
 
-vector<float_p> TWMCSimData::GetStoredTimes()
+vector<float_p> TWMCSimData::GetStoredTimes() const
 {
     vector<float_p> times(n_frames);
 
@@ -135,7 +118,7 @@ vector<float_p> TWMCSimData::GetStoredTimes()
 }
 
 
-vector<vector<float_p>> TWMCSimData::GetStoredVariableEvolution(NoisyMatrix* mat)
+vector<vector<float_p>> TWMCSimData::GetStoredVariableEvolution(const NoisyMatrix* mat) const
 {
     vector<vector<float_p>> result(n_frames, vector<float_p>(nx*ny));
 
