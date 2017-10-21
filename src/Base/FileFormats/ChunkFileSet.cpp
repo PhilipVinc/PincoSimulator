@@ -7,16 +7,13 @@
 //
 
 #include "ChunkFileSet.hpp"
+
+#include "FilesystemLibrary.h"
 #include "TaskResults.hpp"
 
 #include <iostream>
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdocumentation"
-#include <boost/filesystem.hpp>
-#pragma clang pop
 
 using namespace std;
-namespace fs = boost::filesystem;
 
 
 ChunkFileSet::ChunkFileSet(std::string basePath,
@@ -32,7 +29,7 @@ ChunkFileSet::ChunkFileSet(std::string basePath,
         fileNames.push_back(basePath + datasetNames[i] + "_" + to_string(chunkId) + ".cnk");
         
         // if the file exists alredy
-        if (fs::exists(fileNames[i]))
+        if (filesystem::exists(fileNames[i]))
         {
             cout << "Opening File " << fileNames[i] << endl;
             files.push_back(fopen(fileNames[i].c_str(), "a+"));
@@ -49,7 +46,7 @@ ChunkFileSet::ChunkFileSet(std::string basePath,
     registerTrajSize = sizeof(size_t)*(1+2*N);
     buffer = new size_t[(1+2*N)];
 
-    if (fs::exists(registerFileName))
+    if (filesystem::exists(registerFileName))
     {
         registerFile = fopen(registerFileName.c_str(), "a+");
     }

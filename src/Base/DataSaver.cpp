@@ -12,21 +12,15 @@
 #include "TaskResults.hpp"
 #include "ChunkRegister.hpp"
 #include "ChunkFileSet.hpp"
-
-#include <string> 
-#include <iostream>
-#include <stdio.h>
-#include <vector>
-
 #include "PincoFormatDataStore.hpp"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdocumentation"
-#include <boost/filesystem.hpp>
-#pragma clang pop
+#include <iostream>
+#include <string> 
+#include <vector>
+#include <stdio.h>
+
 
 using namespace std;
-namespace fs = boost::filesystem;
 
 DataSaver::DataSaver(const Settings* settings)
 {
@@ -41,7 +35,6 @@ DataSaver::~DataSaver()
 
 void DataSaver::SaveData(TaskResults *results)
 {
-    //cout << "Saving "<< results->GetId() << endl;
     dataStore->SaveTaskResults(results);
 }
 

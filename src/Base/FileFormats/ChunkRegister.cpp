@@ -7,16 +7,11 @@
 //
 
 #include "ChunkRegister.hpp"
-#include <iostream>
+
 #include "TaskResults.hpp"
+#include "FilesystemLibrary.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdocumentation"
-#include <boost/filesystem.hpp>
-#pragma clang pop
-
-using namespace std;
-namespace fs = boost::filesystem;
+#include <iostream>
 
 
 using namespace std;
@@ -90,7 +85,7 @@ bool ChunkRegister::CreateNewRegisterFile()
 
 bool ChunkRegister::OpenRegisterFile()
 {
-    if (!fs::exists(registerFilePath))
+    if (!filesystem::exists(registerFilePath))
         return false;
 
     registerFile = fopen(registerFilePath.c_str(), "rb+");

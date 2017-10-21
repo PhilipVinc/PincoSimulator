@@ -7,32 +7,26 @@
 //
 
 #include "DataStore.hpp"
-#include "Settings.hpp"
-#include "FsUtils.hpp"
 
-#include "TaskResults.hpp"
 #include "ChunkRegister.hpp"
 #include "ChunkFileSet.hpp"
+#include "FilesystemLibrary.h"
+#include "FsUtils.hpp"
+#include "Settings.hpp"
+#include "TaskResults.hpp"
 
-#include <string>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <string>
 #include <stdio.h>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdocumentation"
-#include <boost/filesystem.hpp>
-#pragma clang pop
-
-
 using namespace std;
-namespace fs = boost::filesystem;
 
 
 DataStore::DataStore(const Settings* settings, string folderName)
 {
     rootFolder = folderName;
-    fs::path rootPath = folderName;
+    filesystem::path rootPath = folderName;
     
     //auto trajectoryFoldersN = findFoldersContainingString(rootFolder,
      //                                                     settings->trajectoryFolderBaseName).size()+1;
@@ -54,15 +48,17 @@ bool DataStore::SaveTaskResults(TaskResults* task)
 void DataStore::CreateFolder(string folder)
 {
     boost::filesystem::path dir(folder);
-    if (boost::filesystem::create_directory(dir))
-        std::cout << "Success creating Folder" << "\n";
+    if (boost::filesystem::is_directory(dir))
+        std::cout << "Folder " << folder << " alredy exists." << "\n";
+    else if (boost::filesystem::create_directory(dir))
+        std::cout << "Created folder: " <<  folder << endl;
     else
-        std::cerr << "Error creating Folder" << "\n";
+        std::cerr << "Error creating folder: " << folder << "\n";
 }
 
 void DataStore::SaveFile(string fileName, vector<float_p> data)
 {
-    fs::path pp = dataStoreBasePath;
+    filesystem::path pp = dataStoreBasePath;
     pp = pp / fileName;
 
 
@@ -80,7 +76,7 @@ void DataStore::SaveFile(string fileName, vector<float_p> data)
 
 void DataStore::SaveFile(string fileName, vector<vector<float_p>> data)
 {
-    fs::path pp = dataStoreBasePath;
+    filesystem::path pp = dataStoreBasePath;
     pp = pp / fileName;
 
     ofstream f;

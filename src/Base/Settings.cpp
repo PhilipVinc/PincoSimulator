@@ -7,27 +7,30 @@
 //
 
 #include "Settings.hpp"
+
 #include "CustomTypes.h"
 #include "FsUtils.hpp"
+#include "FilesystemLibrary.h"
 #include "NoisyMatrix.hpp"
 
-#include <iostream>
-#include <string>
-#include <complex>
-#include <time.h>
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdocumentation"
 #include "boost/program_options.hpp"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
-#include <boost/filesystem.hpp>
 #pragma clang pop
+
+#include <complex>
+#include <iostream>
 #include <map>
+#include <string>
+#include <time.h>
+
 
 namespace po = boost::program_options;
 namespace pt = boost::property_tree;
-namespace fs = boost::filesystem;
 using namespace std;
+
 
 Settings::Settings(int argc, char* argv[])
 {
@@ -37,8 +40,8 @@ Settings::Settings(int argc, char* argv[])
         ("input,i", po::value<string>(), "Required folder with _sim.ini or ini file.")
         ("output,o", po::value<string>(), "Output folder [optional]");
         po::variables_map vm;
-    fs::path inputPath;
-    fs::path outputPath;
+    filesystem::path inputPath;
+	filesystem::path outputPath;
     bool append = false;
     vector<string> parameters_override;
     try
@@ -118,19 +121,19 @@ Settings::Settings(int argc, char* argv[])
     // Now that I have the path, I will check that it is okappa.
     
     // Check if it is a folder
-    if (fs::is_directory(inputPath))
+    if (filesystem::is_directory(inputPath))
     {
         cout << "Input was a folder: " << inputPath << endl;
         outputPath = inputPath;
         inputPath = inputPath / paramsFileName;
         
         // Now check if the ini File exists.
-        if (fs::exists(inputPath))
+        if (filesystem::exists(inputPath))
         {
             status = Status::subsequentRun;
         }
     }
-    else if (fs::exists(inputPath))
+    else if (filesystem::exists(inputPath))
     {
         inputParentPathStr = inputPath.parent_path().string();
         status = Status::firstRun;
@@ -304,15 +307,15 @@ NoisyMatrix* Settings::GetMatrix(string path, size_t nx, size_t ny) const
     NoisyMatrix* result;
     result = new NoisyMatrix(nx, ny);
 
-    fs::path root = GetRootFolder();
+	filesystem::path root = GetRootFolder();
     string matPath = tree->get<string>(path, "xxx");
     // If the key exist, check wether it's not a file
     if (matPath != "xxx")
     {
-        fs::path pathToFile = root / matPath;
+	    filesystem::path pathToFile = root / matPath;
 
         // check if it's  a file path, and import it if it is so:
-        if (fs::exists(pathToFile))
+        if (filesystem::exists(pathToFile))
         {
             vector<float_p> values = ReadCharFile(pathToFile.string());
             result->SetValue(values);
@@ -337,7 +340,7 @@ NoisyMatrix* Settings::GetMatrix(string path, size_t nx, size_t ny) const
     }
     else if((matPath = tree->get<string>(path+"_t", "xxx")) != "xxx")     // time dependence
     {
-        if (fs::exists(root/matPath))
+        if (filesystem::exists(root/matPath))
         {
             auto data = ReadTemporalCharFile((root/matPath).string());
             result->SetTemporalValue(data);
@@ -364,11 +367,11 @@ NoisyMatrix* Settings::GetMatrix(string path, size_t nx, size_t ny) const
             cerr << "ERROR: Variable " << path+"_Noise_Val_"+to_string(i) << " was not set, but was necessary." <<endl;
             cerr << "Aborting" << endl;
         }
-            
+
+
+	    filesystem::path pathToFile = root / noiseValPath;
         
-        fs::path pathToFile = root / noiseValPath;
-        
-        if (fs::exists(pathToFile))
+        if (filesystem::exists(pathToFile))
         {
             vector<float_p> values = ReadCharFile(pathToFile.string());
             result->SetNoiseVal(i, values);
