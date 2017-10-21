@@ -105,7 +105,7 @@ classdef (Abstract) SimReader < handle
         isUpdated = IsDataUpToDate( obj, objPath, folderPath)
         
         function oid = GetVarId(obj, strid)
-            indexC = strfind(obj.varNames, strid);
+            indexC = strfind(obj.varNames, strid, 'ForceCellOutput',true);
             oid = find(not(cellfun('isempty', indexC)));
         end
         function dd = Get(obj, strid)

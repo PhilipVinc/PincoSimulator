@@ -48,7 +48,7 @@ function output = ReadAnalizeStoreData( obj )
         end
         
         % Else reload this chunk
-        fprintf( ['Reloading chunk # ', num2str(chunkId), ' .\n']);
+        fprintf( ['Reloading chunk # ', num2str(chunkId), ' :\n']);
         fprintf( ['\tReading...']);
         obj.ReadAllChunk(i);
         fprintf( ['\t Done!\n\tAnalizing...']);

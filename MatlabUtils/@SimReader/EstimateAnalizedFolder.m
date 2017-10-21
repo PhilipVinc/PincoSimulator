@@ -7,12 +7,13 @@ function output = EstimateAnalizedFolder( obj )
     folders = regexp(folderPath,'/','split');
     
     folderIndex = -1;
-    for i=1:min(length(folders), 4)
+    for i=length(folders):-1:(length(folders)-min(length(folders), 4))
         curFolder = folders{i};
         
         % If it's one of the good folder structures
         if any(strcmpi(obj.folderStructureSimulationData, curFolder))
             folderIndex = i;
+            break;
         end
     end
     

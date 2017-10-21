@@ -7,16 +7,18 @@ function output = ReadAllChunkNames( obj )
         '*', obj.simChunkIndexFileTermination]);
     
     preLength = length(obj.simChunkIndexFileName)+1;
-    postLength = length(obj.simChunkIndexFileTermination)
+    postLength = length(obj.simChunkIndexFileTermination);
     
     chunkFiles = dir(chunkIndexName);
     chunksN = zeros(1,length(chunkFiles));
 
     for i=1:length(chunkFiles)
-        name = chunkFiles(i).name
+        name = chunkFiles(i).name;
         number =str2num(name(preLength:end-postLength));
         chunksN(i) = number;
     end
+
+    fprintf(['Identified ',num2str(length(chunkFiles)) ,' chunks...']);
     
     obj.chunkNumbers = chunksN;
     out='ciao';

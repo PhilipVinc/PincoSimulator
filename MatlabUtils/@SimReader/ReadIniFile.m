@@ -27,10 +27,17 @@ function  output = ReadIniFile(obj)
             params.(field) = val;
         elseif strcmp(tmp(end-3:end), '.dat')
             dataFilePath = fullfile(obj.simPath, tmp);
+            
+            success = false;
             if exist(dataFilePath, 'file')
-                varData = load(dataFilePath);
-                params.(field) = varData;
-            else
+                try
+                    varData = load(dataFilePath);
+                    params.(field) = varData;
+                    success = true;
+                catch exception
+                end
+            end
+            if ~success
                 params.(field) = tmp;
                 fprintf(['INI: Could not find file ', dataFilePath, ...
                     ' for key ', field]);
