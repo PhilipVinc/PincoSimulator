@@ -6,15 +6,18 @@
 //  Copyright © 2017 Filippo Vicentini. All rights reserved.
 //
 
+#include "TWMCThreadManager.hpp"
+
+#include "DataSaver.hpp"
 #include "ManagerFactory.hpp"
 #include "Settings.hpp"
-#include "TWMCThreadManager.hpp"
-#include "TWMCSimulation.hpp"
-#include "TWMCSimData.hpp"
 #include "TWMCResults.hpp"
-#include "DataSaver.hpp"
+#include "TWMCSimData.hpp"
+#include "TWMCSimulation.hpp"
+
 
 #include <iostream>
+
 
 using namespace std;
 

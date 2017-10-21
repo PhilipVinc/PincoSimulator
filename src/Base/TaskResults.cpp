@@ -8,6 +8,10 @@
 
 #include "TaskResults.hpp"
 
+
+using namespace std;
+
+
 TaskResults::TaskResults(const size_t _nOfDatasets,
                          const string* _namesOfDatasets) : datasets(_nOfDatasets)
 {

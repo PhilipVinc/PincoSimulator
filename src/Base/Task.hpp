@@ -10,9 +10,10 @@
 #define Simulation_hpp
 
 #include "TaskData.hpp"
-class TaskResults;
 
 #include <stdio.h>
+
+class TaskResults;
 
 
 class Task
@@ -21,7 +22,13 @@ public:
     Task();
     Task(size_t id);
     ~Task();
-    
+
+	/**
+	 * @brief Sets up a Task with some data.
+	 * @param TaskData : Object containing all the data necessary for the simulation, extracted
+	 * from the settings file.
+	 *
+	 */
     virtual void Setup(TaskData* TaskData) = 0;
     virtual TaskResults* GetResults() = 0;
     virtual void Save();

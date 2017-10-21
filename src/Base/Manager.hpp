@@ -16,6 +16,7 @@ class TaskData;
 class TaskResults;
 class Task;
 
+
 class Manager
 {
 public:

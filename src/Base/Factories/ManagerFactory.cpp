@@ -24,7 +24,7 @@ ManagerFactory::~ManagerFactory() {
 }
 
 
-// create event source
+// create the correct Manager
 Manager* ManagerFactory::create( const Settings* info )
 {
     // loop over data source builders
@@ -43,6 +43,9 @@ Manager* ManagerFactory::create( const Settings* info )
             }
         }
     }
+
+    cout << "Manager " << mgrStr << " not found." << endl;
+
     return 0;
 }
 

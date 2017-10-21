@@ -6,10 +6,12 @@
 //  Copyright (c) 2014 Filippo Vicentini. All rights reserved.
 //
 
+#include "WorkerThread.hpp"
+
+#include "ThreadManager.hpp"
+
 #include <iostream>
 
-#include "WorkerThread.hpp"
-#include "ThreadManager.hpp"
 
 WorkerThread::WorkerThread(size_t _id, ThreadManager* _manager)
 {

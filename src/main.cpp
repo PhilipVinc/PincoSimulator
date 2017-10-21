@@ -1,9 +1,12 @@
-#include <iostream>
-#include <csignal>
 
 #include "Base/Settings.hpp"
 #include "Base/Manager.hpp"
 #include "Base/Factories/ManagerFactory.hpp"
+
+#include <iostream>
+#include <csignal>
+
+using namespace std;
 
 int main(int argc, char * argv[])
 {
@@ -11,7 +14,13 @@ int main(int argc, char * argv[])
 
     Manager* manager = ManagerFactory::create(settings);
 
-    manager->ManagerLoop();
+    if (!(manager == NULL))
+    {
+        manager->ManagerLoop();
+    } else {
+        cout << "Invalid Manager. Exiting..." << endl;
+    }
+
 
     return 0;
 }

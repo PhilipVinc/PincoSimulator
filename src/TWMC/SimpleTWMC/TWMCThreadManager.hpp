@@ -10,12 +10,13 @@
 #define TWMCThreadManager_hpp
 
 #include "ThreadManager.hpp"
+
+#include <random>
+#include <stdio.h>
+
 class Settings;
 class TWMCSimData;
 class TaskData;
-
-#include <stdio.h>
-#include <random> 
 
 
 class TWMCThreadManager : public ThreadManager

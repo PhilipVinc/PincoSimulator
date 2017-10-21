@@ -9,18 +9,19 @@
 #ifndef TWMCSimData_hpp
 #define TWMCSimData_hpp
 
-// Project Includes
 #include "TaskData.hpp"
 #include "TWMCTypes.h"
-class Settings;
-class NoisyMatrix;
 
-// Library Includes
 #include <stdio.h>
 #include <string>
 #include <vector>
 
+class Settings;
+class NoisyMatrix;
+
+
 using namespace std;
+
 
 class TWMCSimData : public TaskData
 {

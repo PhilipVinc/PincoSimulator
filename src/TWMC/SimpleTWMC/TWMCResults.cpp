@@ -7,8 +7,9 @@
 //
 
 #include "TWMCResults.hpp"
-#include "TWMCSimData.hpp"
+
 #include "NoisyMatrix.hpp"
+#include "TWMCSimData.hpp"
 
 
 TWMCResults::TWMCResults(const TWMCSimData* taskData) : TWMCResults(taskData->nx, taskData->ny, taskData->n_frames)

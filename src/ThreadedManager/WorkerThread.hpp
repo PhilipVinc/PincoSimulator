@@ -9,17 +9,21 @@
 #ifndef WorkerThread_hpp
 #define WorkerThread_hpp
 
-#include <stdio.h>
-#include <atomic>
-#include <queue>
-#include <chrono>
-
 #include "Task.hpp"
+
 #include "concurrentqueue.h"
+
+#include <atomic>
+#include <chrono>
+#include <stdio.h>
+#include <queue>
+
 class ThreadManager;
+
 
 using namespace moodycamel;
 using namespace std;
+
 
 class WorkerThread
 {

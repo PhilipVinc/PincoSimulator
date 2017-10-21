@@ -7,19 +7,23 @@
 //
 
 #include "TWMCSimulation.hpp"
+
+#include "NoisyMatrix.hpp"
+#include "Settings.hpp"
+#include "TaskData.hpp"
 #include "TWMCSimData.hpp"
 #include "TWMCResults.hpp"
-#include "Settings.hpp"
-#include "NoisyMatrix.hpp"
-#include "TaskData.hpp"
+
+#include <fftw3.h>
 
 #include <iostream>
 #include <random>
 #include <algorithm>
 #include <functional>
 
-#include <fftw3.h>
+
 using namespace std;
+
 
 // Local Utilituy Methods
 inline void randCMat(MatrixCXd *mat, std::mt19937 &gen, std::normal_distribution<> norm);
@@ -181,7 +185,7 @@ void TWMCSimulation::Compute()
     {
         real_step_linear = (-ij*omega - data->gamma/2.0);
     }
-    // End handling of noist matrices
+    // End handling of noise matrices
     
     MatrixCXd beta_t;
     switch (initialCondition)

@@ -9,15 +9,14 @@
 #ifndef TWMCSimulation_hpp
 #define TWMCSimulation_hpp
 
-// Project Includes
 #include "Task.hpp"
 #include "TWMCTypes.h"
+
+#include <stdio.h>
+
 class Settings;
 class TWMCSimData;
 class TWMCResults;
-
-// Library Includes
-#include <stdio.h>
 
 
 class TWMCSimulation : public Task

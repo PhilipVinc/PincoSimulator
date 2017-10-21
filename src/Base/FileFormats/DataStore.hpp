@@ -9,17 +9,16 @@
 #ifndef DataStore_hpp
 #define DataStore_hpp
 
-#include <stdio.h>
+#include "CustomTypes.h"
+#include "Settings.hpp"
+
 #include <string>
 #include <vector>
-
-#include "Settings.hpp"
-#include "CustomTypes.h"
+#include <stdio.h>
 
 class TaskData;
 class TaskResults;
 
-using namespace std;
 
 class DataStore
 {
@@ -34,9 +33,9 @@ public:
 //                                            size_t nFrames,
 //                                            TaskResults *res = nullptr);
     
-    virtual void ProvideDatasetNames(vector<string> names) = 0;
-    void SaveFile(string fileName, vector<float_p> data);
-    void SaveFile(string fileName, vector<vector<float_p>> data);
+    virtual void ProvideDatasetNames(std::vector<std::string> names) = 0;
+    void SaveFile(std::string fileName, std::vector<float_p> data);
+    void SaveFile(std::string fileName, std::vector<std::vector<float_p>> data);
     // Another save
     
 protected:
@@ -53,7 +52,7 @@ protected:
     Settings::SaveSettings saveStatus;
 private:
     
-    void CreateFolder(string folder);
+    void CreateFolder(std::string folder);
 };
 
 

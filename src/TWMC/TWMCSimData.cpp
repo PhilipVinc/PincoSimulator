@@ -6,10 +6,13 @@
 //  Copyright © 2017 Filippo Vicentini. All rights reserved.
 //
 
-#include "EigenUtils.hpp"
-#include "Settings.hpp"
 #include "TWMCSimData.hpp"
+
+#include "EigenUtils.hpp"
 #include "NoisyMatrix.hpp"
+#include "Settings.hpp"
+
+#include <iostream>
 
 
 TWMCSimData::TWMCSimData(const Settings* settings)
@@ -74,7 +77,11 @@ TWMCSimData::TWMCSimData(const Settings* settings)
     n_frames = settings->get<size_t>("n_frames");
     t_start = settings->get<float_p>("t_start");
     t_end = settings->get<float_p>("t_end");
-    
+
+    if (n_frames == 0) {
+        std::cerr << "Must have a non-zero, integer number of frames! Exiting." << endl;
+        exit(-1);
+    }
     // Compute the timestep
     
     float_p timestep = settings->get<float_p>("timestep");

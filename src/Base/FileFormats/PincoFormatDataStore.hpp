@@ -9,17 +9,18 @@
 #ifndef PincoFormatDataStore_hpp
 #define PincoFormatDataStore_hpp
 
-#include <stdio.h>
 #include "DataStore.hpp"
-#include <set>
+
+
 #include <map>
+#include <set>
 #include <vector>
+#include <stdio.h>
 
 class ChunkRegister;
 class ChunkFileSet;
 class TaskResults;
 
-using namespace std;
 
 class PincoFormatDataStore : public DataStore
 {
@@ -27,7 +28,7 @@ public:
     PincoFormatDataStore(const Settings* settings, std::string folderName);
     ~PincoFormatDataStore();
     
-    virtual void ProvideDatasetNames(vector<string> names);
+    virtual void ProvideDatasetNames(std::vector<std::string> names);
 
 protected:
     
@@ -35,9 +36,9 @@ protected:
 private:
     
     virtual void StoreDataSimple(TaskResults* results);
-    
-    vector<string> datasetNames;
-    string chunkRootPath;
+
+	std::vector<std::string> datasetNames;
+	std::string chunkRootPath;
     
     size_t NewChunkId();
     void CreateNewChunk();

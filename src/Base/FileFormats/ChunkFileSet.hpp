@@ -15,7 +15,9 @@
 
 class TaskResults;
 
+
 const size_t minChunkSize = 1024*1024*1024;
+
 
 class ChunkFileSet
 {

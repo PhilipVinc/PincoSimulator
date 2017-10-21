@@ -9,9 +9,13 @@
 #ifndef TrajectorySaver_hpp
 #define TrajectorySaver_hpp
 
-#include <stdio.h>
 #include "DataSaver.hpp"
+
+#include <stdio.h>
+
+
 class TaskResults;
+
 
 class TrajectorySaver : public DataSaver
 {

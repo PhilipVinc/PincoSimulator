@@ -16,8 +16,10 @@
 
 class TWMCSimData;
 
+
 static const size_t nOfSets= 3;
-static const string nameOfSets[3]= {"traj", "dWork", "dArea"};
+static const std::string nameOfSets[3]= {"traj", "dWork", "dArea"};
+
 
 class TWMCThermoResults : public TaskResults
 {

@@ -9,21 +9,23 @@
 #ifndef ThreadManager_hpp
 #define ThreadManager_hpp
 
-#include <stdio.h>
-#include <thread>
-#include <queue>
-#include <vector>
-
-#include "concurrentqueue.h"
 
 #include "WorkerThread.hpp"
 #include "Manager.hpp"
 #include "Task.hpp"
 
+#include "concurrentqueue.h"
+
+#include <stdio.h>
+#include <queue>
+#include <vector>
+#include <thread>
+
 class Settings;
 
 
 using namespace std;
+
 
 class ThreadManager : public Manager
 {
@@ -104,6 +106,8 @@ private:
     void ComputeAverageSpeed();
     bool profiling = true;
     size_t maxProcesses = 0;
+    float averageTaskComputationTime = 0.0;
+    int sleepTimeMs = 1000;
     chrono::system_clock::time_point lastOptTime;
     chrono::system_clock::time_point lastPrintTime;
     chrono::system_clock::time_point startTime;

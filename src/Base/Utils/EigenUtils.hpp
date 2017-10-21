@@ -9,9 +9,11 @@
 #ifndef EigenUtils_hpp
 #define EigenUtils_hpp
 
+#include "CustomTypes.h"
+
 #include <stdio.h>
 #include <vector>
-#include "CustomTypes.h"
+
 
 MatrixCXd InitDiagMatrix(size_t dim, size_t diag, complex_p value);
 

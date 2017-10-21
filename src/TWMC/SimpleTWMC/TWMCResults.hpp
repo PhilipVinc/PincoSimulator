@@ -8,12 +8,14 @@
 
 #ifndef TWMCResults_hpp
 #define TWMCResults_hpp
+
 #include "TaskResults.hpp"
 #include "TWMCTypes.h"
 
 #include <stdio.h>
 
 class TWMCSimData;
+
 
 class TWMCResults : public TaskResults
 {
@@ -23,7 +25,7 @@ public:
     ~TWMCResults();
     
     complex_p* beta_t;
-    vector<complex_p*> noiseMatrices;
+    std::vector<complex_p*> noiseMatrices;
     size_t nx;
     size_t ny;
     size_t nxy;

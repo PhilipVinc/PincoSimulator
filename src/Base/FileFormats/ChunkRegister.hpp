@@ -10,13 +10,15 @@
 #define ChunkRegister_hpp
 
 #include "Settings.hpp"
+
+#include <set>
 #include <stdio.h>
 #include <string>
 #include <vector>
-#include <set>
 
 class TaskResults;
 class ChunkFileSet;
+
 
 class ChunkRegister
 {

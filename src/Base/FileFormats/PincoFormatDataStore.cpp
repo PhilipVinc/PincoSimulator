@@ -14,6 +14,10 @@
 
 #include <algorithm>
 
+
+using namespace std;
+
+
 PincoFormatDataStore::PincoFormatDataStore(const Settings* settings,
                                            std::string folderName) :
     DataStore(settings, folderName)

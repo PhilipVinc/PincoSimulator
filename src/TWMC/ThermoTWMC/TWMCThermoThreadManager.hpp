@@ -10,11 +10,12 @@
 #define TWMCThermoThreadManager_hpp
 
 #include "ThreadManager.hpp"
+
+#include <random>
+#include <stdio.h>
+
 class Settings;
 class TWMCSimData;
-
-#include <stdio.h>
-#include <random>
 
 
 class TWMCThermoThreadManager : public ThreadManager

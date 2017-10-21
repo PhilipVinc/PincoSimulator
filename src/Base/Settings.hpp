@@ -9,14 +9,17 @@
 #ifndef Settings_hpp
 #define Settings_hpp
 
-#include <stdio.h>
-#include <string>
-#include <vector>
 #include <boost/property_tree/ptree_fwd.hpp>
 
+#include <string>
+#include <vector>
+#include <stdio.h>
+
 class NoisyMatrix;
+
+
 namespace pt = boost::property_tree;
-using namespace std;
+
 
 /*! 
     @brief Class containing all settings relative to a single run of the program.
@@ -30,12 +33,12 @@ public:
     Settings(int argc, char* argv[] );
     ~Settings();
     
-    template<class T> T get(string value) const;
+    template<class T> T get(std::string value) const;
     //NoisyMatrix* GetMatrix(string value, vector<size_t> dims) const;
-    NoisyMatrix* GetMatrix(string value, size_t nx, size_t ny) const;
+    NoisyMatrix* GetMatrix(std::string value, size_t nx, size_t ny) const;
     unsigned int GlobalSeed() const;
-    string GetOutputFolder() const;
-    string GetRootFolder() const;
+    std::string GetOutputFolder() const;
+    std::string GetRootFolder() const;
     bool IsOutputFolderSet() const;
 
     /// @brief Enum indicating what type of execution this is
@@ -50,14 +53,14 @@ public:
 
 protected:    
     pt::ptree* tree;
-    string basePath;
+    std::string basePath;
+
+    std::string inputPathStr;
+    std::string outputPathStr;
+    std::string inputParentPathStr;
     
-    string inputPathStr;
-    string outputPathStr;
-    string inputParentPathStr;
-    
-    const string paramsFileName = "_sim.ini";
-    const string trajectoryFolderBaseName = "trajectories";
+    const std::string paramsFileName = "_sim.ini";
+    const std::string trajectoryFolderBaseName = "trajectories";
     
     bool outputFolderIsSet = false;
 private:

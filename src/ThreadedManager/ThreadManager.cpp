@@ -7,16 +7,19 @@
 //
 
 #include "ThreadManager.hpp"
+
 #include "DataSaver.hpp"
 
+#include <algorithm>
+#include <chrono>
+#include <iostream>
 #include <thread>
 #include <vector>
-#include <algorithm>
-#include <iostream>
-#include <chrono>
+
 
 using namespace std;
 using namespace moodycamel;
+
 
 ThreadManager::ThreadManager(const Settings* settings) : Manager(settings), dispatchToken(dispatchedTasks), elaboratedToken(elaboratedTasks)
 {
@@ -40,6 +43,9 @@ ThreadManager::~ThreadManager()
 
 void ThreadManager::Setup()
 {
+    cout << "********************************" << endl;
+    cout << "   Running with "<< nThreads <<" threads  " << endl;
+    cout << "********************************" << endl;
     for (size_t i = 0; i != nThreads; i++)
     {
         CreateWorker();
@@ -68,7 +74,7 @@ void ThreadManager::ManagerLoop()
     Setup();
     //EnableProfilingInWorkers();
     lastOptTime = chrono::system_clock::now();
-    startTime = lastOptTime;
+    startTime = lastPrintTime = lastOptTime;
     deltaTOpt = chrono::seconds(1); deltaTPrint = chrono::seconds(1);
     while(!terminate)
     {
@@ -92,14 +98,20 @@ void ThreadManager::OptimizeRun()
     chrono::system_clock::duration dt = now-lastOptTime;
     if ( dt > deltaTOpt)
     {
+        // Time since start
+        chrono::system_clock::duration elapsed = now-startTime;
+        float elapsedFloat = chrono::duration<float, std::milli>(elapsed).count();
         // Optimize
-        
+        averageTaskComputationTime = (elapsedFloat * nThreads) / float(nCompletedTasks) ;
+        sleepTimeMs = averageTaskComputationTime / 5.0;
+        if (sleepTimeMs > 1000 || sleepTimeMs < 0)
+            sleepTimeMs = 1000;
+
         // Print
         chrono::system_clock::duration dtP = now-lastPrintTime;
         if (dtP > deltaTPrint)
         {
-            chrono::system_clock::duration deltaT = now-startTime;
-            int deltaTc = chrono::duration_cast<chrono::seconds>(deltaT).count();
+            int deltaTc = chrono::duration_cast<chrono::seconds>(elapsed).count();
             
             cout << "Completed " << nCompletedTasks << "/" << nTotalTasks << ".  ";
             cout << " Time: ( " << deltaTc << "/";
@@ -109,7 +121,7 @@ void ThreadManager::OptimizeRun()
             {
                 cout <<  "***";
             }
-            cout << " ) ";
+            cout << " ).  SleepTime: " << sleepTimeMs << " ms.";
             
             if (nCompletedTasks >= nThreads)
             {
@@ -120,7 +132,7 @@ void ThreadManager::OptimizeRun()
         }
         lastOptTime = now;
     }
-    std::this_thread::sleep_for (std::chrono::milliseconds(100));
+    std::this_thread::sleep_for (std::chrono::milliseconds(sleepTimeMs));
 }
 
 void ThreadManager::ComputeAverageSpeed()

@@ -16,7 +16,6 @@
 #include <Eigen/Dense>
 #pragma clang pop
 
-//#include <fftw3.h>
 
 typedef double float_p;
 typedef std::complex<float_p> complex_p;
