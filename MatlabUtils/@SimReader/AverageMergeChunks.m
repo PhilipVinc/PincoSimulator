@@ -39,14 +39,11 @@ function output = AverageMergeChunks( obj )
         data = chunks{ii}.averaged;
         for jj=1:length(quanNames)
             val = quanNames{jj};
-            averaged.(val) = averaged.(val) + data.(val);
+            averaged.(val) = averaged.(val) + data.(val).* ...
+                (chunks{ii}.params.n_traj/n_traj_tot);
         end
     end
 
-    for jj=1:length(quanNames)
-        val = quanNames{jj};
-        averaged.(val) = averaged.(val) / nChunks;
-    end
 
     
     % Compute the std quantities
@@ -61,14 +58,10 @@ function output = AverageMergeChunks( obj )
                 averaged.(val) = sqrt(averaged.(aveSqValname) - (data.(aveValName)).^2);
             else
                 fprintf(['did compute std for ', aveSqValname, '\n']);
-            end
+            end % TODO: Must fix for different number of elements!!!
         end
     end
 
-    for jj=1:length(quanNames)
-        val = quanNames{jj};
-        averaged.(val) = averaged.(val) / nChunks;
-    end
 
     
     aveDataPath = fullfile(obj.averagedPath, obj.fileAveragedFileName);
