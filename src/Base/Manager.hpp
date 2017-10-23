@@ -9,6 +9,8 @@
 #ifndef Manager_hpp
 #define Manager_hpp
 
+#include "TStaticFactory.h"
+
 #include <stdio.h>
 #include <string>
 
@@ -39,5 +41,7 @@ protected:
 private:
     
 };
+
+typedef Base::TFactory<std::string, Manager, Settings*> ManagerFactory;
 
 #endif /* Manager_hpp */

@@ -1,7 +1,6 @@
 
 #include "Base/Settings.hpp"
 #include "Base/Manager.hpp"
-#include "Base/Factories/ManagerFactory.hpp"
 
 #include <iostream>
 #include <csignal>
@@ -12,9 +11,9 @@ int main(int argc, char * argv[])
 {
     Settings* settings = new Settings(argc, argv);
 
-    Manager* manager = ManagerFactory::create(settings);
+    Manager* manager = ManagerFactory::makeRawNewInstance(settings->get<string>("Manager"), settings);
 
-    if (!(manager == NULL))
+    if (!(manager == nullptr))
     {
         manager->ManagerLoop();
     } else {

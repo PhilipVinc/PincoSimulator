@@ -10,11 +10,12 @@
 #define TWMCAppendThreadManager_hpp
 
 #include "ThreadManager.hpp"
-class Settings;
-class TWMCSimData;
 
 #include <stdio.h>
 #include <random>
+
+class Settings;
+class TWMCSimData;
 
 
 class TWMCAppendThreadManager : public ThreadManager
@@ -40,4 +41,7 @@ private:
     std::mt19937 seedGenerator;
     
 };
+
+static ManagerFactory::Registrator<TWMCAppendThreadManager> TwmcThreadReg= ManagerFactory::Registrator<TWMCAppendThreadManager>("TWMCAppendThread");
+
 #endif /* TWMCAppendThreadManager_hpp */

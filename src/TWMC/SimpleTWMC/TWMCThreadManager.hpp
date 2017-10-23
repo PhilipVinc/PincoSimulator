@@ -25,7 +25,7 @@ public:
     TWMCThreadManager(const Settings* settings);
     
     ~TWMCThreadManager();
-    
+
     // Get the simulation Task Data;
     virtual TaskData* SimulationData();
     virtual TaskResults* SampleTaskResult();
@@ -41,4 +41,7 @@ private:
     TWMCSimData* sharedTaskData;
     std::mt19937 seedGenerator;
 };
+
+static ManagerFactory::Registrator<TWMCThreadManager> TwmcThreadReg= ManagerFactory::Registrator<TWMCThreadManager>("TWMCThread");
+
 #endif /* TWMCThreadManager_hpp */

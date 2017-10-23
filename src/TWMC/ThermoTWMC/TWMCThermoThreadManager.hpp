@@ -42,4 +42,7 @@ private:
     std::mt19937 seedGenerator;
     
 };
+
+static ManagerFactory::Registrator<TWMCThermoThreadManager> TwmcThreadReg= ManagerFactory::Registrator<TWMCThermoThreadManager>("TWMCThermoThread");
+
 #endif /* TWMCThermoThreadManager_hpp */

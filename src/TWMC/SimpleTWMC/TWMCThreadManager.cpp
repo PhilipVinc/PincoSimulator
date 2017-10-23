@@ -9,7 +9,6 @@
 #include "TWMCThreadManager.hpp"
 
 #include "DataSaver.hpp"
-#include "ManagerFactory.hpp"
 #include "Settings.hpp"
 #include "TWMCResults.hpp"
 #include "TWMCSimData.hpp"
@@ -78,6 +77,7 @@ TaskResults* TWMCThreadManager::SampleTaskResult()
 }
 
 
+/*
 class TWMCThreadManagerBuilder: public ManagerFactory::Builder {
 public:
     TWMCThreadManagerBuilder(): ManagerFactory::Builder( "TWMCThread" ) {}
@@ -86,3 +86,4 @@ public:
     }
 };
 static TWMCThreadManagerBuilder TWMCBuild;
+*/

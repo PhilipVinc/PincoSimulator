@@ -8,7 +8,6 @@
 
 #include "TWMCAppendThreadManager.hpp"
 
-#include "ManagerFactory.hpp"
 #include "Settings.hpp"
 #include "TWMCSimulation.hpp"
 #include "TWMCSimData.hpp"
@@ -67,7 +66,7 @@ TaskResults* TWMCAppendThreadManager::SampleTaskResult()
     return new TWMCResults(sharedTaskData);
 }
 
-
+/*
 class TWMCAppendThreadManagerBuilder: public ManagerFactory::Builder {
 public:
     TWMCAppendThreadManagerBuilder(): ManagerFactory::Builder( "AppendTWMCThread" ) {}
@@ -76,3 +75,4 @@ public:
     }
 };
 static TWMCAppendThreadManagerBuilder TWMCAppendBuild;
+*/

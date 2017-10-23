@@ -9,6 +9,8 @@
 #ifndef TaskResults_hpp
 #define TaskResults_hpp
 
+#include "Libraries/TStaticFactory.h"
+
 #include <string>
 #include <vector>
 #include <stdio.h>
@@ -57,5 +59,7 @@ private:
     size_t id = 0;
     
 };
+
+typedef Base::TFactory<std::string, TaskResults, const size_t, const std::string*> ResultsFactory;
 
 #endif /* TaskResults_hpp */

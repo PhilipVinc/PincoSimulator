@@ -9,7 +9,6 @@
 #include "TWMCThermoThreadManager.hpp"
 
 #include "DataSaver.hpp"
-#include "ManagerFactory.hpp"
 #include "Settings.hpp"
 #include "TWMCSimData.hpp"
 #include "TWMCThermoResults.hpp"
@@ -80,7 +79,7 @@ TaskResults* TWMCThermoThreadManager::SampleTaskResult()
     return new TWMCThermoResults(sharedTaskData);
 }
 
-
+/*
 class TWMCThermoThreadManagerBuilder: public ManagerFactory::Builder {
 public:
     TWMCThermoThreadManagerBuilder(): ManagerFactory::Builder( "TWMCThermoThread" ) {}
@@ -89,3 +88,4 @@ public:
     }
 };
 static TWMCThermoThreadManagerBuilder TWMCThermoBuild;
+*/

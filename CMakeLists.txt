@@ -59,7 +59,6 @@ set(LINKING SHARED)
 include_directories(src)
 
 include_directories(src/Base/)
-include_directories(src/Base/Factories/)
 include_directories(src/Base/FileFormats/)
 include_directories(src/Base/Utils/)
 include_directories(src/Libraries/)
@@ -69,12 +68,11 @@ include_directories(src/TWMC/SimpleTWMC/)
 include_directories(src/TWMC/ThermoTWMC/)
 include_directories(src/TWMC/AppendTWMC/)
 
-
 set(BASE_SOURCES
-        src/Base/Factories/ManagerFactory.cpp
-        src/Base/Factories/ManagerFactory.hpp
-        src/Base/Factories/TaskResultsFactory.cpp
-        src/Base/Factories/TaskResultsFactory.hpp
+        #        src/Base/Factories/ManagerFactory.cpp
+        #        src/Base/Factories/ManagerFactory.hpp
+        #        src/Base/Factories/TaskResultsFactory.cpp
+        #        src/Base/Factories/TaskResultsFactory.hpp
         src/Base/FileFormats/ChunkFileSet.cpp
         src/Base/FileFormats/ChunkFileSet.hpp
         src/Base/FileFormats/ChunkRegister.cpp
@@ -102,7 +100,9 @@ set(BASE_SOURCES
         src/Base/TaskData.hpp
         src/Base/TaskResults.cpp
         src/Base/TaskResults.hpp
-        src/Libraries/concurrentqueue.h src/Libraries/FilesystemLibrary.h)
+        src/Libraries/concurrentqueue.h
+        src/Libraries/FilesystemLibrary.h
+        src/Libraries/TStaticFactory.h)
 
 add_library(SimFramework ${LINKING} ${BASE_SOURCES})
 target_link_libraries(SimFramework m)
@@ -141,12 +141,9 @@ set(TWMC_SOURCES
 
 add_library(TWMCFramework ${LINKING} ${TWMC_SOURCES})
 target_link_libraries(TWMCFramework SimFramework)
-target_link_libraries(TWMCFramework fftw3)
-target_link_libraries(TWMCFramework fftw3_threads)
 target_link_libraries(TWMCFramework m)
-target_link_libraries(TWMCFramework boost_program_options)
-target_link_libraries(TWMCFramework boost_filesystem)
-target_link_libraries(TWMCFramework boost_system)
+target_link_libraries(TWMCFramework ${FFTW_LIBRARIES})
+target_link_libraries(TWMCFramework ${Boost_LIBRARIES})
 
 set(EXE_FILE
         src/main.cpp)
@@ -157,10 +154,10 @@ target_link_libraries(simexe TWMCFramework)
 
 
 set(SOURCE_FILES
-        src/Base/Factories/ManagerFactory.cpp
-        src/Base/Factories/ManagerFactory.hpp
-        src/Base/Factories/TaskResultsFactory.cpp
-        src/Base/Factories/TaskResultsFactory.hpp
+        #src/Base/Factories/ManagerFactory.cpp
+        #src/Base/Factories/ManagerFactory.hpp
+        #src/Base/Factories/TaskResultsFactory.cpp
+        #src/Base/Factories/TaskResultsFactory.hpp
         src/Base/FileFormats/ChunkFileSet.cpp
         src/Base/FileFormats/ChunkFileSet.hpp
         src/Base/FileFormats/ChunkRegister.cpp
@@ -212,7 +209,8 @@ set(SOURCE_FILES
         src/TWMC/SimpleTWMC/TWMCThreadManager.cpp
         src/TWMC/SimpleTWMC/TWMCThreadManager.hpp
         src/TWMC/TWMCTypes.h
-        src/main.cpp src/Libraries/FilesystemLibrary.h)
+        src/main.cpp src/Libraries/FilesystemLibrary.h
+        src/Libraries/TStaticFactory.h)
 
 add_executable(sim ${SOURCE_FILES})
 
