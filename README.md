@@ -1,12 +1,21 @@
 #  Installation
 
 Prerequisites:
-FFTW3
 
-(on mac: brew install fftw )
+    - FFTW3 (on mac: brew install fftw )
+    - Boost > 1.6.3
+    - C++14 compiler 
+
+To compile the code:
+    
+    cd projDir
+    cmake -DCMAKE_BUILD_TYPE=Release .
+    make sim
 
 To run:
-./twmc -i INPUTFILE.ini
+
+    ./sim -i INPUTFILE.ini (-o OUTPUTFOLDER)
+    ./sim -i INPUTFODER (with INPUTFOLDER/_sim.ini existing)
 
 check test-sim.ini for a sample input file
 

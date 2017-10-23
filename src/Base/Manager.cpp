@@ -5,8 +5,10 @@
 //  Created by Filippo Vicentini on 18/05/17.
 //  Copyright © 2017 Filippo Vicentini. All rights reserved.
 //
-#include "DataSaver.hpp"
+
 #include "Manager.hpp"
+
+#include "DataSaver.hpp"
 #include "Settings.hpp"
 #include "Task.hpp"
 
@@ -25,3 +27,4 @@ void Manager::SaveTask(Task* task)
 {
     saver->SaveData(task->GetResults());
 }
+

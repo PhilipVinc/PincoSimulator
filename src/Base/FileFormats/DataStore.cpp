@@ -47,10 +47,10 @@ bool DataStore::SaveTaskResults(TaskResults* task)
 
 void DataStore::CreateFolder(string folder)
 {
-    boost::filesystem::path dir(folder);
-    if (boost::filesystem::is_directory(dir))
+    filesystem::path dir(folder);
+    if (filesystem::is_directory(dir))
         std::cout << "Folder " << folder << " alredy exists." << "\n";
-    else if (boost::filesystem::create_directory(dir))
+    else if (filesystem::create_directory(dir))
         std::cout << "Created folder: " <<  folder << endl;
     else
         std::cerr << "Error creating folder: " << folder << "\n";

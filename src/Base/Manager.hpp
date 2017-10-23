@@ -10,19 +10,20 @@
 #define Manager_hpp
 
 #include <stdio.h>
+#include <string>
+
 class Settings;
 class DataSaver;
 class TaskData;
 class TaskResults;
 class Task;
 
-
 class Manager
 {
 public:
     Manager(const Settings* settings);
     ~Manager();
-    
+
     virtual void ManagerLoop() = 0;
     
     // Get the simulation Task Data;
@@ -30,7 +31,7 @@ public:
     virtual TaskResults* SampleTaskResult() = 0;
 
 protected:
-    const Settings * settings;
+    const Settings* settings;
     DataSaver* saver;
     
     virtual void SaveTask(Task* task);

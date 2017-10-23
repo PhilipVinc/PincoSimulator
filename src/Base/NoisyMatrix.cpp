@@ -14,6 +14,11 @@
 #include <iostream>
 #include <map>
 
+// Fix for non standard isnan.
+#if defined(__APPLE__)
+#else
+typedef std::isnan isnan;
+#endif
 
 using namespace std;
 

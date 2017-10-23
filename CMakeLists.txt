@@ -1,11 +1,57 @@
 cmake_minimum_required(VERSION 3.8)
 project(Simulator)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "-g")
-set(CMAKE_CXX_FLAGS_DEBUG "")
-set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
+#set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_FLAGS -g)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast")
+add_definitions(-std=c++14 -stdlib=libc++)
+
 #set(CMAKE_VERBOSE_MAKEFILE ON)
+
+if(UNIX AND NOT APPLE)
+    set(LINUX TRUE)
+endif()
+
+If(LINUX)
+    message(Linux Detected)
+    message(is: ${CMAKE_CXX_FLAGS})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -stdlib=libc++")
+endif()
+
+# Directory with all compilation modules
+set(CMAKE_MODULE_PATH  ${CMAKE_SOURCE_DIR}/cmake-modules)
+
+# Find package boost, if present
+if(APPLE)
+    find_package(Boost 1.65 COMPONENTS program_options system filesystem)
+    if (NOT Boost_FOUND)
+        message(Searching again for Boost)
+        SET(BOOST_ROOT ~/opt/local/)
+        SET(BOOST_ROOT ~/opt/local/)
+        find_package(Boost 1.65 COMPONENTS program_options system filesystem REQUIRED )
+    endif (NOT Boost_FOUND)
+else()
+    find_package(Boost 1.65 COMPONENTS program_options system )
+    if (NOT Boost_FOUND)
+        message(Searching again for Boost)
+        SET(BOOST_ROOT ~/opt/local/)
+        SET(BOOST_ROOT ~/opt/local/)
+        find_package(Boost 1.65 COMPONENTS program_options system REQUIRED )
+    endif (NOT Boost_FOUND)
+endif()
+
+message(found ${Boost_INCLUDE_DIR})
+message(found ${Boost_LIBRARIES})
+
+
+find_package(FFTW REQUIRED)
+include_directories(${FFTW_INCLUDE_DIR})
+
+message(found ${FFTW_INCLUDE_DIR})
+message(found ${FFTW_LIBRARIES})
+
+
 
 set(LINKING SHARED)
 
@@ -60,9 +106,13 @@ set(BASE_SOURCES
 
 add_library(SimFramework ${LINKING} ${BASE_SOURCES})
 target_link_libraries(SimFramework m)
-target_link_libraries(SimFramework boost_program_options)
-target_link_libraries(SimFramework boost_filesystem)
-target_link_libraries(SimFramework boost_system)
+target_link_libraries(SimFramework ${Boost_LIBRARIES})
+
+if(LINUX)
+    target_link_libraries(SimFramework rt) #realtime
+    target_link_libraries(SimFramework c++experimental) #filesystem
+endif()
+
 
 set(TWMC_SOURCES
         src/ThreadedManager/ThreadManager.cpp
@@ -172,12 +222,17 @@ include_directories(/usr/local/include/eigen3/)
 
 
 # Linker
-target_link_libraries(sim fftw3)
-target_link_libraries(sim fftw3_threads)
+target_link_libraries(sim ${Boost_LIBRARIES})
+target_link_libraries(sim ${FFTW_LIBRARIES})
 target_link_libraries(sim m)
-target_link_libraries(sim boost_program_options)
-target_link_libraries(sim boost_filesystem)
-target_link_libraries(sim boost_system)
+
+#target_link_libraries(sim fftw_thread)
+
+if(LINUX)
+    target_link_libraries(sim rt) #realtime
+    target_link_libraries(sim c++experimental) #filesystem
+endif()
+
 
 # Copy file
 add_custom_command(TARGET sim
@@ -187,4 +242,3 @@ add_custom_command(TARGET sim
 add_custom_command(TARGET sim
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/SampleData/ $<TARGET_FILE_DIR:sim>/TestSimulation/)
-#file(COPY Support Files/test-sim.ini DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

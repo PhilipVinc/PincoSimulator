@@ -241,6 +241,8 @@ namespace details {
 
 #if defined(__GNUC__) && !defined( __clang__ )
 	typedef ::max_align_t max_align_t;      // GCC forgot to add it to std:: for a while
+#elif !defined(__APPLE__)
+    typedef ::max_align_t max_align_t;      // Also on linux...
 #else
 	typedef std::max_align_t max_align_t;   // Others (e.g. MSVC) insist it can *only* be accessed via std::
 #endif
