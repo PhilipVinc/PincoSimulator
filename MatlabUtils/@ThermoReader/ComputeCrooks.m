@@ -63,6 +63,7 @@ function histData = ComputeCrooks( obj, varargin)
     histData.beta = zeros(1, nxy); histData.betaErr = zeros(1, nxy);
     histData.T = zeros(1, nxy); histData.TErr = zeros(1, nxy);
     histData.DF = zeros(1, nxy); histData.DFErr = zeros(1, nxy);
+    histData.DS = zeros(1, nxy); histData.DSErr = zeros(1, nxy);
     
     histData.xFitPts = zeros(100,nxy); histData.yFitPts = zeros(100, nxy);
     
@@ -152,6 +153,8 @@ function histData = ComputeCrooks( obj, varargin)
             betaErr = ffCrooksErr(1);
             deltaF = ffCrooks(2)/ffCrooks(1);
             deltaFErr = ffCrooksErr(2);
+            deltaS = 0; % (deltaU-deltaF)*beta;
+            deltaSErr = 0;
 
             xFitPts = linspace(min(crooksXPts),max(crooksXPts),100);
             yFitPts = polyval(ffCrooks, xFitPts);
@@ -165,6 +168,8 @@ function histData = ComputeCrooks( obj, varargin)
             betaErr =0;
             deltaF=0;
             deltaFErr= 0;
+            deltaS=0;
+            deltaSErr=0;
             ffCrooks = 0;
             xFitPts = crooksXPts; yFitPts = crooksYPts;
             failedFitFlag = true;
@@ -177,7 +182,6 @@ function histData = ComputeCrooks( obj, varargin)
         histData.crooks_ratio{i} = crooksYPts;
         histData.crooks_logratio{i} = log(crooksYPts);
         
-        
         histData.crooksFits{i} = ffCrooks;
         histData.xFitPts(:,i) = xFitPts';
         histData.yFitPts(:,i) = yFitPts';
@@ -185,6 +189,8 @@ function histData = ComputeCrooks( obj, varargin)
         histData.beta(i) = beta; histData.betaErr(i) = betaErr;
         histData.T(i) = 1.0/beta; histData.TErr(i) = betaErr/beta^2;
         histData.DF(i) = deltaF; histData.DFErr(i) = deltaFErr;
+        histData.DS(i) = deltaS; histData.DSErr(i) = deltaSErr;
+        
     end
     histData.W = xUp';
 end

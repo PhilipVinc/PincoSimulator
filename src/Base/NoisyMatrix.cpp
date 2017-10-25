@@ -14,11 +14,11 @@
 #include <iostream>
 #include <map>
 
-// Fix for non standard isnan.
+/*// Fix for non standard isnan. Fixed in c++14
 #if defined(__APPLE__)
 #else
 typedef std::isnan isnan;
-#endif
+#endif*/
 
 using namespace std;
 

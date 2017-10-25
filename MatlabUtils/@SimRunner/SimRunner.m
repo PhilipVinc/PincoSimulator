@@ -4,7 +4,6 @@ classdef SimRunner < handle
     
     properties (Access = public)
         params = containers.Map('KeyType', 'char', 'ValueType', 'any');
-        
         pulseParams = containers.Map('KeyType', 'char', 'ValueType', 'any');
         
         simName = '';
@@ -42,23 +41,32 @@ classdef SimRunner < handle
             
             obj.simPath = fullfile(obj.parentPath, obj.simName);
             obj.CreateFolder(obj.simPath);
-            pulseData = obj.CreateTimeDependentPulse();
             
-            obj.params('t_end') = obj.params('t_start') + pulseData.times(end);
-            if ~isKey(obj.params, 'frames_freq')
-                obj.params('n_frames') = floor(obj.params('t_end') - obj.params('t_start'));
-            else
-                obj.params('n_frames') = floor((obj.params('t_end') - obj.params('t_start'))*obj.params('frames_freq'));
-            end
             
-            pulseText = obj.Pulse2CellText(pulseData);
-            obj.SaveTextFileByLine(fullfile(obj.simPath, ...
-                                        obj.pulseFileName), pulseText);
             if isKey(obj.params, 'F')
-                remove(obj.params, 'F');
+                if (prod(size(obj.params('F'))) > 1)
+                    dlmwrite(fullfile(obj.simPath,'_F.dat'), obj.params('F'), '\t');
+                    obj.params('F') = '_F.dat';
+                end
+            else
+                pulseData = obj.CreateTimeDependentPulse();
+                pulseText = obj.Pulse2CellText(pulseData);
+                obj.SaveTextFileByLine(fullfile(obj.simPath, ...
+                                        obj.pulseFileName), pulseText);
+                obj.params('F_t') = obj.pulseFileName;
             end
             
-            obj.params('F_t') = obj.pulseFileName;
+            if ~isKey(obj.params, 't_end')
+                obj.params('t_end') = obj.params('t_start') + pulseData.times(end);
+            end
+            
+            if (~isKey(obj.params, 'n_frames') ||  ~isKey(obj.params, 't_end'))
+                if ~isKey(obj.params, 'frames_freq')
+                    obj.params('n_frames') = floor(obj.params('t_end') - obj.params('t_start'));
+                else
+                    obj.params('n_frames') = floor((obj.params('t_end') - obj.params('t_start'))*obj.params('frames_freq'));
+                end
+            end
             
             paramsText = obj.Params2CellText();
             obj.SaveTextFileByLine(obj.IniFilePath(), paramsText);

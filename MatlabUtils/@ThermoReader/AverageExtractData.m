@@ -45,7 +45,7 @@ function res = AverageExtractData( obj, data, params )
     dF_t = diff(obj.params.F_t);
     for i=1:nSites
         ids = find(dF_t(:,i));
-        beginPulse=max(ids(1)-1, 0);
+        beginPulse=max(ids(1)-1, 1);
         endPulse = min(ids(end)+1, length(obj.params.t));
         midPulse = floor(beginPulse + (endPulse -beginPulse)/2);
         

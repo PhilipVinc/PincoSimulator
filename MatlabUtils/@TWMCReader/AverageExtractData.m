@@ -55,6 +55,7 @@ function res = AverageExtractData( obj, data, params )
     % Compute  n(t) for each trace.
     n_t = data{trajId}.*conj(data{trajId}) -1/2;
     % Average across traces and cavities.
+    n_i_t = squeeze(mean(n_t,3));
     n_a_t=squeeze(mean(mean(n_t,3),1));
     % Compute the standard deviation (Spread) of n(t) for every cavity.
     std_n_t = std(n_t,0,3);
@@ -192,6 +193,7 @@ function res = AverageExtractData( obj, data, params )
     %%%-----------------------------------------------------------------%%%
     %%%                           Save back                             %%%
     %%%-----------------------------------------------------------------%%%
+    res.ave.n_i_t = n_i_t;
     res.ave.n_t = n_a_t;  %res.ave.n_t_std = std_n_a_t;
     res.ave.g2_t = g2_t;  %res.ave.g2_t_std = g2_tErr;
     res.ave.nk0_t = nk0_t;  %res.ave.nk0_t_std = nk0_tErr;

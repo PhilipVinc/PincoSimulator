@@ -153,5 +153,26 @@ classdef (Abstract) SimReader < handle
                     '.mat']);
         end
     end
+    
+    methods(Access=public)
+        function AddTrajectories(obj, ntraj)
+            commandStr = ['$HOME/bin/', 'sim', ...
+                ' -i ', obj.simPath];
+            commandStr = [commandStr, ' --processes ', num2str(2*feature('numcores'))];
+            if (ntraj ~= 0)
+                commandStr = [commandStr, ' --n_traj ' , num2str(ntraj)];
+            end
+            fprintf([commandStr, '\n']);
+            tic;
+            system(commandStr);
+            tt = toc;
+            
+            fprintf(['ELAPSED TIME: ', num2str(tt), ' s.\n']);
+        end
+        
+        function Reload(obj)
+            obj.ReadAnalizeStoreData();
+        end
+    end
 end
 
