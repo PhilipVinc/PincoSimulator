@@ -9,9 +9,24 @@ function output = ReadAllChunk( obj, chunkId )
     % Open the chunks
     dF = cell(1, obj.varN);
     for i=1:obj.varN
-        dF{i} = fopen(fullfile(obj.simPath, 'data', ...
-                    [char(obj.varNames(i)),'_',num2str(obj.chunkNumbers(chunkId)),'.cnk']), ...
-                    'r');
+        name = [char(obj.varNames(i)),'_',num2str(obj.chunkNumbers(chunkId)),'.cnk'];
+        path = fullfile(obj.simPath, 'data', name);
+        opened = false;
+        if exist(path, 'file')
+            dF{i} = fopen(path, 'r');
+            opened = true;
+        end
+        
+        if ~opened
+            name = ['variable',num2str(i),'_',num2str(obj.chunkNumbers(chunkId)),'.cnk'];
+            path = fullfile(obj.simPath, 'data', name);
+            if exist(path, 'file')
+                dF{i} = fopen(path, 'r');
+                opened = true;
+            else
+                fprintf('ERROR: COULD NOT FIND FILE!');
+            end
+        end
     end
         
     % Find the dataset Size
