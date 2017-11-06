@@ -17,6 +17,7 @@ classdef SimRunner < handle
         iniFileName = '_sim.ini';
         pulseFileName = 'F_t.dat'
         nCores = feature('numcores');
+        hasName=false;
     end
     
     methods
@@ -38,7 +39,9 @@ classdef SimRunner < handle
             if ~isKey(obj.params, 't_start')
                 obj.params('t_start') = 0;
             end
-            
+            if (~obj.hasName)
+                obj.GenerateRandomName()
+            end
             obj.simPath = fullfile(obj.parentPath, obj.simName);
             obj.CreateFolder(obj.simPath);
             
@@ -88,7 +91,22 @@ classdef SimRunner < handle
         end
         
         function GenerateRandomName(obj)
-            obj.simName = ['TWMC_', datestr(now, 'yy-mm-dd_HH-MM-SS')];
+            try
+                try
+                    Fstr = ['_F-', num2str(num2str(obj.params('F')))];
+                catch
+                    Fstr='';
+                end
+                
+                obj.simName = ['TWMC_',num2str(obj.params('nx')), 'x', num2str(obj.params('ny')), ...
+                    Fstr,...
+                    '_ts-',num2str(num2str(obj.params('timestep'))),...
+                    '_', datestr(now, 'yy-mm-dd_HH-MM-SS')];
+                obj.hasName = true;
+            catch
+                
+                obj.hasName = false;
+            end
         end
     end
     

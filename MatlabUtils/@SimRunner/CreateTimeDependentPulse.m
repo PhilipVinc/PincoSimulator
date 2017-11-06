@@ -60,7 +60,7 @@ function pulseData = CreateTimeDependentPulse( obj)
     end
     
     times(end+1) = floor(times(end)+1);
-    values{end+1} = values{end}
+    values{end+1} = values{end};
     
     pulseData.times = times;
     pulseData.values = values;

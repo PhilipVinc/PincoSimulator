@@ -33,7 +33,7 @@ classdef TWMCReader < SimReader
             sims = cell(1, length(simFolds));
 
             for i=1:length(simFolds)
-                sims{i}=TWMCReader(fullfile(parentPath, simFolds(i).name));
+                sims{i}=TWMCReader(fullfile(folderPath, simFolds(i).name));
             end
         end
     end

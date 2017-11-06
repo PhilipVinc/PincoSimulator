@@ -30,6 +30,13 @@
 		{"name":"filename", "kind":"required", "type":"folderpath"}
 	]
 },
+"TWMCReader.ReadFolder":
+{
+	"inputs":
+	[
+		{"name":"filename", "kind":"required", "type":"folderpath"}
+	]
+},
 "ThermoReader.AddTrajectories":
 {
 	"inputs":

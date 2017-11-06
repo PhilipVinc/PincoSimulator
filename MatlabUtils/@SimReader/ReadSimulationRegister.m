@@ -2,7 +2,14 @@ function output = ReadSimulationRegister(obj)
 %READMATLAB Summary of this function goes here
 %   Detailed explanation goes here
 
-    registerFile = fopen(fullfile(obj.simPath, 'data', '_register.bin'), 'r');
+    registerFileName = fullfile(obj.simPath, 'data', '_register.bin');
+    registerFile = fopen(registerFileName, 'r');
+    
+    if registerFile == -1
+        fprintf(['\n\nError: File ', registerFileName, ' not found. Aborting.\n\n']);
+        output = -1
+        return;
+    end
     
     % Start reading. Read the Magic Bytes 
     magic = fread(registerFile, 8, 'uchar');

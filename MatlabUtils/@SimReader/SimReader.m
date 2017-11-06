@@ -10,8 +10,6 @@ classdef (Abstract) SimReader < handle
         quan;
         
         varNames;
-        varN;
-        varTypes;
         varDimN;
         varDimensions;
     end
@@ -34,7 +32,10 @@ classdef (Abstract) SimReader < handle
         chunkNumbers;
         chunksToRead;
         chunkData;
-        
+
+        varTypes;
+        varN;
+
         keepInMemory = false;
     end
     
@@ -60,6 +61,16 @@ classdef (Abstract) SimReader < handle
     
     methods
         function obj = SimReader(simPath)
+            % Check that the path exists
+            if ~exist(simPath, 'dir')
+                errStr = ['ERROR: Folder ', simPath, ' does not exist.'];
+                barStr = [UniformString(length(errStr), '-'),'\n'];
+                fprintf(barStr);
+                fprintf([errStr,'\n']);
+                fprintf(barStr);
+                return;
+            end
+            
             obj.simPath = simPath;
             obj.params = [];
             
@@ -172,6 +183,10 @@ classdef (Abstract) SimReader < handle
         
         function Reload(obj)
             obj.ReadAnalizeStoreData();
+        end
+        
+        function path = GetFolderName(obj)
+            path = obj.simPath;
         end
     end
 end
