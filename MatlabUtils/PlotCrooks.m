@@ -32,7 +32,7 @@ function [] = PlotCrooks( obj )
     
     plot(obj.params.F_t, obj.ave.n_t);
     xlabel('time');
-    ha2.YAxisLocation = 'right'
+    ha2.YAxisLocation = 'right';
     ylabel('Population n(t)');
     legend(cavNames, 'Location', 'northwest');
 
@@ -78,6 +78,14 @@ function [] = PlotCrooks( obj )
         ll2 = legend({'Data points'; 'Linear Regression'});
         ylabel('$\log\left(\frac{P_{A\rightarrow B}(W)}{P_{B\rightarrow A}(W)}\right)$', 'Interpreter', 'latex');
     
+    end
+    
+    fprintf(['---- Temperatures -----\n']);
+    for i=1:nCavs
+        fprintf(['F_speed= ' , num2str(obj.params.F_speeds(i)), ...
+                '  \tT = ', num2str(obj.crooksData.T(i)), ' +- ', num2str(obj.crooksData.TErr(i)),...
+                '  \tDeltaF = ', num2str(obj.crooksData.DF(i)), ' +- ', num2str(obj.crooksData.DFErr(i)),...
+                '\n']);                
     end
 end
 
