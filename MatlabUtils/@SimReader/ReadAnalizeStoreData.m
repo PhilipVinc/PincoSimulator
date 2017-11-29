@@ -75,6 +75,10 @@ function output = ReadAnalizeStoreData( obj )
     obj.AverageMergeChunks();
     obj.QuantitiesMergeChunks();
     
+    if obj.keepInMemory
+        obj.MergeChunksData();
+    end
+    
     output = 'good';
     
 end

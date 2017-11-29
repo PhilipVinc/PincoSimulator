@@ -6,7 +6,7 @@ function  output = ReadIniFile(obj)
     iniFiles = dir(fullfile(obj.simPath,'*.ini'));
     
     if (~length(iniFiles) == 1)
-        output = 'Error: Found more than 1 ini File';
+        output = ['Error: Found', num2str(length(iniFiles)),'ini Files. 1 Expected.'];
         fprintf(output);
         return;
     end
@@ -45,6 +45,11 @@ function  output = ReadIniFile(obj)
         else
             params.(field) = tmp;
         end
+    end
+    
+    % Check if the local basis size is specified
+    if ~isfield(obj.params,'local_cell_size')
+        params.local_cell_size=1;
     end
     
     % Store the results

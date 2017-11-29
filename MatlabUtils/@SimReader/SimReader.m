@@ -60,10 +60,17 @@ classdef (Abstract) SimReader < handle
     end
     
     methods
-        function obj = SimReader(simPath)
+        function obj = SimReader(simPath, varargin)
+            
+            p=inputParser;
+            addRequired(p,'simPath', @isstr);
+            addParameter(p,'SaveTrajectories', false, @islogical);
+            parse(p, simPath, varargin{:});
+            pars=p.Results;
+            
             % Check that the path exists
-            if ~exist(simPath, 'dir')
-                errStr = ['ERROR: Folder ', simPath, ' does not exist.'];
+            if ~exist(pars.simPath, 'dir')
+                errStr = ['ERROR: Folder ', pars.simPath, ' does not exist.'];
                 barStr = [UniformString(length(errStr), '-'),'\n'];
                 fprintf(barStr);
                 fprintf([errStr,'\n']);
@@ -71,7 +78,8 @@ classdef (Abstract) SimReader < handle
                 return;
             end
             
-            obj.simPath = simPath;
+            obj.simPath = pars.simPath;
+            obj.keepInMemory = pars.SaveTrajectories;
             obj.params = [];
             
             obj.magicSignature = [137; 80; 78; 67; 13; 10; 26; 10];
@@ -142,6 +150,8 @@ classdef (Abstract) SimReader < handle
         
         output = EstimateAnalizedFolder(obj);
         output = ReadAnalizeStoreData( obj );
+        
+        res = ConvertInterleavedToComplex( obj, data, condition );
         
         function cp = ChunkIndexPath(obj, id)
             cp = fullfile(obj.simPath, obj.simDataFolderName, ...
