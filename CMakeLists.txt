@@ -69,10 +69,6 @@ include_directories(src/TWMC/ThermoTWMC/)
 include_directories(src/TWMC/AppendTWMC/)
 
 set(BASE_SOURCES
-        #        src/Base/Factories/ManagerFactory.cpp
-        #        src/Base/Factories/ManagerFactory.hpp
-        #        src/Base/Factories/TaskResultsFactory.cpp
-        #        src/Base/Factories/TaskResultsFactory.hpp
         src/Base/FileFormats/ChunkFileSet.cpp
         src/Base/FileFormats/ChunkFileSet.hpp
         src/Base/FileFormats/ChunkRegister.cpp
@@ -133,6 +129,12 @@ set(TWMC_SOURCES
         src/TWMC/ThermoTWMC/TWMCThermoSimulation.hpp
         src/TWMC/ThermoTWMC/TWMCThermoThreadManager.cpp
         src/TWMC/ThermoTWMC/TWMCThermoThreadManager.hpp
+        src/TWLieb/TWMCLiebResults.cpp
+        src/TWLieb/TWMCLiebResults.hpp
+        src/TWLieb/TWMCLiebSimulation.cpp
+        src/TWLieb/TWMCLiebSimulation.hpp
+        src/TWLieb/TWMCLiebThreadManager.cpp
+        src/TWLieb/TWMCLiebThreadManager.hpp
         src/TWMC/TrajectorySaver.cpp
         src/TWMC/TrajectorySaver.hpp
         src/TWMC/SimpleTWMC/TWMCThreadManager.cpp
@@ -154,10 +156,6 @@ target_link_libraries(simexe TWMCFramework)
 
 
 set(SOURCE_FILES
-        #src/Base/Factories/ManagerFactory.cpp
-        #src/Base/Factories/ManagerFactory.hpp
-        #src/Base/Factories/TaskResultsFactory.cpp
-        #src/Base/Factories/TaskResultsFactory.hpp
         src/Base/FileFormats/ChunkFileSet.cpp
         src/Base/FileFormats/ChunkFileSet.hpp
         src/Base/FileFormats/ChunkRegister.cpp
@@ -204,13 +202,20 @@ set(SOURCE_FILES
         src/TWMC/ThermoTWMC/TWMCThermoSimulation.hpp
         src/TWMC/ThermoTWMC/TWMCThermoThreadManager.cpp
         src/TWMC/ThermoTWMC/TWMCThermoThreadManager.hpp
+        src/TWLieb/TWMCLiebResults.cpp
+        src/TWLieb/TWMCLiebResults.hpp
+        src/TWLieb/TWMCLiebSimulation.cpp
+        src/TWLieb/TWMCLiebSimulation.hpp
+        src/TWLieb/TWMCLiebThreadManager.cpp
+        src/TWLieb/TWMCLiebThreadManager.hpp
         src/TWMC/TrajectorySaver.cpp
         src/TWMC/TrajectorySaver.hpp
         src/TWMC/SimpleTWMC/TWMCThreadManager.cpp
         src/TWMC/SimpleTWMC/TWMCThreadManager.hpp
         src/TWMC/TWMCTypes.h
         src/main.cpp src/Libraries/FilesystemLibrary.h
-        src/Libraries/TStaticFactory.h)
+        src/Libraries/TStaticFactory.h
+        src/TWLieb/TWLiebSimData.cpp src/TWLieb/TWLiebSimData.hpp src/TWLieb/TWLiebTypes.hpp)
 
 add_executable(sim ${SOURCE_FILES})
 
