@@ -226,7 +226,21 @@ template <class T> inline T Settings::get(string path) const
     catch(std::exception& exc)
     {
     }
-    
+
+    return result;
+}
+
+template <class T> inline T Settings::get(string path, T defRes) const
+{
+    T result;
+    try
+    {
+        result = tree->get<T>(path, defRes);
+    }
+    catch(std::exception& exc)
+    {
+    }
+
     return result;
 }
 
@@ -259,6 +273,13 @@ template<>  bool Settings::get<bool>(string path) const
     bool result = tree->get<bool>(path, false);
     return result;
 }
+
+template<>  bool Settings::get<bool>(string path, bool defVal) const
+{
+    bool result = tree->get<bool>(path, defVal);
+    return result;
+}
+
 
 template<>  complex<float> Settings::get<complex<float>>(string path) const
 {
@@ -348,7 +369,8 @@ NoisyMatrix* Settings::GetMatrix(string path, size_t nx, size_t ny) const
     }
     else
     {
-        cerr << "ERROR READING MATRIX" << endl;
+        cerr << "ERROR READING MATRIX @name: "<< path ;
+        cerr << " @path:" << matPath << endl;
     }
     
     string noiseType = tree->get<string>(path+"_Noise_Type", "xxx");

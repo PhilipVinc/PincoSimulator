@@ -32,8 +32,9 @@ class Settings
 public:
     Settings(int argc, char* argv[] );
     ~Settings();
-    
+
     template<class T> T get(std::string value) const;
+    template<class T> T get(std::string value, const T defaultValue) const;
     //NoisyMatrix* GetMatrix(string value, vector<size_t> dims) const;
     NoisyMatrix* GetMatrix(std::string value, size_t nx, size_t ny) const;
     unsigned int GlobalSeed() const;
