@@ -33,8 +33,12 @@ classdef TWMCRunner < BaseSimRunner
             name = obj.managerName;
         end
         
+        function PreProcessParams(obj)
+            % Processing done before standard processing
+        end
+        
         function PostProcessParams(obj)
-            a=1+1;
+            % Processing done after standard processing
         end
     end
     

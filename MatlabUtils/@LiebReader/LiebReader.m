@@ -15,7 +15,6 @@ classdef LiebReader < SimReader
 
             % Base constructor
             obj = obj@SimReader(simPath, varargin{:});
-            
         end
     end
     

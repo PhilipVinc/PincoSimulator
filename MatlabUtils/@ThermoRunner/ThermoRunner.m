@@ -1,4 +1,4 @@
-classdef ThermoRunner
+classdef ThermoRunner < BaseSimRunner
     %THERMORUNNER This class is used to Initialize the params of a Square
     %Lattice, 1D Truncated Wigner Simulation.
     %   This class creates the folder with a UUID where the params of the
@@ -27,7 +27,7 @@ classdef ThermoRunner
         end
         
         function PreProcessParams(obj)
-            
+            % Processing done before standard processing
             if ~isKey(obj.params, 'F')
                 fprintf('Assuming a time-dep pulse described');
                 pulseData = obj.CreateTimeDependentPulse();
@@ -40,7 +40,10 @@ classdef ThermoRunner
                     obj.params('t_end') = obj.params('t_start') + pulseData.times(end);
                 end
             end
-        end            
+        end       
+        
+        function PostProcessParams(obj)
+            % Processing done after standard processing
+        end
     end
 end
-
