@@ -7,7 +7,7 @@ function output = ReadAnalizeStoreData( obj )
     aveDataPath = fullfile(anPath, obj.fileAveragedFileName);
     quanDataPath = fullfile(anPath, obj.fileQuantitiesFileName);
     
-    if (obj.IsDataUpToDate(aveDataPath, dataPath))
+    if (obj.IsDataUpToDate(aveDataPath, dataPath) && ~obj.keepInMemory)
         fprintf(['Averaged and Quantities data is up', ...
             ' to date. Loading .mat file.\n']);
        aveData = load(aveDataPath);
@@ -21,8 +21,11 @@ function output = ReadAnalizeStoreData( obj )
        output = 'upToDate mat';
        return
     end
-    
-    fprintf(['Analized data is not up to date. Reloading\n']);
+    if ~obj.keepInMemory
+        fprintf(['Analized data is not up to date. Reloading.\n']);
+    else
+        fprintf(['Storing all Trajectories, therefore Reloading all data.\n']);
+    end
     
     obj.ReadIniFile();
     obj.ReadRegisterFast();
@@ -43,7 +46,7 @@ function output = ReadAnalizeStoreData( obj )
         aveCnkPath = obj.AveragedChunkPath(chunkId);
         
         % Check if it is up to date
-        if (obj.IsDataUpToDate(aveCnkPath, cIPath))
+        if (obj.IsDataUpToDate(aveCnkPath, cIPath) && ~obj.keepInMemory)
             continue;
         end
         

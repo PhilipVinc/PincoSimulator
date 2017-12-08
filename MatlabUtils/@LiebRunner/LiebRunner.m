@@ -58,7 +58,7 @@ classdef LiebRunner < BaseSimRunner
             %SETPUMPGAUSSIAN Center:even->C, odd->B,A
             Lx=obj.params('nx')*obj.params('ny')*2;
             if center > Lx
-                fprintf('ERROR In center of gaussian')
+                fprintf('ERROR In center of gaussian: too big\n')
             else
                 pts=exp(-(((1:Lx)-center).^2)./(2*FWHM.^2))*maxF^2;
                 obj.params('F_A') = sqrt(pts(1:2:end));

@@ -1,5 +1,5 @@
 classdef (Abstract) SimReader < handle
-    %SIMREADER Summary of this class goes here
+    %SIMREADER Base Abstract Class used for Reading a Simulation
     %   Detailed explanation goes here
     
     properties (Access = public)
@@ -63,6 +63,7 @@ classdef (Abstract) SimReader < handle
         function obj = SimReader(simPath, varargin)
             
             p=inputParser;
+            p.KeepUnmatched = true;
             addRequired(p,'simPath', @isstr);
             addParameter(p,'SaveTrajectories', false, @islogical);
             parse(p, simPath, varargin{:});

@@ -19,6 +19,8 @@ function res = AverageExtractData( obj, data, params )
     params.F_B = obj.ConvertInterleavedToComplex(params.F_B, length(params.F_B) >= 2*nxy);
     params.F_C = obj.ConvertInterleavedToComplex(params.F_C, length(params.F_C) >= 2*nxy);
     
+    params.F_tot=sum(abs(params.F_A))+sum(abs(params.F_B))+sum(abs(params.F_C));
+    params.I_tot=sum(abs(params.F_A).^2)+sum(abs(params.F_B).^2)+sum(abs(params.F_C).^2);
     
     %%%-----------------------------------------------------------------%%%
     %%%                         Hardcoded Stuff                         %%%

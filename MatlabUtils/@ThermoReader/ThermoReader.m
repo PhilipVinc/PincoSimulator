@@ -30,12 +30,12 @@ classdef ThermoReader < SimReader
     end
     
     methods(Static)
-        function sims = ReadFolder(folderPath)
+        function sims = ReadFolder(folderPath, varargin)
             simFolds = dir(fullfile(folderPath, 'TWMC*'));
             sims = cell(1, length(simFolds));
 
             for i=1:length(simFolds)
-                sims{i}=ThermoReader(fullfile(folderPath, simFolds(i).name));
+                sims{i}=ThermoReader(fullfile(folderPath, simFolds(i).name), varargin{:});
             end
         end
     end

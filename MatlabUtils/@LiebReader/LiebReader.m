@@ -24,12 +24,39 @@ classdef LiebReader < SimReader
     end
     
     methods(Static)
-        function sims = ReadFolder(folderPath)
-            simFolds = dir(fullfile(folderPath, 'TWMC*'));
+        function sims = ReadFolder(folderPath, varargin)
+            
+            p=inputParser;
+            p.KeepUnmatched = true;
+            addRequired(p,'folderPath', @isstr);
+            addParameter(p,'SortKey', '', @isstr);
+            parse(p, folderPath, varargin{:});
+            pars=p.Results;
+
+            
+            simFolds = dir(fullfile(pars.folderPath, 'TWLieb_*'));
             sims = cell(1, length(simFolds));
 
             for i=1:length(simFolds)
-                sims{i}=TWMCReader(fullfile(folderPath, simFolds(i).name));
+                sims{i}=LiebReader(fullfile(pars.folderPath, simFolds(i).name), varargin{:});
+            end
+            
+            if ~strcmp('', pars.SortKey)
+                if isfield(sims{1}.params, pars.SortKey)
+                    fprintf(['Sorting...']);
+                    sVals = zeros(length(sims),1);
+                    for i=1:length(simFolds)
+                        sVals(i) = sims{i}.params.(pars.SortKey);
+                    end
+                    
+                    [~, sKey] = sort(sVals);
+                    sims = sims(sKey);
+                    
+                    fprintf(['Succesfull!\n']);
+                else
+                    fprintf(['ERROR: Cannot Sort because ', pars.SortKey,...
+                        ' is not a valid field of params.\n']);
+                end
             end
         end
     end
