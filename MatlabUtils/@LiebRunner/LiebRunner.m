@@ -16,10 +16,8 @@ classdef LiebRunner < BaseSimRunner
         managerName = 'TWMCLieb';
     end
     
-    
-    
 	methods(Access = protected)
-        function res = GenerateSimulationName( obj, data, params )
+        function res = GenerateSimulationName( obj )
             res = ['TWLieb_'];
         end
         

@@ -19,7 +19,7 @@ classdef BaseSimRunner < handle
     end
     
     methods(Abstract, Access = protected)
-        res = GenerateSimulationName( obj, data, params );
+        res = GenerateSimulationName( obj );
         PreProcessParams(obj);
         PostProcessParams(obj);
         name = GetManagerName(obj);
