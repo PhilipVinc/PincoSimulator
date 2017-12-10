@@ -12,76 +12,102 @@
 using namespace std;
 
 
-TaskResults::TaskResults(const size_t _nOfDatasets,
-                         const string* _namesOfDatasets) : datasets(_nOfDatasets)
+TaskResults::TaskResults(const size_t _nOfDatasets) : datasets(_nOfDatasets),
+                                                           datasetByteSizes(_nOfDatasets),
+                                                           datasetElementSize(_nOfDatasets),
+                                                           datasetFormat(_nOfDatasets),
+                                                           dimensionsOfDatasets(_nOfDatasets),
+                                                           dimensionalityData(_nOfDatasets)
 {
     numberOfDatasets = _nOfDatasets;
-    namesOfDatasets.reserve(_nOfDatasets+3);
-    for (int i = 0; i != _nOfDatasets; i++)
-    {
-        namesOfDatasets.push_back(_namesOfDatasets[i]);
-    }
-}
-
-void TaskResults::AddOptionalResult(const string name, void* memAddr)
-{
-    numberOfDatasets++;
-    namesOfDatasets.push_back(name);
-    datasets.push_back(memAddr);
 }
 
 
-size_t TaskResults::GetId()
+void TaskResults::AddResult(const std::string name, void* memAddr, size_t byteSize, size_t elSize,
+                            size_t format, const std::vector<size_t> dimensions)
 {
+	AddResult(name, memAddr, byteSize, elSize, format, dimensions.size(), dimensions.data());
+}
+
+void TaskResults::AddResult(const std::string name, void* memAddr, size_t byteSize, size_t elSize, size_t format,
+                            size_t dimensions, const size_t* dimData)
+{
+	numberOfDatasets++;
+	namesOfDatasets.push_back(name);
+	datasets.push_back(memAddr);
+	datasetByteSizes.push_back(byteSize);
+	datasetElementSize.push_back(elSize);
+	datasetFormat.push_back(format);
+
+	dimensionsOfDatasets.push_back(dimensions);
+	for (size_t i = 0; i!= dimensions; ++i)
+	{
+		dimensionalityData.push_back(dimData[i]);
+	}
+}
+
+
+
+// --------------------
+// Generic Accessor Methods
+
+size_t TaskResults::GetId() const{
     return id;
 }
 
-void TaskResults::SetId(size_t _id)
-{
+void TaskResults::SetId(size_t _id) {
     id = _id;
 }
 
-void* TaskResults::GetDataSet(size_t id)
-{
+size_t TaskResults::ElementsInDataSet(size_t id) const {
+	return datasetElementSize[id];
+}
+
+size_t TaskResults::DataSetSize(size_t id) const {
+	return datasetByteSizes[id];
+}
+
+void* TaskResults::GetDataSet(size_t id) {
     return datasets[id];
 }
 
-const size_t TaskResults::NumberOfDataSets()const
-{
+size_t TaskResults::NumberOfDataSets()const {
     return numberOfDatasets;
 }
 
-const string TaskResults::NameOfDataset(const size_t datasetId)
-{
+const string TaskResults::NameOfDataset(const size_t datasetId)const {
     return namesOfDatasets[datasetId];
 }
 
-const vector<string>& TaskResults::NamesOfDatasets()const
-{
+unsigned char TaskResults::DataSetDataType(size_t id) const {
+	return datasetFormat[id];
+}
+
+const vector<string>& TaskResults::NamesOfDatasets()const {
     return namesOfDatasets;
 }
 
-const size_t TaskResults::DataSetDimension(size_t id)const
-{
+size_t TaskResults::DataSetDimension(size_t id)const {
     return dimensionsOfDatasets[id];
 }
 
-const vector<size_t>& TaskResults::DataSetsDimensionData()const
-{
+const vector<size_t>& TaskResults::DataSetsDimensionData()const {
     return dimensionalityData;
 }
 
-const unsigned int TaskResults::SerializingExtraDataOffset()const
-{
+
+// ------------------ //
+// Serialization and default null methods (to take care when
+// the libraries do not implement those. They are virtual anyawy
+
+const unsigned int TaskResults::SerializingExtraDataOffset()const {
     return 0;
 }
 
-const void* TaskResults::SerializeExtraData()const
-{
+const void* TaskResults::SerializeExtraData()const {
     return nullptr;
 }
 
-void TaskResults::DeSerializegExtraData(void* data, unsigned int length)
-{
+void TaskResults::DeSerializeExtraData(void* data, unsigned int length) {
     return;
 }

@@ -12,42 +12,26 @@
 #include "TWMCSimData.hpp"
 
 
-TWMCResults::TWMCResults(const TWMCSimData* taskData) : TWMCResults(taskData->nx, taskData->ny, taskData->n_frames)
-{
-    extraDataMemory[0] = taskData->t_start;
-    extraDataMemory[1] = taskData->t_end;
-    
-    dimensionsOfDatasets = {2};
-    dimensionalityData = {taskData->nx, taskData->ny};
+TWMCResults::TWMCResults(const TWMCSimData* taskData) : TWMCResults(taskData->nx, taskData->ny, taskData->n_frames) {
+	extraDataMemory[0] = taskData->t_start;
+	extraDataMemory[1] = taskData->t_end;
 
-    // Determine the additional noisy matrices to be saved
-    if (taskData->U->GetNoiseType() != NoisyMatrix::NoiseType::None)
-    {
-        dimensionsOfDatasets.push_back(2);
-        dimensionalityData.push_back(taskData->nx);
-        dimensionalityData.push_back(taskData->ny);
-        complex_p * noiseU = new complex_p[nxy];
-        noiseMatrices.push_back(noiseU);
-        AddOptionalResult("U_Realizations", noiseU);
-    }
-    if (taskData->omega->GetNoiseType() != NoisyMatrix::NoiseType::None)
-    {
-        dimensionsOfDatasets.push_back(2);
-        dimensionalityData.push_back(taskData->nx);
-        dimensionalityData.push_back(taskData->ny);
-        complex_p * noiseOmega = new complex_p[nxy];
-        noiseMatrices.push_back(noiseOmega);
-        AddOptionalResult("Omega_Realizations", noiseOmega);
-    }
-    if (taskData->F->GetNoiseType() != NoisyMatrix::NoiseType::None)
-    {
-        dimensionsOfDatasets.push_back(2);
-        dimensionalityData.push_back(taskData->nx);
-        dimensionalityData.push_back(taskData->ny);
-        complex_p * noiseF = new complex_p[nxy];
-        noiseMatrices.push_back(noiseF);
-        AddOptionalResult("F_Realizations", noiseF);
-    }
+	// Determine the additional noisy matrices to be saved
+	if (taskData->U->HasNoise()) {
+		AddComplexMatrixDataset("U_Realizations", taskData->nx, taskData->ny);
+	}
+	if (taskData->omega->HasNoise()) {
+		AddComplexMatrixDataset("Omega_Realizations", taskData->nx, taskData->ny);
+	}
+	if (taskData->F->HasNoise()) {
+		AddComplexMatrixDataset("F_Realizations", taskData->nx, taskData->ny);
+	}
+
+	// It's a thermal simulation.
+	if (taskData->F->HasTimeDependence()) {
+		AddRealMatrixDataset( "dWork", taskData->nx, taskData->ny, taskData->n_frames);
+		AddRealMatrixDataset( "dArea", taskData->nx, taskData->ny, taskData->n_frames);
+	}
 }
 
 TWMCResults::TWMCResults(size_t _nx, size_t _ny, size_t _frames) : nx(_nx), ny(_ny), nxy(nx*ny), frames(_frames)
@@ -55,46 +39,43 @@ TWMCResults::TWMCResults(size_t _nx, size_t _ny, size_t _frames) : nx(_nx), ny(_
     nxy = ny*nx;
     beta_t = new complex_p[nxy*frames];
 
-    datasets[0] = beta_t;
+	AddResult("traj", beta_t, nx*ny*frames*sizeof(complex_p), frames, 22, {nx,ny});
 }
 
 TWMCResults::~TWMCResults()
 {
     delete[] beta_t;
 
-    for (int i = 0; i != noiseMatrices.size(); i++)
-    {
-        delete[] noiseMatrices[i];
-    }
+	for (int i = 0; i != complexMatrices.size(); i++)
+	{
+		delete[] complexMatrices[i];
+	}
+	for (int i = 0; i != realMatrices.size(); i++)
+	{
+		delete[] realMatrices[i];
+	}
 }
 
-size_t TWMCResults::DataSetSize(size_t id)
+
+// Adding datasets
+void TWMCResults::AddComplexMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames)
 {
-    switch(id)
-    {
-        case 0:
-            return nxy*frames*sizeof(complex_p);
+	// create the array holding the quantity;
+	complex_p* mat = new complex_p[nx*ny*frames];
+	complexMatrices.push_back(mat);
 
-        default:
-            return nxy*sizeof(complex_p);
-    }
-
+	// Add it to the underlying storage.
+	AddResult(name, mat, nx*ny*sizeof(complex_p), frames, 22, {nx,ny});
 }
 
-size_t TWMCResults::ElementsInDataSet(size_t id)
+void TWMCResults::AddRealMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames)
 {
-    switch(id)
-    {
-        case 0:
-            return frames;
-        default:
-            return 1;
-    }
-}
+	// create the array holding the quantity;
+	float_p* mat = new float_p[nx*ny*frames];
+	realMatrices.push_back(mat);
 
-unsigned char TWMCResults::DataSetDataType(size_t id)
-{
-    return 22;
+	// Add it to the underlying storage.
+	AddResult(name, mat, nx*ny*sizeof(complex_p), frames, 11, {nx,ny});
 }
 
 
