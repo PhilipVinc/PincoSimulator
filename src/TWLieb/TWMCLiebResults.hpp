@@ -21,20 +21,21 @@ public:
     ~TWMCLiebResults();
 
     complex_p* beta_t;
-    std::vector<complex_p*> noiseMatrices;
-    size_t nx;
+    float_p* work_t;
+    float_p* area_t;
+	std::vector<complex_p*> complexMatrices;
+	std::vector<float_p*> realMatrices;
+	size_t nx;
     size_t ny;
     size_t nxy;
     size_t frames;
 
-    double extraDataMemory[2];
-
-    virtual size_t ElementsInDataSet(size_t id);
-    virtual size_t DataSetSize(size_t id);
-    virtual unsigned char DataSetDataType(size_t id);
+	void AddRealMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames = 1);
+	void AddComplexMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames = 1);
 
     // Serialization and deserialization
-    const virtual unsigned int SerializingExtraDataOffset()const;
+    double extraDataMemory[2];
+	const virtual unsigned int SerializingExtraDataOffset()const;
     const virtual void* SerializeExtraData()const;
     virtual void DeSerializegExtraData(void* data, unsigned int length);
 

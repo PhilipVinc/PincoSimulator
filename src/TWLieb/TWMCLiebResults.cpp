@@ -8,101 +8,72 @@
 #include "TWLiebSimData.hpp"
 
 
-TWMCLiebResults::TWMCLiebResults(const TWLiebSimData* taskData) : TWMCLiebResults(taskData->nx, taskData->ny, taskData->n_frames)
+TWMCLiebResults::TWMCLiebResults(const TWLiebSimData* taskData) :
+		TWMCLiebResults(taskData->nx, taskData->ny, taskData->n_frames)
 {
     extraDataMemory[0] = taskData->t_start;
     extraDataMemory[1] = taskData->t_end;
 
-    dimensionsOfDatasets = {3};
-    dimensionalityData = {taskData->nx, taskData->ny, 3};
+	// Determine the additional noisy matrices to be saved
+	if (taskData->U_A->HasNoise() || taskData->U_B->HasNoise() ||
+	    taskData->U_C->HasNoise()) {
+		AddComplexMatrixDataset("U_Realizations", taskData->nx, taskData->ny);
+	}
 
-    // Determine the additional noisy matrices to be saved is U
-    if (taskData->U_A->GetNoiseType() != NoisyMatrix::NoiseType::None &&
-            taskData->U_B->GetNoiseType() != NoisyMatrix::NoiseType::None &&
-            taskData->U_C->GetNoiseType() != NoisyMatrix::NoiseType::None)
-    {
-        dimensionsOfDatasets.push_back(3);
-        dimensionalityData.push_back(taskData->nx);
-        dimensionalityData.push_back(taskData->ny);
-        dimensionalityData.push_back(3);
-        complex_p * noiseU = new complex_p[nxy*3];
-        noiseMatrices.push_back(noiseU);
-        AddOptionalResult("U_Realizations", noiseU);
-    }
+	if (taskData->E_A->HasNoise() || taskData->E_B->HasNoise() ||
+	    taskData->E_C->HasNoise()) {
+		AddComplexMatrixDataset("Delta_Realizations", taskData->nx, taskData->ny);
+	}
 
-
-    if (taskData->E_A->GetNoiseType() != NoisyMatrix::NoiseType::None &&
-            taskData->E_B->GetNoiseType() != NoisyMatrix::NoiseType::None &&
-            taskData->E_C->GetNoiseType() != NoisyMatrix::NoiseType::None)
-    {
-        dimensionsOfDatasets.push_back(3);
-        dimensionalityData.push_back(taskData->nx);
-        dimensionalityData.push_back(taskData->ny);
-        dimensionalityData.push_back(3);
-        complex_p * noiseOmega = new complex_p[nxy];
-        noiseMatrices.push_back(noiseOmega);
-        AddOptionalResult("Delta_Realizations", noiseOmega);
-    }
-
-    if (taskData->F_A->GetNoiseType() != NoisyMatrix::NoiseType::None &&
-            taskData->F_B->GetNoiseType() != NoisyMatrix::NoiseType::None &&
-            taskData->F_C->GetNoiseType() != NoisyMatrix::NoiseType::None)
-    {
-        dimensionsOfDatasets.push_back(3);
-        dimensionalityData.push_back(taskData->nx);
-        dimensionalityData.push_back(taskData->ny);
-        dimensionalityData.push_back(3);
-        complex_p * noiseF = new complex_p[nxy*3];
-        noiseMatrices.push_back(noiseF);
-        AddOptionalResult("F_Realizations", noiseF);
+	if (taskData->F_A->HasNoise() || taskData->F_B->HasNoise() ||
+	    taskData->F_C->HasNoise()) {
+	    AddComplexMatrixDataset("F_Realizations", taskData->nx, taskData->ny);
     }
 }
 
-TWMCLiebResults::TWMCLiebResults(size_t _nx, size_t _ny, size_t _frames) : nx(_nx), ny(_ny), nxy(nx*ny), frames(_frames)
+TWMCLiebResults::TWMCLiebResults(size_t _nx, size_t _ny, size_t _frames) :
+	nx(_nx), ny(_ny), nxy(_nx*_ny), frames(_frames)
 {
     nxy = ny*nx;
     beta_t = new complex_p[nxy*3*frames];
 
-    datasets[0] = beta_t;
+	AddResult("traj", beta_t, nxy*3*frames*sizeof(complex_p), frames, 22, {nx,ny,3});
 }
 
 TWMCLiebResults::~TWMCLiebResults()
 {
     delete[] beta_t;
 
-    for (int i = 0; i != noiseMatrices.size(); i++)
+    for (int i = 0; i != complexMatrices.size(); i++)
     {
-        delete[] noiseMatrices[i];
+        delete[] complexMatrices[i];
+    }
+    for (int i = 0; i != realMatrices.size(); i++)
+    {
+        delete[] realMatrices[i];
     }
 }
 
-size_t TWMCLiebResults::DataSetSize(size_t id)
+
+// Adding datasets
+void TWMCLiebResults::AddComplexMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames)
 {
-    switch(id)
-    {
-        case 0:
-            return nxy*3*frames*sizeof(complex_p);
+    // create the array holding the quantity;
+    complex_p* mat = new complex_p[nx*ny*3*frames];
+    complexMatrices.push_back(mat);
 
-        default:
-            return nxy*3*sizeof(complex_p);
-    }
-
+    // Add it to the underlying storage.
+    AddResult(name, mat, nx*ny*sizeof(complex_p), frames, 22, {nx,ny,3});
 }
 
-size_t TWMCLiebResults::ElementsInDataSet(size_t id)
+void TWMCLiebResults::AddRealMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames)
 {
-    switch(id)
-    {
-        case 0:
-            return frames;
-        default:
-            return 1;
-    }
-}
+    // create the array holding the quantity;
+    float_p* mat = new float_p[nx*ny*3*frames];
+    realMatrices.push_back(mat);
 
-unsigned char TWMCLiebResults::DataSetDataType(size_t id)
-{
-    return 22;
+    // Add it to the underlying storage.
+    AddResult(name, mat, nx*ny*sizeof(complex_p), frames, 11, {nx,ny,3});
 }
 
 

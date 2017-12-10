@@ -8,69 +8,80 @@
 
 #include "TWMCThermoResults.hpp"
 
+#include "NoisyMatrix.hpp"
 #include "TWMCSimData.hpp"
 
 
 TWMCThermoResults::TWMCThermoResults(const TWMCSimData* taskData) :
     TWMCThermoResults(taskData->nx, taskData->ny, taskData->n_frames)
 {
-    extraDataMemory[0] = taskData->t_start;
-    extraDataMemory[1] = taskData->t_end;
-    
-    dimensionsOfDatasets = {2,2,2};
-    dimensionalityData = {taskData->nx, taskData->ny, taskData->nx, taskData->ny, taskData->nx, taskData->ny};
+	extraDataMemory[0] = taskData->t_start;
+	extraDataMemory[1] = taskData->t_end;
+
+	// Determine the additional noisy matrices to be saved
+	if (taskData->U->HasNoise()) {
+		AddComplexMatrixDataset("U_Realizations", taskData->nx, taskData->ny);
+	}
+	if (taskData->omega->HasNoise()) {
+		AddComplexMatrixDataset("Omega_Realizations", taskData->nx, taskData->ny);
+	}
+	if (taskData->F->HasNoise()) {
+		AddComplexMatrixDataset("F_Realizations", taskData->nx, taskData->ny);
+	}
+
+	// It's a thermal simulation.
+	if (taskData->F->HasTimeDependence()) {
+		AddRealMatrixDataset( "dWork", taskData->nx, taskData->ny, taskData->n_frames);
+		AddRealMatrixDataset( "dArea", taskData->nx, taskData->ny, taskData->n_frames);
+	}
 }
 
 TWMCThermoResults::TWMCThermoResults(size_t _nx, size_t _ny, size_t _frames) :
-TaskResults(nOfSets, nameOfSets), nx(_nx), ny(_ny), nxy(nx*ny), frames(_frames)
+		nx(_nx), ny(_ny), nxy(nx*ny), frames(_frames)
 {
-    nxy = ny*nx;
-    datasets[0] = beta_t = new complex_p[nxy*frames];
-    datasets[1] = work_t = new float_p[nxy*frames];
-    datasets[2] = area_t = new float_p[nxy*frames];
-    //energy_t = new float_p[nxy*frames];
+	nxy = ny*nx;
+	beta_t = new complex_p[nxy*frames];
+
+	AddResult("traj", beta_t, nx*ny*frames*sizeof(complex_p), frames, 22, {nx,ny});
+
+	work_t = realMatrices[0];
+	area_t = realMatrices[1];
 }
 
 TWMCThermoResults::~TWMCThermoResults()
 {
-    delete[] beta_t;
+	delete[] beta_t;
+
+	for (int i = 0; i != complexMatrices.size(); i++)
+	{
+		delete[] complexMatrices[i];
+	}
+	for (int i = 0; i != realMatrices.size(); i++)
+	{
+		delete[] realMatrices[i];
+	}
 }
 
-size_t TWMCThermoResults::DataSetSize(size_t id)
+// Adding datasets
+void TWMCThermoResults::AddComplexMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames)
 {
-    switch(id)
-    {
-        case 0:
-            return nxy*frames*sizeof(complex_p);
-            
-        case 1:
-        case 2:
-            return nxy*frames*sizeof(float_p);
-    }
-    return 0;
+	// create the array holding the quantity;
+	complex_p* mat = new complex_p[nxy*frames];
+	complexMatrices.push_back(mat);
+
+	// Add it to the underlying storage.
+	AddResult(name, mat, nx*ny*sizeof(complex_p), frames, 22, {nx,ny});
 }
 
-
-unsigned char TWMCThermoResults::DataSetDataType(size_t id)
+void TWMCThermoResults::AddRealMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames)
 {
-    switch(id)
-    {
-        case 0:
-            // Complex_p
-            return 22;
-        case 1:
-        case 2:
-            return 11;
-    }
-    return 0;
+	// create the array holding the quantity;
+	float_p* mat = new float_p[nxy*frames];
+	realMatrices.push_back(mat);
+
+	// Add it to the underlying storage.
+	AddResult(name, mat, nx*ny*sizeof(complex_p), frames, 11, {nx,ny});
 }
-
-size_t TWMCThermoResults::ElementsInDataSet(size_t id)
-{
-    return frames;
-}
-
-
 
 
 // Serialization stuff
