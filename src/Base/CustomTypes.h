@@ -18,6 +18,7 @@
 
 
 typedef double float_p;
+typedef float_p real_p;
 typedef std::complex<float_p> complex_p;
 typedef Eigen::Matrix<complex_p, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatrixCXd;
 typedef Eigen::Matrix<float_p, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatrixRXd;

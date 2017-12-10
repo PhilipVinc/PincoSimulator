@@ -75,15 +75,3 @@ TaskResults* TWMCThreadManager::SampleTaskResult()
 {
     return new TWMCResults(sharedTaskData);
 }
-
-
-/*
-class TWMCThreadManagerBuilder: public ManagerFactory::Builder {
-public:
-    TWMCThreadManagerBuilder(): ManagerFactory::Builder( "TWMCThread" ) {}
-    virtual Manager* build( const Settings* settings ) {
-        return new TWMCThreadManager( settings );
-    }
-};
-static TWMCThreadManagerBuilder TWMCBuild;
-*/

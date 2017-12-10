@@ -314,3 +314,16 @@ tuple<size_t,MatrixCXd> NoisyMatrix::GetAtTimeWithSuggestion(float_p t, size_t s
         return  tuple<size_t, MatrixCXd>(id, matCTimes[id] + complex_p(t - times[id], 0)*dVals[id]);
     }
 }
+
+bool NoisyMatrix::HasNoise() const
+{
+    if (noiseType != NoiseType::None)
+        return true;
+
+    return false;
+}
+
+bool NoisyMatrix::HasTimeDependence() const
+{
+    return timeDep;
+}

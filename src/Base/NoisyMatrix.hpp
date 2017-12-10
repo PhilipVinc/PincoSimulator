@@ -33,6 +33,8 @@ public:
     enum NoiseType { None, Uniform, Gaussian, Lorentzian, Poissonian};
     void SetNoiseType(std::string type);
     NoiseType GetNoiseType() const;
+	bool HasNoise() const;
+	bool HasTimeDependence() const;
 
     size_t GetNoiseVariables() const;
     
@@ -49,9 +51,9 @@ public:
 
     
 protected:
-    
-private:
 
+
+private:
     std::vector<float_p> times;
     std::vector<MatrixCXd> dVals;
     std::vector<MatrixRXd> matRTimes;

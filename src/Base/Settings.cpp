@@ -456,6 +456,7 @@ vector<float_p> ReadCharFile(const string &path)
             vec.push_back(tmp);
         file.close();
     }
+    cout << "File had length: " << vec.size() << endl;
     return vec;
 }
 

@@ -78,14 +78,3 @@ TaskResults* TWMCThermoThreadManager::SampleTaskResult()
 {
     return new TWMCThermoResults(sharedTaskData);
 }
-
-/*
-class TWMCThermoThreadManagerBuilder: public ManagerFactory::Builder {
-public:
-    TWMCThermoThreadManagerBuilder(): ManagerFactory::Builder( "TWMCThermoThread" ) {}
-    virtual Manager* build( const Settings* settings ) {
-        return new TWMCThermoThreadManager( settings );
-    }
-};
-static TWMCThermoThreadManagerBuilder TWMCThermoBuild;
-*/

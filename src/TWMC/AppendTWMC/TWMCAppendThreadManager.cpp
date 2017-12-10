@@ -65,14 +65,3 @@ TaskResults* TWMCAppendThreadManager::SampleTaskResult()
 {
     return new TWMCResults(sharedTaskData);
 }
-
-/*
-class TWMCAppendThreadManagerBuilder: public ManagerFactory::Builder {
-public:
-    TWMCAppendThreadManagerBuilder(): ManagerFactory::Builder( "AppendTWMCThread" ) {}
-    virtual Manager* build( const Settings* settings ) {
-        return new TWMCAppendThreadManager( settings );
-    }
-};
-static TWMCAppendThreadManagerBuilder TWMCAppendBuild;
-*/
