@@ -248,11 +248,12 @@ void TWMCSimulation::Compute()
         {
             size_t size = res->nx*res->ny;
             complex_p* data = beta_t.data();
-            
-            for (unsigned j= 0; j < size; j++)
-            {
-                res->beta_t[i_frame*size + j] = data[j];
-            }
+            memcpy(&res->beta_t[i_frame*size], data, sizeof(complex_p)*size);
+
+            //for (unsigned j= 0; j < size; j++)
+            //{
+            //    res->beta_t[i_frame*size + j] = data[j];
+            //}
             i_frame = i_frame + 1;
         }
         t += data->dt;

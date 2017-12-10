@@ -292,9 +292,11 @@ void TWMCThermoSimulation::Compute()
             complex_p* dataWork = deltaW.data();
             complex_p* dataArea = deltaA.data();
 
+            memcpy(&res->beta_t[i_frame*size], dataBeta, sizeof(complex_p)*size);
+
             for (unsigned j= 0; j < size; j++)
             {
-                res->beta_t[i_frame*size + j] = dataBeta[j];
+                //res->beta_t[i_frame*size + j] = dataBeta[j];
                 res->work_t[i_frame*size + j] = real(dataWork[j]);
                 res->area_t[i_frame*size + j] = real(dataArea[j]);
             }
