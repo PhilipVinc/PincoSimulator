@@ -22,16 +22,19 @@ class ChunkFileSet;
 
 class ChunkRegister
 {
-    struct registerEntry
+public:
+    struct RegisterEntry
     {
         size_t traj_id;
         size_t chunk_id;
         size_t chunk_offset;
         size_t continuation_offset;
         size_t* additionalData;
+
+        size_t registerWritePosition;
     };
 
-    
+
 public:
     ChunkRegister(std::string path);
     ~ChunkRegister();
@@ -47,7 +50,11 @@ public:
     size_t GetNumberOfChunks();
     std::set<size_t> GetUsedChunkIds();
     size_t GetNumberOfSavedTasks();
-    
+
+	std::vector<size_t> GetSavedTasksIds();
+	RegisterEntry* GetEntryById(size_t id);
+	RegisterEntry* GetEntryByPosition(size_t index);
+
 protected:
     void GoToCurrentWritePosition();
     void GoToTrajectoryDataBegin();
@@ -75,12 +82,13 @@ private:
     std::string registerFilePath;
     FILE* registerFile;
     bool registerInitialized = false;
-    bool newRun = false;
+	bool registerDataRead = false;
+	bool newRun = false;
     unsigned int sizeOfTrajEntry = 0;
     unsigned int initialSizeOfTrajEntry = 0;
     size_t* trajBuffer;
     
-    std::vector<registerEntry*> entries;
+    std::vector<RegisterEntry*> entries;
     std::set<size_t> chunkIds;
     
     long int additionalDataBegin;

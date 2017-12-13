@@ -53,7 +53,6 @@ TWMCLiebSimulation::TWMCLiebSimulation(const TWLiebSimData* TaskData)
             delta(3*i+2) = tmpC(i);
         }
         delta = - delta.array() + data->detuning;
-        //cout << "delta=" << endl << delta << endl<<endl;
 
         // For U
         U = MatrixCXd::Zero(data->nx, 3*data->ny);
@@ -67,7 +66,6 @@ TWMCLiebSimulation::TWMCLiebSimulation(const TWLiebSimData* TaskData)
             U(3*i+1) = tmpB(i);
             U(3*i+2) = tmpC(i);
         }
-        //cout << "U=" << endl << U << endl<<endl;
 
         // For F
         F = MatrixCXd::Zero(data->nx, 3*data->ny);
@@ -81,7 +79,6 @@ TWMCLiebSimulation::TWMCLiebSimulation(const TWLiebSimData* TaskData)
             F(3*i+1) = tmpB(i);
             F(3*i+2) = tmpC(i);
         }
-        //cout << "F=" << endl << F << endl<<endl;
 
         real_step_linear = (-ij*delta.array() - data->gamma_val/2.0);
         //cout << "real_step_linear=" << endl << real_step_linear << endl<<endl;
@@ -122,14 +119,12 @@ TWMCLiebSimulation::TWMCLiebSimulation(const TWLiebSimData* TaskData)
         }
         coupling_mat_total = SparseCXd(3*ny,3*ny);
         coupling_mat_total.setFromTriplets(elList.begin(), elList.end());
-        //cout << "jumpDense=" << endl << MatrixCXd(coupling_mat_total) << endl<<endl;
 
     }
     else if (TaskData->dimension == TWLiebSimData::Dimension::D2)
     {
         std::cerr << "ERROR: 2D Not Supported for LIEB "<<endl;
     }
-
 
     // If we have a 1D system, then we put to 0 it's contribution of the cosinus (1D/2D) code.
     double flag1DNx = (data->nx==1) ? 0.0 : 1.0;

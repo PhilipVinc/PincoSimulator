@@ -27,7 +27,6 @@ PincoFormatDataStore::PincoFormatDataStore(const Settings* settings,
     chunkIds = cRegister->GetUsedChunkIds();
     
     cachedWriteChunk = nullptr;
-    //datasetNames = ;
 }
 
 PincoFormatDataStore::~PincoFormatDataStore()
@@ -50,7 +49,7 @@ size_t PincoFormatDataStore::NewChunkId()
 void PincoFormatDataStore::CreateNewChunk()
 {
     size_t id = NewChunkId();
-    ChunkFileSet* chunk = new ChunkFileSet(chunkRootPath , datasetNames, id);
+    ChunkFileSet* chunk = new ChunkFileSet(chunkRootPath , datasetN, id);
     
     chunkIds.insert(id);
     chunkFileSets[id] = chunk;
@@ -76,7 +75,21 @@ void PincoFormatDataStore::StoreDataSimple(TaskResults *results)
     cRegister->RegisterStoredData(results, cnk->GetId(), offset, Settings::SaveSettings::saveIdFiles);
 }
 
+void PincoFormatDataStore::StoreDataComplex(TaskResults *results)
+{
+    ChunkFileSet * cnk = GetWritableChunk();
+    size_t offset = cnk->WriteToChunk(results);
+    cRegister->RegisterStoredData(results, cnk->GetId(), offset, Settings::SaveSettings::appendIdFiles);
+}
+
 void PincoFormatDataStore::ProvideDatasetNames(vector<string> names)
 {
-    datasetNames = names;
+//    datasetNames = names;
+    datasetN = names.size();
+}
+
+void PincoFormatDataStore::LoadListOfStoredDataEvents()
+{
+    // TODO
+    return;
 }

@@ -27,13 +27,9 @@ DataStore::DataStore(const Settings* settings, string folderName)
 {
     rootFolder = folderName;
     filesystem::path rootPath = folderName;
-    
-    //auto trajectoryFoldersN = findFoldersContainingString(rootFolder,
-     //                                                     settings->trajectoryFolderBaseName).size()+1;
-   
+
     dataStoreBasePath = (rootPath  / "data" ).string();
-    
-    
+
     CreateFolder(dataStoreBasePath);
     saveStatus = settings->saveStatus;
 }
@@ -60,7 +56,6 @@ void DataStore::SaveFile(string fileName, vector<float_p> data)
 {
     filesystem::path pp = dataStoreBasePath;
     pp = pp / fileName;
-
 
     //FILE* f = fopen(pp.string().c_str(), "w+");
     ofstream f;

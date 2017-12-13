@@ -34,22 +34,23 @@ protected:
     
     ChunkFileSet* GetWritableChunk();
 private:
-    
-    virtual void StoreDataSimple(TaskResults* results);
 
-	std::vector<std::string> datasetNames;
+	virtual void StoreDataSimple(TaskResults* results);
+	virtual void StoreDataComplex(TaskResults* results);
+	virtual void LoadListOfStoredDataEvents();
+
+	size_t NewChunkId();
+	void CreateNewChunk();
+	ChunkFileSet* Chunk(size_t id);
+
+	size_t datasetN;
 	std::string chunkRootPath;
-    
-    size_t NewChunkId();
-    void CreateNewChunk();
 
-    
-    std::set<size_t> chunkIds;
+	std::set<size_t> chunkIds;
     std::map<size_t, ChunkFileSet*> chunkFileSets;
     
     ChunkRegister* cRegister;
     ChunkFileSet* cachedWriteChunk;
-    ChunkFileSet* Chunk(size_t id);
 };
 
 #endif /* PincoFormatDataStore_hpp */

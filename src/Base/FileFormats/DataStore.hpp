@@ -48,6 +48,7 @@ protected:
     bool isWritable = false;
     
     virtual void StoreDataSimple(TaskResults* results) = 0;
+    virtual void LoadListOfStoredDataEvents() = 0;
 
     Settings::SaveSettings saveStatus;
 private:

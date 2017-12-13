@@ -22,10 +22,9 @@ const size_t minChunkSize = 1024*1024*1024;
 class ChunkFileSet
 {
 public:
-    ChunkFileSet(std::string basePath,
-                 const std::vector<std::string>& datasetNames,
-                 size_t chunkId);
-    ~ChunkFileSet();
+	ChunkFileSet(std::string basePath, size_t nDatasets, size_t chunkId);
+
+	~ChunkFileSet();
     
     FILE* GetFile(size_t datasetId);
     size_t WriteToChunk(TaskResults* results);
@@ -35,14 +34,16 @@ public:
     size_t GetId();
 protected:
     size_t WriteToChunk(size_t datasetId, const void * ptr, size_t dataSize);
+	void Initialise();
 
 private:
     std::vector<FILE*> files;
     std::vector<size_t> fileSizes;
     std::vector<size_t> fileOffsets;
     std::vector<std::string> fileNames;
-    
-    std::string registerFileName;
+
+	std::string basePath;
+	std::string registerFileName;
     FILE* registerFile;
     size_t registerTrajSize;
     size_t N;
@@ -50,6 +51,7 @@ private:
     size_t* buffer;
     size_t id;
     size_t nTrajWritten = 0;
+	bool initialised = false;
 };
 
 #endif /* ChunkFileSet_hpp */
