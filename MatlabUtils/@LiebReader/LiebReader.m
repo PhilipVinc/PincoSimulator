@@ -58,6 +58,8 @@ classdef LiebReader < SimReader
                 end
             end
         end
+        
+        [A,B,C] = Lieb1PartCoeffs(Jx, Jy, nx, ny);
     end
     
 end

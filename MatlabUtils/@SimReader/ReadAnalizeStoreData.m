@@ -1,5 +1,6 @@
 function output = ReadAnalizeStoreData( obj )
-%READANALIZESTOREDATA Summary of this function goes here
+%READANALIZESTOREDATA Reads and Analizes data, after the path has been correctly 
+%set up in the class instance.
 %   Detailed explanation goes here
     
     dataPath = fullfile(obj.simPath, obj.simDataFolderName);

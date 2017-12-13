@@ -71,6 +71,7 @@ classdef LiebRunner < BaseSimRunner
         
         function SetPumpK(obj, kval)
             obj.UniformLiebParam('F');           
+            obj.params('F_k') = kval; % Store it in the params.
             
             Lx=obj.params('nx')*obj.params('ny');
             

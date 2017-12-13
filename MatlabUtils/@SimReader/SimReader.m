@@ -192,7 +192,16 @@ classdef (Abstract) SimReader < handle
             fprintf(['ELAPSED TIME: ', num2str(tt), ' s.\n']);
         end
         
-        function Reload(obj)
+        function Reload(obj, varargin)
+            
+            p=inputParser;
+            p.KeepUnmatched = true;
+            addParameter(p,'SaveTrajectories', false, @islogical);
+            parse(p, varargin{:});
+            pars=p.Results;
+            
+            obj.keepInMemory = pars.SaveTrajectories;
+            
             obj.ReadAnalizeStoreData();
         end
         

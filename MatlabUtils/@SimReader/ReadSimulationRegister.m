@@ -7,21 +7,23 @@ function output = ReadSimulationRegister(obj)
     
     if registerFile == -1
         fprintf(['\n\nError: File ', registerFileName, ' not found. Aborting.\n\n']);
-        output = -1
+        output = -1;
         return;
     end
     
-    % Start reading. Read the Magic Bytes 
+    % Start reading. Read the Magic Bytes and the file format version
     magic = fread(registerFile, 8, 'uchar');
     obj.registerVersion = fread(registerFile, 1, 'uchar');
     
     % Check that file is valid
     if (~isequal(magic, obj.magicSignature))
         output = 'Register file is corrupted';
-        fprintf(output)
-        return
+        fprintf(output);
+        return;
     end
     
+    %TODO HERE I COULD BRANCH ON FILE VERSION NUMBER
+
     % If file is valid, start reading in.
     % Number of datasets
     obj.varN = fread(registerFile, 1, 'uchar');

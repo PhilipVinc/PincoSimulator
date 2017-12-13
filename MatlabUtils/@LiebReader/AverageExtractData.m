@@ -90,28 +90,52 @@ function res = AverageExtractData( obj, data, params )
     % Correlation function if it is 2D
     if (params.nx ~= 1 && params.ny ~= 1)
         fprintf('Computing for 2D: ');
+        fprintf('ERROROROROR!!!! ');
         % Our beta_ij_tcut
-        beta_ij_t = reshape(data{trajId}(:,t_cut:end,:), [nx, ny, cutted_frames, n_traces]);
-        n_ij_t = reshape(n_t(:,t_cut:end,:), [nx, ny, cutted_frames, n_traces]);
-        nat_cut = n_a_t(t_cut:end);
-        nat_cut = reshape(nat_cut,[1,1,length(nat_cut)]);
+        %beta_ij_t = reshape(data{trajId}(:,t_cut:end,:), [nx, ny, cutted_frames, n_traces]);
+        %n_ij_t = reshape(n_t(:,t_cut:end,:), [nx, ny, cutted_frames, n_traces]);
+        %nat_cut = n_a_t(t_cut:end);
+        %nat_cut = reshape(nat_cut,[1,1,length(nat_cut)]);
         
-        fprintf('nk..');
+        %fprintf('nk..');
         % Compute populations of nk neq 0
-        beta_kxy_t = fft2(beta_ij_t);
-        n_kxy_t = (mean(abs(beta_kxy_t).^2,4)/nxy-0.5)./(nxy*nat_cut);
+        %beta_kxy_t = fft2(beta_ij_t);
+        %n_kxy_t = (mean(abs(beta_kxy_t).^2,4)/nxy-0.5)./(nxy*nat_cut);
         
-        beta_k0_t = beta_kxy_t(1,1,:,:);
+        %beta_k0_t = beta_kxy_t(1,1,:,:);
         
     elseif (params.nx == 1 | params.ny == 1)
         fprintf('Computing for 1D: ');
-        nat_cut = n_a_t(t_cut:end);
+        
+        t_cut_k = 1;
+        cutted_frames_k = length(params.t);
+        
+        nat_cut = n_a_t(t_cut_k:end);
         
        	% Compute populations of nk neq 0
         fprintf('nk..');
-        beta_kxy_t = fft(data{trajId}(:,t_cut:end,:));
-        n_kxy_t = (mean(abs(beta_kxy_t).^2,3)/nxy-0.5)./(nxy*nat_cut);
-        beta_k0_t = beta_kxy_t(1,:,:);
+        a_k=fft(data{trajId}(1:3:end,t_cut_k:end,:))*1/sqrt(nx);
+        b_k=fft(data{trajId}(2:3:end,t_cut_k:end,:))*1/sqrt(nx);
+        c_k=fft(data{trajId}(3:3:end,t_cut_k:end,:))*1/sqrt(nx);
+        
+        [A,B,C] = obj.Lieb1PartCoeffs(params.J_AB, params.J_BC,nx,1);
+        
+        phi_b_k_t = zeros(3, nx, cutted_frames_k, n_traces);
+        N_b_k_t = zeros(3, nx, cutted_frames_k);
+        % For the three bands
+        for band=1:3
+            phi_b_k_t(band, :,:, :) = bsxfun(@times,A(:,band),a_k) +...
+              bsxfun(@times,B(:,band),b_k) + ...
+              bsxfun(@times,C(:,band),c_k);
+        end
+        
+        N_b_k_t = mean( (phi_b_k_t.*conj(phi_b_k_t)-1/2) ,4);
+        
+        N_b_t = squeeze(sum(N_b_k_t,2));
+        Nfrac_b_t = N_b_t./sum(N_b_t,1);
+        %beta_kxy_t = fft(data{trajId}(:,t_cut:end,:));
+        %n_kxy_t = (mean(abs(beta_kxy_t).^2,3)/nxy-0.5)./(nxy*nat_cut);
+        %beta_k0_t = beta_kxy_t(1,:,:);
     end
 
     
@@ -212,8 +236,11 @@ function res = AverageExtractData( obj, data, params )
     res.ave.n_t = n_a_t;  %res.ave.n_t_std = std_n_a_t;
     res.ave.g2_t = g2_t;  %res.ave.g2_t_std = g2_tErr;
     res.ave.nk0_t = nk0_t;  %res.ave.nk0_t_std = nk0_tErr;
-    res.ave.nk_xy_t = n_kxy_t;
-
+    %res.ave.nk_xy_t = n_kxy_t;
+    res.ave.N_b_k_t = N_b_k_t;
+    res.ave.N_b_t = N_b_t;
+    res.ave.Nfrac_b_t = Nfrac_b_t;
+        
     % And the cut at the last 3/4 of times, averaged, for the steady state.
     res.ave.n_end = mean(n_a_t(t_cut:end));
     res.ave.std_n_end = sqrt(sum(std_n_a_t(t_cut:end).^2))/( ...
