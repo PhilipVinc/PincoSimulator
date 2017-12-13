@@ -33,6 +33,8 @@ TWMCThermoResults::TWMCThermoResults(const TWMCSimData* taskData) :
 	if (taskData->F->HasTimeDependence()) {
 		AddRealMatrixDataset( "dWork", taskData->nx, taskData->ny, taskData->n_frames);
 		AddRealMatrixDataset( "dArea", taskData->nx, taskData->ny, taskData->n_frames);
+		work_t = realMatrices[0];
+		area_t = realMatrices[1];
 	}
 }
 
@@ -43,9 +45,6 @@ TWMCThermoResults::TWMCThermoResults(size_t _nx, size_t _ny, size_t _frames) :
 	beta_t = new complex_p[nxy*frames];
 
 	AddResult("traj", beta_t, nx*ny*frames*sizeof(complex_p), frames, 22, {nx,ny});
-
-	work_t = realMatrices[0];
-	area_t = realMatrices[1];
 }
 
 TWMCThermoResults::~TWMCThermoResults()
@@ -70,7 +69,7 @@ void TWMCThermoResults::AddComplexMatrixDataset(std::string name, size_t nx, siz
 	complexMatrices.push_back(mat);
 
 	// Add it to the underlying storage.
-	AddResult(name, mat, nx*ny*sizeof(complex_p), frames, 22, {nx,ny});
+	AddResult(name, mat, nx*ny*sizeof(complex_p)*frames, frames, 22, {nx,ny});
 }
 
 void TWMCThermoResults::AddRealMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames)
@@ -80,7 +79,7 @@ void TWMCThermoResults::AddRealMatrixDataset(std::string name, size_t nx, size_t
 	realMatrices.push_back(mat);
 
 	// Add it to the underlying storage.
-	AddResult(name, mat, nx*ny*sizeof(complex_p), frames, 11, {nx,ny});
+	AddResult(name, mat, nx*ny*sizeof(float_p)*frames, frames, 11, {nx,ny});
 }
 
 

@@ -12,9 +12,21 @@ function output = ReadAllChunk( obj, chunkId )
         name = [char(obj.varNames(i)),'_',num2str(obj.chunkNumbers(chunkId)),'.cnk'];
         path = fullfile(obj.simPath, 'data', name);
         opened = false;
+        
+        % Try to open it with the basic name
         if exist(path, 'file')
             dF{i} = fopen(path, 'r');
             opened = true;
+        end
+
+        % Try to open it with the basic name
+        if ~opened
+            name = ['variable',num2str(i-1),'_',num2str(obj.chunkNumbers(chunkId)),'.cnk'];
+            path = fullfile(obj.simPath, 'data', name);
+            if exist(path, 'file')
+                dF{i} = fopen(path, 'r');
+                opened = true;
+            end
         end
         
         if ~opened
