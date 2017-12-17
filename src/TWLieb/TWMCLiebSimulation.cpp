@@ -82,6 +82,7 @@ TWMCLiebSimulation::TWMCLiebSimulation(const TWLiebSimData* TaskData)
 
         real_step_linear = (-ij*delta.array() - data->gamma_val/2.0);
         //cout << "real_step_linear=" << endl << real_step_linear << endl<<endl;
+        //cout << "PUMP=" << endl << F << endl<<endl;
 
         coupling_mat = SparseCXd(3*ny,3*ny);
 
@@ -119,6 +120,8 @@ TWMCLiebSimulation::TWMCLiebSimulation(const TWLiebSimData* TaskData)
         }
         coupling_mat_total = SparseCXd(3*ny,3*ny);
         coupling_mat_total.setFromTriplets(elList.begin(), elList.end());
+
+        //cout << coupling_mat_total << endl;
 
     }
     else if (TaskData->dimension == TWLiebSimData::Dimension::D2)

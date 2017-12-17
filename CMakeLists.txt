@@ -5,7 +5,7 @@ project(Simulator)
 set(CMAKE_CXX_FLAGS -g)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast")
-add_definitions(-std=c++14 -stdlib=libc++)
+add_definitions(-std=c++14 -stdlib=libc++ -march=native)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
