@@ -133,6 +133,8 @@ function res = AverageExtractData( obj, data, params )
         
         N_b_t = squeeze(sum(N_b_k_t,2));
         Nfrac_b_t = N_b_t./sum(N_b_t,1);
+        params.kx = (0:(nx-1))*pi/nx;
+        params.ky = (0:(ny-1))*pi/ny;
         %beta_kxy_t = fft(data{trajId}(:,t_cut:end,:));
         %n_kxy_t = (mean(abs(beta_kxy_t).^2,3)/nxy-0.5)./(nxy*nat_cut);
         %beta_k0_t = beta_kxy_t(1,:,:);
