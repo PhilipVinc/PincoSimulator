@@ -22,7 +22,7 @@ const unsigned char fileVersion = 1;
 
 ChunkRegister::ChunkRegister(std::string _path)
 {
-    cout << "Creating ChunkRegister" << endl;
+    cout << "Instantiating ChunkRegister Class" << endl;
     registerFilePath = _path;
 
     if (OpenRegisterFile()) {
@@ -82,6 +82,7 @@ bool ChunkRegister::ReadRegisterEntries()
 
 bool ChunkRegister::CreateNewRegisterFile()
 {
+    cout << "Creating new register file at path: " << registerFilePath << endl;
     registerFile = fopen(registerFilePath.c_str(), "wb");
     newRun = true;
     registerInitialized = false;
@@ -94,6 +95,7 @@ bool ChunkRegister::OpenRegisterFile()
     if (!filesystem::exists(registerFilePath))
         return false;
 
+    cout << "Loading Register file: " << registerFilePath << endl;
     registerFile = fopen(registerFilePath.c_str(), "rb+");
     size_t version = CheckRegisterVersion();
 
@@ -102,6 +104,9 @@ bool ChunkRegister::OpenRegisterFile()
         fclose(registerFile);
         return false;
     }
+
+    ReadRegisterHeader();
+
 
     return true;
 }

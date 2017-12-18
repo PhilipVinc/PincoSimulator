@@ -215,7 +215,7 @@ set(SOURCE_FILES
         src/TWMC/TWMCTypes.h
         src/main.cpp src/Libraries/FilesystemLibrary.h
         src/Libraries/TStaticFactory.h
-        src/TWLieb/TWLiebSimData.cpp src/TWLieb/TWLiebSimData.hpp src/TWLieb/TWLiebTypes.hpp)
+        src/TWLieb/TWLiebSimData.cpp src/TWLieb/TWLiebSimData.hpp src/TWLieb/TWLiebTypes.hpp src/Base/Utils/StringFormatter.hpp)
 
 add_executable(sim ${SOURCE_FILES})
 

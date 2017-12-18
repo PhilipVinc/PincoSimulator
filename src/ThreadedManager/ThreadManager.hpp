@@ -114,6 +114,9 @@ private:
     chrono::system_clock::duration deltaTOpt;
     chrono::system_clock::duration deltaTPrint;
 
+    // Printing stuff
+    size_t lastMsgLength = 0;
+
 public:
     void ReportAverageSpeed(float speed);
 

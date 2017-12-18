@@ -9,10 +9,12 @@
 #include "ThreadManager.hpp"
 
 #include "DataSaver.hpp"
+#include "StringFormatter.hpp"
 
 #include <algorithm>
 #include <chrono>
 #include <iostream>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -112,22 +114,21 @@ void ThreadManager::OptimizeRun()
         if (dtP > deltaTPrint)
         {
             int deltaTc = chrono::duration_cast<chrono::seconds>(elapsed).count();
-            
-            cout << "Completed " << nCompletedTasks << "/" << nTotalTasks << ".  ";
-            cout << " Time: ( " << deltaTc << "/";
-            if (nCompletedTasks!= 0)
-                cout <<  int(deltaTc*nTotalTasks/float(nCompletedTasks));
-            else
-            {
-                cout <<  "***";
-            }
-            cout << " ).  SleepTime: " << sleepTimeMs << " ms.";
-            
+
+            std::string tmptmp = nCompletedTasks!= 0 ? std::to_string(int(deltaTc*nTotalTasks/float(nCompletedTasks))):"***";
+            std::string msgString = string_format("Completed %i/%i.   Time: (%i/%s). Sleeptime: %i ms.",  nCompletedTasks, nTotalTasks, deltaTc,
+                                                  tmptmp.c_str(),sleepTimeMs );
+
+            std::string tmp = std::string(lastMsgLength, '\b');
+            lastMsgLength = msgString.length() -1;
+            msgString = tmp + msgString;
+            cout << msgString;
+            fflush(stdout);
+
             if (nCompletedTasks >= nThreads)
             {
                 deltaTPrint = chrono::seconds(int(ceil(deltaTc*nTotalTasks/float(nCompletedTasks*100))));
             }
-            cout << endl;
             lastPrintTime = now;
         }
         lastOptTime = now;
