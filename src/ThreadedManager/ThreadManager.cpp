@@ -187,31 +187,33 @@ void ThreadManager::ProcessElaboratedTasks()
 
 void ThreadManager::EnqueueTask(size_t nTasks)
 {
-    for (;nTasks != 0; nTasks--)
-    {
-        Task* _task;
+    // tmp Enqueue vector
+    vector<Task*> tmpTaskVec;
+
+    for (;nTasks != 0; nTasks--) {
+        Task *_task;
         // If we have tasks alredy setup, reuse them
-        if (voidTaskPool.size() != 0)
-        {
+        if (voidTaskPool.size() != 0) {
             _task = voidTaskPool.front();
             voidTaskPool.pop();
             _task = PrepareTask(_task);
-        }
-        else
-        {
+        } else {
             _task = PrepareTask();
         }
-        
-        if (_task != nullptr)
-        {
-            dispatchedTasks.enqueue(dispatchToken, _task);
-            nTasksToSave++;
-            nTasksLeftToEnqueue--;
-        }
-        else
-        {
+        if (_task != nullptr) {
+            tmpTaskVec.push_back(_task);
+        } else {
             break;
         }
+    }
+
+    if (tmpTaskVec.size() != 0) {
+        dispatchedTasks.enqueue_bulk(dispatchToken, tmpTaskVec.begin(), tmpTaskVec.size());
+
+        nTasksToSave += tmpTaskVec.size();
+        nTasksLeftToEnqueue -= tmpTaskVec.size();
+        //std::cout << "Enqueued " << tmpTaskVec.size() << " tasks." <<std::endl;
+        tmpTaskVec.clear();
     }
 }
 
@@ -270,10 +272,26 @@ Task* ThreadManager::GetTask(size_t th_id)
         return NULL;
 }
 
+std::vector<Task*> ThreadManager::GetTasks(size_t th_id, size_t maxTasks)
+{
+    std::vector<Task*> tasks = std::vector<Task*>(maxTasks, NULL);
+    size_t dequeuedTasks = dispatchedTasks.try_dequeue_bulk_from_producer(dispatchToken,
+                                                                          tasks.begin(),
+                                                                          maxTasks);
+    tasks.resize(dequeuedTasks);
+    return tasks;
+}
+
 void  ThreadManager::GiveResults(size_t th_id, Task* task)
 {
     elaboratedTasks.enqueue(workersTokens[th_id], task);
 }
+
+void  ThreadManager::GiveResults(size_t th_id, std::vector<Task*> tasks)
+{
+    elaboratedTasks.enqueue_bulk(workersTokens[th_id], tasks.begin(), tasks.size());
+}
+
 
 void ThreadManager::Terminate()
 {

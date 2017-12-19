@@ -47,8 +47,10 @@ public:
     
     // Take a task from dispatchedTasks to execute it (called by a worker)
     Task* GetTask(size_t th_id);
+    std::vector<Task*> GetTasks(size_t th_id, size_t maxTasks);
     // Return a completed task, to add it to elaboratedTasks
     void GiveResults(size_t th_id, Task* task);
+    void GiveResults(size_t th_id, std::vector<Task*> tasks);
     // Method called by a thread to inform the manager that he is now dead
     // and can be joined.
     void ReportThreadTermination(size_t th_id);
