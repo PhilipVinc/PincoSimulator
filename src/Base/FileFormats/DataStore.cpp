@@ -10,10 +10,10 @@
 
 #include "ChunkRegister.hpp"
 #include "ChunkFileSet.hpp"
-#include "FilesystemLibrary.h"
-#include "FsUtils.hpp"
-#include "Settings.hpp"
-#include "TaskResults.hpp"
+#include "Libraries/FilesystemLibrary.h"
+#include "../Utils/FsUtils.hpp"
+#include "../Settings.hpp"
+#include "../TaskResults.hpp"
 
 #include <fstream>
 #include <iostream>

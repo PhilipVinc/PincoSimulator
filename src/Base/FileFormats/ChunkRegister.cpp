@@ -8,8 +8,8 @@
 
 #include "ChunkRegister.hpp"
 
-#include "TaskResults.hpp"
-#include "FilesystemLibrary.h"
+#include "Base/TaskResults.hpp"
+#include "Libraries/FilesystemLibrary.h"
 
 #include <algorithm>
 #include <iostream>
@@ -280,12 +280,12 @@ bool ChunkRegister::ReadRegisterHeader()
 	}
 }
 
-void ChunkRegister::GoToTrajectoryDataBegin()
+inline void ChunkRegister::GoToTrajectoryDataBegin()
 {
     fseek(registerFile, trajDataBegin, SEEK_SET);
 }
 
-void ChunkRegister::GoToCurrentWritePosition()
+inline void ChunkRegister::GoToCurrentWritePosition()
 {
     fseek(registerFile, storedEntries*sizeOfTrajEntry + trajDataBegin, SEEK_SET);
 }
@@ -325,7 +325,7 @@ void ChunkRegister::RegisterStoredData(TaskResults* results,
 }
 
 
-size_t ChunkRegister::GetNumberOfSavedTasks()
+inline size_t ChunkRegister::GetNumberOfSavedTasks()
 {
     return storedEntries;
 }
@@ -363,7 +363,7 @@ std::vector<size_t> ChunkRegister::GetSavedTasksIds()
 	return ids;
 }
 
-ChunkRegister::RegisterEntry* ChunkRegister::GetEntryByPosition(size_t index)
+inline ChunkRegister::RegisterEntry* ChunkRegister::GetEntryByPosition(size_t index)
 {
 	return entries[index];
 }

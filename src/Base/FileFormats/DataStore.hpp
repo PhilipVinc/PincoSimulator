@@ -9,8 +9,8 @@
 #ifndef DataStore_hpp
 #define DataStore_hpp
 
-#include "CustomTypes.h"
-#include "Settings.hpp"
+#include "../CustomTypes.h"
+#include "../Settings.hpp"
 
 #include <string>
 #include <vector>

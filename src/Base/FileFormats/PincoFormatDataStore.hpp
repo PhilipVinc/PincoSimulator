@@ -39,6 +39,8 @@ private:
 	virtual void StoreDataComplex(TaskResults* results);
 	virtual void LoadListOfStoredDataEvents();
 
+	void Initialise(TaskResults* task);
+
 	size_t NewChunkId();
 	void CreateNewChunk();
 	ChunkFileSet* Chunk(size_t id);
@@ -51,6 +53,8 @@ private:
     
     ChunkRegister* cRegister;
     ChunkFileSet* cachedWriteChunk;
+
+	bool initialised = false;
 };
 
 #endif /* PincoFormatDataStore_hpp */

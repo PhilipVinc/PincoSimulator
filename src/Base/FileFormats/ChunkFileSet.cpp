@@ -8,8 +8,8 @@
 
 #include "ChunkFileSet.hpp"
 
-#include "FilesystemLibrary.h"
-#include "TaskResults.hpp"
+#include "Libraries/FilesystemLibrary.h"
+#include "../TaskResults.hpp"
 
 #include <iostream>
 
@@ -18,11 +18,12 @@ using namespace std;
 
 ChunkFileSet::ChunkFileSet(std::string _basePath,
                            size_t nDatasets,
-                           size_t chunkId)
+                           size_t chunkId) :
+basePath(_basePath), N(nDatasets), id(chunkId)
 {
-	basePath=_basePath;
-    N = nDatasets;
-    id = chunkId;
+    if (nDatasets==0)
+        cout << "ERROR: Initialised ChunkFileSet with 0 datasets!" << endl;
+
     Initialise();
 }
 
@@ -96,7 +97,7 @@ void ChunkFileSet::Initialise()
 }
 
 
-FILE* ChunkFileSet::GetFile(size_t datasetId)
+inline FILE* ChunkFileSet::GetFile(size_t datasetId)
 {
     return files[datasetId];
 }
@@ -140,9 +141,4 @@ void ChunkFileSet::FlushData()
 bool ChunkFileSet::IsChunkBig()
 {
     return (fileSizes[0] > minChunkSize);
-}
-
-size_t ChunkFileSet::GetId()
-{
-    return id;
 }

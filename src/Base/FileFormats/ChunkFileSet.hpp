@@ -31,7 +31,7 @@ public:
     void FlushData();
     bool IsChunkBig();
     
-    size_t GetId();
+    size_t GetId() {return id;};
 protected:
     size_t WriteToChunk(size_t datasetId, const void * ptr, size_t dataSize);
 	void Initialise();
