@@ -11,18 +11,18 @@
 
 #include "Libraries/TStaticFactory.h"
 
+#include "TaskData.hpp"
+
 #include <string>
 #include <vector>
-#include <stdio.h>
+#include <cstdio>
 
 
-static std::string default_dataset_name = "traj";
 
-
-class TaskResults
+class TaskResults : public TaskData
 {
 public:
-    TaskResults(const size_t nOfDatasets = 1);
+    explicit TaskResults( size_t nOfDatasets = 1);
 
     size_t GetId() const;
     void SetId(size_t);
@@ -30,7 +30,7 @@ public:
     size_t NumberOfDataSets() const;
     const std::vector<std::string>& NamesOfDatasets() const;
 
-    const std::string NameOfDataset(const size_t datasetId) const;
+    const std::string NameOfDataset(size_t datasetId) const;
     size_t DataSetSize(size_t id) const;
     size_t ElementsInDataSet(size_t id) const;
     size_t DataSetDimension(size_t id)const;
@@ -38,11 +38,11 @@ public:
     const std::vector<size_t>& DataSetsDimensionData() const;
     void* GetDataSet(size_t id);
 
-    void AddResult(const std::string name, void* memAddr, size_t byteSize, size_t elSize,
+    void AddResult(std::string name, void* memAddr, size_t byteSize, size_t elSize,
                    size_t format, size_t dimensions, const size_t* dimData);
 
-    void AddResult(const std::string name, void* memAddr, size_t byteSize, size_t elSize,
-                   size_t format, const std::vector<size_t> dimensions);
+    void AddResult(std::string name, void* memAddr, size_t byteSize, size_t elSize,
+                   size_t format, std::vector<size_t> dimensions);
 
 
     // Serialization and deserialization
@@ -55,9 +55,9 @@ public:
 protected:
     size_t numberOfDatasets = 0;
     std::vector<std::string> namesOfDatasets;
+    size_t id = 0;
 
 private:
-    size_t id = 0;
 
     // Datasets, and related informations.
     std::vector<void*> datasets;

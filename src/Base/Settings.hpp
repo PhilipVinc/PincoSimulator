@@ -36,7 +36,7 @@ public:
     template<class T> T get(std::string value) const;
     template<class T> T get(std::string value, const T defaultValue) const;
     //NoisyMatrix* GetMatrix(string value, vector<size_t> dims) const;
-    NoisyMatrix* GetMatrix(std::string value, size_t nx, size_t ny) const;
+    NoisyMatrix* GetMatrix(std::string value, size_t nx, size_t ny, size_t cellSz = 1) const;
     unsigned int GlobalSeed() const;
     std::string GetOutputFolder() const;
     std::string GetRootFolder() const;

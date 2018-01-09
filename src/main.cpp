@@ -20,6 +20,7 @@ int main(int argc, char * argv[])
         cout << "Invalid Manager. Exiting..." << endl;
     }
 
+    delete manager;
 
     return 0;
 }

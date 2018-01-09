@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 3.8)
 project(Simulator)
 
+option(COMPILE_GPU "Build with GPU Support for the Solvers" ON)
+
+
 #set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS -g)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast")
-add_definitions(-std=c++14 -stdlib=libc++ -march=native)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native")
+add_definitions(-std=c++14 -stdlib=libc++)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -21,23 +24,60 @@ endif()
 
 # Directory with all compilation modules
 set(CMAKE_MODULE_PATH  ${CMAKE_SOURCE_DIR}/cmake-modules)
+set (BOOST_PACKAGES program_options system filesystem)
+
+# GPU SUPPORT
+if (COMPILE_GPU)
+    message("Enabling GPU Support")
+    add_definitions(-DGPU_SUPPORT)
+
+    #VEXCL Definitions
+    option(VEXCL_SHOW_KERNELS "Show generated kernels in tests and examples" OFF)
+    option(VEXCL_CACHE_KERNELS "Cache compiled kernels offline" ON)
+
+    if (CMAKE_VERSION VERSION_LESS "3.1.0")
+        set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules/opencl)
+    endif()
+    list(APPEND BOOST_PACKAGES chrono date_time thread )
+    message("${BOOST_PACKAGES}")
+
+    # VexCL Backends
+    add_library(Common INTERFACE)
+    add_library(VexCL::Common ALIAS Common)
+
+    find_package(OpenCL)
+    if(OpenCL_FOUND)
+        add_library(OpenCL INTERFACE)
+        add_library(VexCL::OpenCL ALIAS OpenCL)
+
+        target_include_directories(OpenCL INTERFACE ${OpenCL_INCLUDE_DIRS})
+        target_link_libraries(OpenCL INTERFACE Common ${OpenCL_LIBRARIES})
+        target_compile_definitions(OpenCL INTERFACE VEXCL_BACKEND_OPENCL)
+
+        message(STATUS "Found VexCL::OpenCL")
+
+    endif()
+
+
+endif(COMPILE_GPU)
 
 # Find package boost, if present
 if(APPLE)
-    find_package(Boost 1.65 COMPONENTS program_options system filesystem)
+    find_package(Boost 1.65 COMPONENTS "${BOOST_PACKAGES}")
     if (NOT Boost_FOUND)
         message(Searching again for Boost)
         SET(BOOST_ROOT ~/opt/local/)
         SET(BOOST_ROOT ~/opt/local/)
-        find_package(Boost 1.65 COMPONENTS program_options system filesystem REQUIRED )
+        find_package(Boost 1.65 COMPONENTS "${BOOST_PACKAGES}" REQUIRED )
     endif (NOT Boost_FOUND)
 else()
-    find_package(Boost 1.65 COMPONENTS program_options system )
+    find_package(Boost 1.65 COMPONENTS "${BOOST_PACKAGES}" )
     if (NOT Boost_FOUND)
-        message(Searching again for Boost)
+        message(Searching again for Boost without filesystem support)
         SET(BOOST_ROOT ~/opt/local/)
         SET(BOOST_ROOT ~/opt/local/)
-        find_package(Boost 1.65 COMPONENTS program_options system REQUIRED )
+        list(REMOVE_ITEM BOOST_PACKAGES filesystem) # remove filesystem
+        find_package(Boost 1.65 COMPONENTS "${BOOST_PACKAGES}" REQUIRED )
     endif (NOT Boost_FOUND)
 endif()
 
@@ -58,164 +98,44 @@ set(LINKING SHARED)
 # Src Folders
 include_directories(src)
 
-include_directories(src/Base/)
-include_directories(src/Base/FileFormats/)
-include_directories(src/Base/Utils/)
-include_directories(src/Libraries/)
-include_directories(src/ThreadedManager/)
-include_directories(src/TWMC/)
-include_directories(src/TWMC/SimpleTWMC/)
-include_directories(src/TWMC/ThermoTWMC/)
-include_directories(src/TWMC/AppendTWMC/)
-
-set(BASE_SOURCES
-        src/Base/FileFormats/ChunkFileSet.cpp
-        src/Base/FileFormats/ChunkFileSet.hpp
-        src/Base/FileFormats/ChunkRegister.cpp
-        src/Base/FileFormats/ChunkRegister.hpp
-        src/Base/FileFormats/DataStore.cpp
-        src/Base/FileFormats/DataStore.hpp
-        src/Base/FileFormats/PincoFormatDataStore.cpp
-        src/Base/FileFormats/PincoFormatDataStore.hpp
-        src/Base/Utils/EigenUtils.cpp
-        src/Base/Utils/EigenUtils.hpp
-        src/Base/Utils/FsUtils.cpp
-        src/Base/Utils/FsUtils.hpp
-        src/Base/CustomTypes.h
-        src/Base/DataSaver.cpp
-        src/Base/DataSaver.hpp
-        src/Base/Manager.cpp
-        src/Base/Manager.hpp
-        src/Base/NoisyMatrix.cpp
-        src/Base/NoisyMatrix.hpp
-        src/Base/Settings.cpp
-        src/Base/Settings.hpp
-        src/Base/Task.cpp
-        src/Base/Task.hpp
-        src/Base/TaskData.cpp
-        src/Base/TaskData.hpp
-        src/Base/TaskResults.cpp
-        src/Base/TaskResults.hpp
-        src/Libraries/concurrentqueue.h
-        src/Libraries/FilesystemLibrary.h
-        src/Libraries/TStaticFactory.h)
-
-add_library(SimFramework ${LINKING} ${BASE_SOURCES})
-target_link_libraries(SimFramework m)
-target_link_libraries(SimFramework ${Boost_LIBRARIES})
-
-if(LINUX)
-    target_link_libraries(SimFramework rt) #realtime
-    target_link_libraries(SimFramework c++experimental) #filesystem
-endif()
-
-
-set(TWMC_SOURCES
-        src/ThreadedManager/ThreadManager.cpp
-        src/ThreadedManager/ThreadManager.hpp
-        src/ThreadedManager/WorkerThread.cpp
-        src/ThreadedManager/WorkerThread.hpp
-        src/TWMC/AppendTWMC/TWMCAppendThreadManager.cpp
-        src/TWMC/AppendTWMC/TWMCAppendThreadManager.hpp
-        src/TWMC/SimpleTWMC/TWMCResults.cpp
-        src/TWMC/SimpleTWMC/TWMCResults.hpp
-        src/TWMC/TWMCSimData.cpp
-        src/TWMC/TWMCSimData.hpp
-        src/TWMC/SimpleTWMC/TWMCSimulation.cpp
-        src/TWMC/SimpleTWMC/TWMCSimulation.hpp
-        src/TWMC/ThermoTWMC/TWMCThermoResults.cpp
-        src/TWMC/ThermoTWMC/TWMCThermoResults.hpp
-        src/TWMC/ThermoTWMC/TWMCThermoSimulation.cpp
-        src/TWMC/ThermoTWMC/TWMCThermoSimulation.hpp
-        src/TWMC/ThermoTWMC/TWMCThermoThreadManager.cpp
-        src/TWMC/ThermoTWMC/TWMCThermoThreadManager.hpp
-        src/TWLieb/TWMCLiebResults.cpp
-        src/TWLieb/TWMCLiebResults.hpp
-        src/TWLieb/TWMCLiebSimulation.cpp
-        src/TWLieb/TWMCLiebSimulation.hpp
-        src/TWLieb/TWMCLiebThreadManager.cpp
-        src/TWLieb/TWMCLiebThreadManager.hpp
-        src/TWMC/TrajectorySaver.cpp
-        src/TWMC/TrajectorySaver.hpp
-        src/TWMC/SimpleTWMC/TWMCThreadManager.cpp
-        src/TWMC/SimpleTWMC/TWMCThreadManager.hpp
-        src/TWMC/TWMCTypes.h)
-
-add_library(TWMCFramework ${LINKING} ${TWMC_SOURCES})
-target_link_libraries(TWMCFramework SimFramework)
-target_link_libraries(TWMCFramework m)
-target_link_libraries(TWMCFramework ${FFTW_LIBRARIES})
-target_link_libraries(TWMCFramework ${Boost_LIBRARIES})
-
-set(EXE_FILE
-        src/main.cpp)
-
-add_executable(simexe ${EXE_FILE})
-target_link_libraries(simexe SimFramework)
-target_link_libraries(simexe TWMCFramework)
+#include_directories(src/Base/)
+#include_directories(src/TWMC/)
 
 
 set(SOURCE_FILES
-        src/Base/FileFormats/ChunkFileSet.cpp
-        src/Base/FileFormats/ChunkFileSet.hpp
-        src/Base/FileFormats/ChunkRegister.cpp
-        src/Base/FileFormats/ChunkRegister.hpp
-        src/Base/FileFormats/DataStore.cpp
-        src/Base/FileFormats/DataStore.hpp
-        src/Base/FileFormats/PincoFormatDataStore.cpp
-        src/Base/FileFormats/PincoFormatDataStore.hpp
-        src/Base/Utils/EigenUtils.cpp
-        src/Base/Utils/EigenUtils.hpp
-        src/Base/Utils/FsUtils.cpp
-        src/Base/Utils/FsUtils.hpp
+        src/Base/FileFormats/ChunkFileSet.cpp src/Base/FileFormats/ChunkFileSet.hpp
+        src/Base/FileFormats/ChunkRegister.cpp src/Base/FileFormats/ChunkRegister.hpp
+        src/Base/FileFormats/DataStore.cpp src/Base/FileFormats/DataStore.hpp
+        src/Base/FileFormats/PincoFormatDataStore.cpp src/Base/FileFormats/PincoFormatDataStore.hpp
+        src/Base/Utils/EigenUtils.cpp src/Base/Utils/EigenUtils.hpp
+        src/Base/Utils/FsUtils.cpp src/Base/Utils/FsUtils.hpp
         src/Base/CustomTypes.h
-        src/Base/DataSaver.cpp
-        src/Base/DataSaver.hpp
-        src/Base/Manager.cpp
-        src/Base/Manager.hpp
-        src/Base/NoisyMatrix.cpp
-        src/Base/NoisyMatrix.hpp
-        src/Base/Settings.cpp
-        src/Base/Settings.hpp
-        src/Base/Task.cpp
-        src/Base/Task.hpp
-        src/Base/TaskData.cpp
-        src/Base/TaskData.hpp
-        src/Base/TaskResults.cpp
-        src/Base/TaskResults.hpp
+        src/Base/Manager.cpp src/Base/Manager.hpp
+        src/Base/NoisyMatrix.cpp src/Base/NoisyMatrix.hpp
+        src/Base/Settings.cpp src/Base/Settings.hpp
+        src/Base/TaskData.cpp src/Base/TaskData.hpp
+        src/Base/TaskResults.cpp src/Base/TaskResults.hpp
         src/Libraries/concurrentqueue.h
-        src/ThreadedManager/ThreadManager.cpp
-        src/ThreadedManager/ThreadManager.hpp
-        src/ThreadedManager/WorkerThread.cpp
-        src/ThreadedManager/WorkerThread.hpp
-        src/TWMC/AppendTWMC/TWMCAppendThreadManager.cpp
-        src/TWMC/AppendTWMC/TWMCAppendThreadManager.hpp
-        src/TWMC/SimpleTWMC/TWMCResults.cpp
-        src/TWMC/SimpleTWMC/TWMCResults.hpp
-        src/TWMC/TWMCSimData.cpp
-        src/TWMC/TWMCSimData.hpp
-        src/TWMC/SimpleTWMC/TWMCSimulation.cpp
-        src/TWMC/SimpleTWMC/TWMCSimulation.hpp
-        src/TWMC/ThermoTWMC/TWMCThermoResults.cpp
-        src/TWMC/ThermoTWMC/TWMCThermoResults.hpp
-        src/TWMC/ThermoTWMC/TWMCThermoSimulation.cpp
-        src/TWMC/ThermoTWMC/TWMCThermoSimulation.hpp
-        src/TWMC/ThermoTWMC/TWMCThermoThreadManager.cpp
-        src/TWMC/ThermoTWMC/TWMCThermoThreadManager.hpp
-        src/TWLieb/TWMCLiebResults.cpp
-        src/TWLieb/TWMCLiebResults.hpp
-        src/TWLieb/TWMCLiebSimulation.cpp
-        src/TWLieb/TWMCLiebSimulation.hpp
-        src/TWLieb/TWMCLiebThreadManager.cpp
-        src/TWLieb/TWMCLiebThreadManager.hpp
-        src/TWMC/TrajectorySaver.cpp
-        src/TWMC/TrajectorySaver.hpp
-        src/TWMC/SimpleTWMC/TWMCThreadManager.cpp
-        src/TWMC/SimpleTWMC/TWMCThreadManager.hpp
+        src/ThreadedManager/WorkerThread.cpp src/ThreadedManager/WorkerThread.hpp
+        src/TWMC/TWMCResults.cpp src/TWMC/TWMCResults.hpp
         src/TWMC/TWMCTypes.h
         src/main.cpp src/Libraries/FilesystemLibrary.h
         src/Libraries/TStaticFactory.h
-        src/TWLieb/TWLiebSimData.cpp src/TWLieb/TWLiebSimData.hpp src/TWLieb/TWLiebTypes.hpp src/Base/Utils/StringFormatter.hpp)
+        src/Base/Utils/StringFormatter.hpp
+        src/ThreadedManager/WorkerThread.cpp src/ThreadedManager/WorkerThread.hpp
+        src/Base/Solver.cpp src/Base/Solver.hpp
+        src/Base/TaskProcessor.cpp src/Base/TaskProcessor.hpp
+        src/Base/Interfaces/ITaskConsumer.hpp src/Base/Interfaces/ITaskConsumer.cpp
+        src/ThreadedManager/ThreadedTaskProcessor.cpp src/ThreadedManager/ThreadedTaskProcessor.hpp
+        src/Base/Interfaces/IResultConsumer.cpp src/Base/Interfaces/IResultConsumer.hpp
+        src/Base/ResultsSaver.cpp src/Base/ResultsSaver.hpp
+        src/TWMC/Solvers/TWMCBaseSolver.cpp src/TWMC/Solvers/TWMCBaseSolver.hpp
+        src/TWMC/TWMCTaskData.cpp src/TWMC/TWMCTaskData.hpp
+        src/TWMC/TWMCSystemData.cpp src/TWMC/TWMCSystemData.hpp
+        src/TWMC/TWMCManager.cpp src/TWMC/TWMCManager.hpp
+        src/TWMC/Solvers/TWMCThermoSolver.cpp src/TWMC/Solvers/TWMCThermoSolver.hpp
+        src/TWMC/Solvers/TWMCLiebSolver.cpp src/TWMC/Solvers/TWMCLiebSolver.hpp
+        src/TWMC/Solvers/TWMCLiebGPUSolver.cpp src/TWMC/Solvers/TWMCLiebGPUSolver.hpp src/Base/SolverGPU.cpp src/Base/SolverGPU.hpp)
 
 add_executable(sim ${SOURCE_FILES})
 
@@ -229,6 +149,10 @@ target_link_libraries(sim ${Boost_LIBRARIES})
 target_link_libraries(sim ${FFTW_LIBRARIES})
 target_link_libraries(sim m)
 
+if (COMPILE_GPU)
+    target_link_libraries(sim VexCL::OpenCL)
+    target_link_libraries(sim boost_system)
+endif(COMPILE_GPU)
 #target_link_libraries(sim fftw_thread)
 
 if(LINUX)

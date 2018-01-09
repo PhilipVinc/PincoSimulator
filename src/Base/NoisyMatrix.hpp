@@ -24,7 +24,7 @@ class NoisyMatrix
 
 public:
     NoisyMatrix(std::vector<size_t> dims);
-    NoisyMatrix(size_t nx, size_t ny);
+    NoisyMatrix(size_t nx, size_t ny, size_t cellSize = 1);
 
     void SetValue(complex_p val);
     void SetValue(float_p val);

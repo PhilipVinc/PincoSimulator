@@ -9,32 +9,36 @@
 #ifndef TWMCResults_hpp
 #define TWMCResults_hpp
 
-#include "TaskResults.hpp"
+#include "Base/TaskResults.hpp"
 #include "TWMCTypes.h"
 
 #include <stdio.h>
 
-class TWMCSimData;
+class TWMCTaskData;
 
 
 class TWMCResults : public TaskResults
 {
 public:
-    TWMCResults(const TWMCSimData* TaskData);
-    TWMCResults(size_t nx, size_t ny, size_t frames);
+    TWMCResults(const TWMCTaskData* TaskData);
+    TWMCResults(size_t nx, size_t ny, size_t frames, size_t _cellSz);
     ~TWMCResults();
-    
-    complex_p* beta_t;
+
+    std::vector<complex_p> beta_t;
+    float_p* work_t;
+    float_p* area_t;
     std::vector<complex_p*> complexMatrices;
     std::vector<float_p*> realMatrices;
     size_t nx;
     size_t ny;
+    size_t cellSz;
     size_t nxy;
     size_t frames;
     
     double extraDataMemory[2];
-    void AddRealMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames = 1);
-    void AddComplexMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames = 1);
+    void AddRealMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames,  size_t cellSz);
+    void AddComplexMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames,
+                                     size_t cellSz);
 
     // Serialization and deserialization
     const virtual unsigned int SerializingExtraDataOffset()const;

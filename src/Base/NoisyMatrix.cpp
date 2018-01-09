@@ -8,7 +8,7 @@
 
 #include "NoisyMatrix.hpp"
 
-#include "EigenUtils.hpp"
+#include "Utils/EigenUtils.hpp"
 #include "CustomTypes.h"
 
 #include <iostream>
@@ -25,15 +25,26 @@ using namespace std;
 
 NoisyMatrix::NoisyMatrix(vector<size_t> dims) : normal(0.0, 1.0), uniform(-1.0, 1.0), poisson(1.0)
 {
-    nx = dims[0];
-    ny = dims[1];
+    auto sz = dims.size();
+    if (sz == 1){
+        nx = dims[0];
+        ny = dims[1];
+    } else if (sz == 2) {
+        nx = dims[0];
+        ny = dims[1];
+    } else if (sz == 3) {
+        nx = dims[0];
+        ny = dims[1] * dims[2];
+    } else {
+        cerr << "ERROR: matrix format not recognized." << endl;
+    }
 }
 
 
-NoisyMatrix::NoisyMatrix(size_t _nx, size_t _ny) : normal(0.0, 1.0), uniform(0.0, 1.0), poisson(1.0)
+NoisyMatrix::NoisyMatrix(size_t _nx, size_t _ny, size_t cellSize) : normal(0.0, 1.0), uniform(0.0, 1.0), poisson(1.0)
 {
     nx = _nx;
-    ny = _ny;
+    ny = _ny*cellSize;
 }
 
 

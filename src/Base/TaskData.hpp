@@ -14,7 +14,7 @@
 class TaskData
 {
 public:
-    //virtual ~TaskData() = 0;
+    virtual ~TaskData() {};
 protected:
     
 private:

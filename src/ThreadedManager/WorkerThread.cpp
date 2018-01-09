@@ -8,36 +8,38 @@
 
 #include "WorkerThread.hpp"
 
-#include "ThreadManager.hpp"
-
+#include "ThreadedTaskProcessor.hpp"
+#include "Base/Solver.hpp"
+#include "Base/TaskData.hpp"
 #include <iostream>
 
 
-WorkerThread::WorkerThread(size_t _id, ThreadManager* _manager)
+WorkerThread::WorkerThread(size_t id, ThreadedTaskProcessor* manager, Solver* solver)
 {
-    id = _id;
-    manager = _manager;
-    
-    gotSimulation = false;
-    finished = false;
-    terminate = false;
+	_id = id;
+	_manager = manager;
+	_solver = solver;
+
+	computing = false;
+	terminate = false;
 }
 
 WorkerThread::~WorkerThread()
 {
-    
-}
-
-void WorkerThread::ClearSimulation()
-{
+    delete _solver;
+	if (_data != nullptr)
+		delete _data;
+	std::for_each(_currentTasks.begin(),
+	              _currentTasks.end(),
+	              std::default_delete<TaskData>());
 }
 
 void WorkerThread::WorkerLoop()
 {
     while (!terminate)
     {
-        currentTask = manager->GetTask(id);
-        if (currentTask != NULL)
+        _currentTasks = _manager->GetDispatchedTasks(_id, _solver->nTasksToRequest);
+        if (_currentTasks.size() != 0)
         {
             // Profiler
             if (profileEnabled)
@@ -45,9 +47,11 @@ void WorkerThread::WorkerLoop()
                 startTime = std::chrono::high_resolution_clock::now();
                 monitoringTime = true;
             }
-            currentTask->Execute();
-            manager->GiveResults(id, currentTask);
-            ClearSimulation();
+
+	        computing = true;
+            std::vector<TaskResults*> results = _solver->Compute(_currentTasks);
+            _manager->GiveResults(_id, results);
+	        computing = false;
 
             if (profileEnabled)
             {
@@ -56,57 +60,38 @@ void WorkerThread::WorkerLoop()
                 float dt_ms = std::chrono::duration_cast<std::chrono::milliseconds>(dT).count();
                 speed = 1.0/dt_ms;
                 monitoringTime = false;
-                manager->ReportAverageSpeed(speed);
+                _manager->ReportAverageSpeed(speed);
             }
+        } else if (terminateWhenDone == true) {
+	        terminate = true;
         }
     }
-    manager->ReportThreadTermination(id);
+    _manager->ReportThreadTermination(_id);
 }
-
-bool WorkerThread::IsFinished()
-{
-    return (!gotSimulation);
-}
-
-void WorkerThread::Terminate()
-{
-    terminate = true;
-}
-
 
 // Optimizer
 float WorkerThread::GetSimulationSpeed()
 {
-    if (currentTask != NULL && monitoringTime)
-    {
-        auto t = chrono::high_resolution_clock::now();
-        std::chrono::duration<float> dT = t - startTime;
-        float dt_ms = std::chrono::duration_cast<std::chrono::milliseconds>(dT).count();
-        
-        return currentTask->ApproximateComputationProgress()/dt_ms;
-    }
-    else
-    {
-        return speed;
-    }
-    return 0;
+	if (_currentTasks.size() != 0 && monitoringTime)
+	{
+		auto t = chrono::high_resolution_clock::now();
+		std::chrono::duration<float> dT = t - startTime;
+		float dt_ms = std::chrono::duration_cast<std::chrono::milliseconds>(dT).count();
+
+		return _solver->ApproximateComputationProgress()/dt_ms;
+	}
+	else
+	{
+		return speed;
+	}
+	return 0;
 }
 
 float WorkerThread::GetSimulationProgress()
 {
-    if (currentTask != NULL)
-    {
-        return currentTask->ApproximateComputationProgress();
-    }
-    return 0;
+	if (computing) {
+		return _solver->ApproximateComputationProgress();
+	}
+	return 0;
 }
 
-void WorkerThread::StartProfiling()
-{
-    profileEnabled = true;
-}
-
-void WorkerThread::StopProfiling()
-{
-    profileEnabled = false;
-}

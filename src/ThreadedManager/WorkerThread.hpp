@@ -9,56 +9,51 @@
 #ifndef WorkerThread_hpp
 #define WorkerThread_hpp
 
-#include "Task.hpp"
-
-#include "concurrentqueue.h"
-
 #include <atomic>
 #include <chrono>
 #include <stdio.h>
 #include <queue>
+#include <vector>
 
-class ThreadManager;
+class ThreadedTaskProcessor;
+class Solver;
+class TaskData;
 
-
-using namespace moodycamel;
 using namespace std;
-
 
 class WorkerThread
 {
 public:
-    WorkerThread(size_t id, ThreadManager* manager);
+    WorkerThread(size_t id, ThreadedTaskProcessor* manager, Solver* solver);
     ~WorkerThread();
-    void Terminate();
     void WorkerLoop();
-    
-    void AssignTask(Task* task);
-    void ClearSimulation();
-    
-    bool IsFinished();
-    
-    float GetSimulationSpeed();
-    float GetSimulationProgress();
-    
-    void StartProfiling();
-    void StopProfiling();
-    
-    size_t id;
-    
+	void Terminate() {terminate = true;};
+	void TerminateWhenDone() {terminateWhenDone = true;};
+
+	//bool IsFinished();
+
+	float GetSimulationSpeed();
+	float GetSimulationProgress();
+
+	void StartProfiling() {	profileEnabled = true; };
+	void StopProfiling() {	profileEnabled = false; };
+
+	size_t _id;
+
 protected:
-    ThreadManager* manager;
-    Task* currentTask;
-    
-    bool gotSimulation;
-    bool finished;
-    bool terminate;
-    
-    bool profileEnabled = false;
-    bool monitoringTime = false;
-    chrono::high_resolution_clock::time_point startTime;
-    float speed = 0;
-    void ClearPlan();
+	ThreadedTaskProcessor* _manager;
+	Solver* _solver;
+	TaskData* _data = nullptr;
+	std::vector<TaskData*> _currentTasks;
+
+	bool computing = false;
+	bool terminate = false;
+	bool terminateWhenDone = false;
+
+	bool profileEnabled = false;
+	bool monitoringTime = false;
+	chrono::high_resolution_clock::time_point startTime;
+	float speed = 0;
 };
 
 
