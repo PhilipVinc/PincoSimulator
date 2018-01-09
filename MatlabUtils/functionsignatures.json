@@ -7,7 +7,7 @@
 		{"name":"varargin", "kind":"optional", "multiplicity":"append"}
 	]
 },
-"TWMCReader":
+"LiebReader":
 {
 	"inputs":
 	[
@@ -27,14 +27,24 @@
 {
 	"inputs":
 	[
-		{"name":"filename", "kind":"required", "type":"folderpath"}
+		{"name":"filename", "kind":"required", "type":"folderpath"},
+		{"name":"varargin", "kind":"optional", "multiplicity":"append"}
+	]
+},
+"LiebReader.ReadFolder":
+{
+	"inputs":
+	[
+		{"name":"filename", "kind":"required", "type":"folderpath"},
+		{"name":"varargin", "kind":"optional", "multiplicity":"append"}
 	]
 },
 "TWMCReader.ReadFolder":
 {
 	"inputs":
 	[
-		{"name":"filename", "kind":"required", "type":"folderpath"}
+		{"name":"filename", "kind":"required", "type":"folderpath"},
+		{"name":"varargin", "kind":"optional", "multiplicity":"append"}
 	]
 },
 "ThermoReader.AddTrajectories":
@@ -45,6 +55,13 @@
 	]
 },
 "TWMCReader.AddTrajectories":
+{
+	"inputs":
+	[
+		{"name":"n_traj", "kind":"required", "type":"numeric"}
+	]
+},
+"LiebReader.AddTrajectories":
 {
 	"inputs":
 	[
