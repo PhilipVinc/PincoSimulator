@@ -14,7 +14,7 @@ classdef TWMCRunner < BaseSimRunner
     end
     
     properties (Access = protected)
-        managerName = 'TWMCThread';
+        managerName = 'TWMC';
         pulseFileName = 'F_t.dat'
     end
         

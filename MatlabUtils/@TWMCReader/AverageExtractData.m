@@ -47,7 +47,9 @@ function res = AverageExtractData( obj, data, params )
         
         res.ave.(nameAvg) = mean(varData,3);
         res.ave.(nameStd) = std(varData,0,3);
-        res.ave.(nameAvesq) = (rssq(varData,3).^2)./n_traces;
+        % Workaround to no license of signal processing toolbox
+        % res.ave.(nameAvesq) = (rssq(varData,3).^2)./n_traces;
+        res.ave.(nameAvesq) = sum(varData.^2, 3)./n_traces
     end
 
     
