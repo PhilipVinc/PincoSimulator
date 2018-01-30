@@ -20,7 +20,14 @@ ThreadedTaskProcessor::ThreadedTaskProcessor(const Settings* settings, std::stri
 		TaskProcessor(settings, solverName)
 {
 	size_t n = std::thread::hardware_concurrency();
-	size_t nset = settings->get<size_t>("processes");
+	size_t nset = 0;
+	int ntmp = settings->get<int>("processes", -1);
+	if (ntmp == -1)
+		nset = 1000;
+	else
+		nset = ntmp;
+
+
 #ifdef GPU_SUPPORT
 	nThreads = std::min(n, nset);
 #else
@@ -63,7 +70,7 @@ void ThreadedTaskProcessor::Setup()
 #ifdef GPU_SUPPORT
     vex::Context ctx( vex::Filter::GPU && vex::Filter::Env );
     int nAvailableGPUs = ctx.size();
-	int nMaxGPUs = _settings->get<int>("GPUs");
+	int nMaxGPUs = _settings->get<int>("GPUs", -1);
 	if (nMaxGPUs  < 0)
 		nMaxGPUs = 100000;
 	nAvailableGPUs = std::min(nAvailableGPUs, nMaxGPUs);
@@ -73,11 +80,14 @@ void ThreadedTaskProcessor::Setup()
 	for (size_t i = 0; i != nAvailableGPUs; i++)
 	{
 		SolverGPU* solver = SolverGPUFactory::makeRawNewInstance(_solverName);
-        solver->SetupGPU(i);
 		if (solver != nullptr) {
-			nGPUThreads++;
+            solver->SetupGPU(i);
+            nGPUThreads++;
 			worksizeGPU += solver->nTasksToRequest;
 			CreateWorker(solver);
+		}
+		else {
+			break;
 		}
 	}
 	nTasksFillCapacity += worksizeGPU;

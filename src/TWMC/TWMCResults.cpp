@@ -46,7 +46,7 @@ TWMCResults::TWMCResults(size_t _nx, size_t _ny, size_t _frames, size_t _cellSz 
 {
     nxy = ny*nx;
 
-	AddResult("traj", beta_t.data(), nx*ny*frames*sizeof(complex_p), frames, 22, {nx,ny, _cellSz});
+	AddResult("traj", beta_t.data(), nx*ny*cellSz*frames*sizeof(complex_p), frames, 22, {nx,ny, _cellSz});
 }
 
 TWMCResults::~TWMCResults()
@@ -73,7 +73,7 @@ void TWMCResults::AddComplexMatrixDataset(std::string name, size_t nx, size_t ny
 	complexMatrices.push_back(mat);
 
 	// Add it to the underlying storage.
-	AddResult(name, mat, nx*ny*sizeof(complex_p), frames, 22, {nx,ny, cellSz});
+	AddResult(name, mat, nx*ny*cellSz*sizeof(complex_p), frames, 22, {nx,ny, cellSz});
 }
 
 void TWMCResults::AddRealMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames,
@@ -84,7 +84,7 @@ void TWMCResults::AddRealMatrixDataset(std::string name, size_t nx, size_t ny, s
 	realMatrices.push_back(mat);
 
 	// Add it to the underlying storage.
-	AddResult(name, mat, nx*ny*sizeof(complex_p), frames, 11, {nx,ny, cellSz});
+	AddResult(name, mat, nx*ny*cellSz*sizeof(complex_p), frames, 11, {nx,ny, cellSz});
 }
 
 

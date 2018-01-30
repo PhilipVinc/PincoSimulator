@@ -39,7 +39,7 @@ TWMCLiebGPUSolver::~TWMCLiebGPUSolver() {
 void TWMCLiebGPUSolver::SetupGPU(size_t gpuId)
 {
     cout << "Initialized GPU Context #" << gpuId << endl;
-    ctx = vex::Context(vex::Filter::GPU && vex::Filter::Env && vex::Filter::Position(gpuId));
+    ctx = vex::Context(vex::Filter::GPU && vex::Filter::Env && vex::Filter::Count(1)) ;//&& vex::Filter::Position(gpuId) );
     iJ_GPU = vex::sparse::matrix<complex_p>(ctx.queue()[0]);
 
     cout << "--number of devices:" << ctx.size() << endl;

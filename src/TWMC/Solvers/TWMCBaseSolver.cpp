@@ -95,7 +95,7 @@ void TWMCBaseSolver::Setup() {
 
 std::vector<TaskResults*> TWMCBaseSolver::Compute(const std::vector<TaskData *> tasks)
 {
-	cout << "computing" <<endl;
+	//cout << "computing" <<endl;
 	std::vector<TaskResults*> allResults;
 	for (size_t i =0; i < tasks.size(); i++ )
 	{
