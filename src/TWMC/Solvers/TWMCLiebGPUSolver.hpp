@@ -94,10 +94,10 @@ private:
 };
 
 static SolverFactory::Registrator<TWMCLiebGPUSolver> TWMCBaseSolver=
-        SolverFactory::Registrator<TWMCLiebGPUSolver::TWMCLiebGPUSolver>("TWMCLieb_GPU");
+        SolverFactory::Registrator<class TWMCLiebGPUSolver::TWMCLiebGPUSolver>("TWMCLieb_GPU");
 
 static SolverGPUFactory::Registrator<TWMCLiebGPUSolver> TWMCBaseSolverGPU=
-        SolverGPUFactory::Registrator<TWMCLiebGPUSolver::TWMCLiebGPUSolver>("TWMCLieb");
+        SolverGPUFactory::Registrator<class TWMCLiebGPUSolver::TWMCLiebGPUSolver>("TWMCLieb");
 
 
 #endif //SIMULATOR_TWMCLIEBGPUSOLVER_HPP

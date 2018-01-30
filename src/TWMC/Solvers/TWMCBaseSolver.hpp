@@ -54,6 +54,6 @@ private:
 	float_p t_end;
 };
 
-static SolverFactory::Registrator<TWMCBaseSolver> TWMCBaseSolver= SolverFactory::Registrator<TWMCBaseSolver::TWMCBaseSolver>("TWMCBase");
+static SolverFactory::Registrator<TWMCBaseSolver> TWMCBaseSolver= SolverFactory::Registrator<class TWMCBaseSolver::TWMCBaseSolver>("TWMCBase");
 
 #endif //SIMULATOR_TWMCBASESOLVER_HPP

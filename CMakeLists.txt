@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 project(Simulator)
 
-option(COMPILE_GPU "Build with GPU Support for the Solvers" ON)
+option(COMPILE_GPU "Build with GPU Support for the Solvers" OFF)
 
 
 #set(CMAKE_CXX_STANDARD 14)
@@ -134,8 +134,18 @@ set(SOURCE_FILES
         src/TWMC/TWMCSystemData.cpp src/TWMC/TWMCSystemData.hpp
         src/TWMC/TWMCManager.cpp src/TWMC/TWMCManager.hpp
         src/TWMC/Solvers/TWMCThermoSolver.cpp src/TWMC/Solvers/TWMCThermoSolver.hpp
-        src/TWMC/Solvers/TWMCLiebSolver.cpp src/TWMC/Solvers/TWMCLiebSolver.hpp
-        src/TWMC/Solvers/TWMCLiebGPUSolver.cpp src/TWMC/Solvers/TWMCLiebGPUSolver.hpp src/Base/SolverGPU.cpp src/Base/SolverGPU.hpp)
+        src/TWMC/Solvers/TWMCLiebSolver.cpp src/TWMC/Solvers/TWMCLiebSolver.hpp )
+
+set(GPU_SOURCE_FILES
+        src/Base/SolverGPU.cpp src/Base/SolverGPU.hpp
+        src/TWMC/Solvers/TWMCLiebGPUSolver.cpp src/TWMC/Solvers/TWMCLiebGPUSolver.hpp
+        src/TWMC/Solvers/TWMCBaseGPU.cpp src/TWMC/Solvers/TWMCBaseGPU.hpp)
+
+if (COMPILE_GPU)
+    # Append GPU Source FIles
+    message("Adding GPU Files")
+    set(SOURCE_FILES ${SOURCE_FILES} ${GPU_SOURCE_FILES})
+endif(COMPILE_GPU)
 
 add_executable(sim ${SOURCE_FILES})
 

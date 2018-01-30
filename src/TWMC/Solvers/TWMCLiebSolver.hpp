@@ -66,7 +66,7 @@ private:
     float_p t_end;
 };
 
-static SolverFactory::Registrator<TWMCLiebSolver> TWMCBaseSolver= SolverFactory::Registrator<TWMCLiebSolver::TWMCLiebSolver>("TWMCLieb");
+static SolverFactory::Registrator<TWMCLiebSolver> TWMCBaseSolver= SolverFactory::Registrator<class TWMCLiebSolver::TWMCLiebSolver>("TWMCLieb");
 
 
 #endif //SIMULATOR_TWMCLIEBSOLVER_HPP

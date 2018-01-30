@@ -6,10 +6,15 @@ Prerequisites:
     - Boost > 1.6.3
     - C++14 compiler 
 
+Optionals:
+
+    - OpenCL (>1.0)
+    - VexCL 
+
 To compile the code:
     
     cd projDir
-    cmake -DCMAKE_BUILD_TYPE=Release .
+    cmake -DCMAKE_BUILD_TYPE=Release -DCOMPILE_GPU=OFF .
     make sim
 
 To run:

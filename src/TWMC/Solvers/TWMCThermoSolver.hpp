@@ -62,7 +62,7 @@ private:
     float_p t_end;
 };
 
-static SolverFactory::Registrator<TWMCThermoSolver> TWMCBaseSolver= SolverFactory::Registrator<TWMCThermoSolver::TWMCThermoSolver>("TWMCThermo");
+static SolverFactory::Registrator<TWMCThermoSolver> TWMCBaseSolver= SolverFactory::Registrator<class TWMCThermoSolver::TWMCThermoSolver>("TWMCThermo");
 
 
 #endif //SIMULATOR_TWMCTHERMOSOLVER_HPP
