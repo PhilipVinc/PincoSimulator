@@ -28,7 +28,7 @@ NoisyMatrix::NoisyMatrix(vector<size_t> dims) : normal(0.0, 1.0), uniform(-1.0, 
     auto sz = dims.size();
     if (sz == 1){
         nx = dims[0];
-        ny = dims[1];
+        ny = 1;//dims[1];
     } else if (sz == 2) {
         nx = dims[0];
         ny = dims[1];
@@ -156,6 +156,12 @@ NoisyMatrix::NoiseType NoisyMatrix::GetNoiseType() const
 {
     return noiseType;
 }
+
+std::tuple<size_t, size_t> NoisyMatrix::GetDimensions() const
+{
+    return {nx, ny};
+};
+
 
 MatrixCXd NoisyMatrix::Generate(std::mt19937 &gen)
 {

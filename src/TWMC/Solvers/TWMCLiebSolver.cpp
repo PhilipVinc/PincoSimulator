@@ -143,7 +143,7 @@ std::vector<TaskResults*> TWMCLiebSolver::Compute(const std::vector<TaskData *> 
             U = data->U->Generate(gen);
 
             // And now store this matrix in the results
-            complex_p* resData = res->complexMatrices[noiseN]; noiseN++;
+            std::vector<complex_p> resData = *(res->complexMatrices[noiseN]); noiseN++;
             complex_p* matData = U.data();
 
             for (unsigned j= 0; j < data->nxy; j++)
@@ -157,7 +157,7 @@ std::vector<TaskResults*> TWMCLiebSolver::Compute(const std::vector<TaskData *> 
             E = data->omega->Generate(gen);
 
             // And now store this matrix in the results
-            complex_p* resData = res->complexMatrices[noiseN]; noiseN++;
+            std::vector<complex_p> resData = *(res->complexMatrices[noiseN]); noiseN++;
             complex_p* matData = E.data();
 
             for (unsigned j= 0; j < data->nxy; j++)
@@ -171,7 +171,7 @@ std::vector<TaskResults*> TWMCLiebSolver::Compute(const std::vector<TaskData *> 
             F = data->F->Generate(gen);
 
             // And now store this matrix in the results
-            complex_p* resData = res->complexMatrices[noiseN]; noiseN++;
+            std::vector<complex_p> resData = *(res->complexMatrices[noiseN]); noiseN++;
             complex_p* matData = F.data();
 
             for (unsigned j= 0; j < data->nxy; j++)

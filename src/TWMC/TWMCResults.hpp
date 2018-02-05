@@ -25,10 +25,12 @@ public:
     ~TWMCResults();
 
     std::vector<complex_p> beta_t;
-    float_p* work_t;
-    float_p* area_t;
-    std::vector<complex_p*> complexMatrices;
-    std::vector<float_p*> realMatrices;
+    std::vector<float_p> work_t;
+    std::vector<float_p> area_t;
+    //std::vector<complex_p*> complexMatrices;
+    std::vector<std::vector<complex_p>*> complexMatrices;
+    //std::vector<float_p*> realMatrices;
+    std::vector<std::vector<float_p>*> realMatrices;
     size_t nx;
     size_t ny;
     size_t cellSz;

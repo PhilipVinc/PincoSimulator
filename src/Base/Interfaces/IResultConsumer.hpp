@@ -14,6 +14,7 @@
 
 class IResultConsumer {
 public:
+	// Inherited public methods
 	void EnqueueTasks(std::vector<TaskResults*> tasks);
 	void EnqueueTasks(std::vector<TaskResults*> tasks, size_t prodID);
 
