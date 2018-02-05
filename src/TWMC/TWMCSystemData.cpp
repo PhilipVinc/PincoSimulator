@@ -98,6 +98,10 @@ TWMCSystemData::TWMCSystemData(const Settings* settings)
 		n_frames++;
 		t_end = t_end+dt;
 	}
+}
+
+TWMCSystemData::TWMCSystemData()
+{
 
 }
 
@@ -147,3 +151,4 @@ vector<vector<float_p>> TWMCSystemData::GetStoredVariableEvolution(const NoisyMa
     }
     return result;
 }
+

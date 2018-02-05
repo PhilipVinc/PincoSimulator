@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.8)
 project(Simulator)
 
+set(COMPILE_MPI ON)
+
 option(COMPILE_GPU "Build with GPU Support for the Solvers" OFF)
+option(COMPILE_MPI "Build with MPI Support for the Manager" OFF)
 
 
 #set(CMAKE_CXX_STANDARD 14)
@@ -57,9 +60,16 @@ if (COMPILE_GPU)
         message(STATUS "Found VexCL::OpenCL")
 
     endif()
-
-
 endif(COMPILE_GPU)
+
+if (COMPILE_MPI)
+    message("Enabling MPI Support")
+    add_definitions(-DMPI_SUPPORT)
+
+    list(APPEND BOOST_PACKAGES serialization )
+    message("${BOOST_PACKAGES}")
+
+endif (COMPILE_MPI)
 
 # Find package boost, if present
 if(APPLE)
@@ -141,11 +151,22 @@ set(GPU_SOURCE_FILES
         src/TWMC/Solvers/TWMCLiebGPUSolver.cpp src/TWMC/Solvers/TWMCLiebGPUSolver.hpp
         src/TWMC/Solvers/TWMCBaseGPU.cpp src/TWMC/Solvers/TWMCBaseGPU.hpp)
 
+set(MPI_SOURCE_FILES
+        src/Libraries/eigen_boost_serialization.hpp)
+
+
 if (COMPILE_GPU)
     # Append GPU Source FIles
     message("Adding GPU Files")
     set(SOURCE_FILES ${SOURCE_FILES} ${GPU_SOURCE_FILES})
 endif(COMPILE_GPU)
+
+
+if (COMPILE_MPI)
+    # Append MPI Source FIles
+    message("Adding MPI Files")
+    set(SOURCE_FILES ${SOURCE_FILES} ${MPI_SOURCE_FILES})
+endif(COMPILE_MPI)
 
 add_executable(sim ${SOURCE_FILES})
 

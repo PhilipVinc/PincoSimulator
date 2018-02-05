@@ -18,6 +18,9 @@
 #include <tuple>
 #include <vector>
 
+#ifdef MPI_SUPPORT
+#include "../Libraries/eigen_boost_serialization.hpp"
+#endif
 
 class NoisyMatrix
 {
@@ -44,12 +47,12 @@ public:
     void SetTemporalValue(std::map<float_p, std::vector<float_p>> data);
     MatrixCXd GetAtTime(float_p t, size_t suggestedId = 0) const;
 	std::tuple<size_t,MatrixCXd> GetAtTimeWithSuggestion(float_p t, size_t suggestedId = 0) const;
+	std::tuple<size_t, size_t> GetDimensions() const;
 
     MatrixCXd GenerateNoNoise();
     MatrixCXd Generate(std::mt19937 &gen);
     MatrixCXd EvaluateNoise(std::mt19937 &gen);
 
-    
 protected:
 
 
@@ -75,6 +78,57 @@ private:
     std::normal_distribution<> normal;
     std::uniform_real_distribution<> uniform;
     std::poisson_distribution<> poisson;
+
+#ifdef MPI_SUPPORT
+    friend class boost::serialization::access;
+	template<class Archive> void serialize(Archive & ar, const unsigned int version)
+	{
+		ar & times;
+		ar & dVals;
+		ar & matRTimes;
+		ar & matCTimes;
+		ar & values;
+		ar & baseMat;
+		ar & noiseType;
+		ar & nx;
+		ar & ny;
+		ar & setup;
+		ar & noise;
+		ar & timeDep;
+		ar & noiseVars;
+	}
+#endif
+
 };
+
+#ifdef MPI_SUPPORT
+
+// Support for serializing NoisyMatrix, as it has no default constructor
+namespace boost {
+	namespace serialization {
+		template<class Archive>
+		inline void save_construct_data(
+				Archive & ar, const NoisyMatrix * t, const unsigned int file_version
+		){
+			// save data required to construct instance
+			auto dims = t->GetDimensions();
+			ar & std::get<0>(dims);
+			ar & std::get<1>(dims);
+		}
+
+		template<class Archive>
+		inline void load_construct_data(
+				Archive & ar, NoisyMatrix * t, const unsigned int file_version
+		){
+			// retrieve data from archive required to construct new instance
+			size_t nx;	ar & nx;
+			size_t ny;  ar & ny;
+
+			// invoke inplace constructor to initialize instance of my_class
+			::new(t)NoisyMatrix(nx, ny);
+		}
+	}} // namespace ...
+#endif
+
 
 #endif /* NoisyMatrix_hpp */
