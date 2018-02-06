@@ -111,3 +111,9 @@ const void* TaskResults::SerializeExtraData()const {
 void TaskResults::DeSerializeExtraData(void* data, unsigned int length) {
     return;
 }
+
+// ------------------ //
+// Boost::Serialization
+#ifdef MPI_SUPPORT
+BOOST_CLASS_EXPORT_IMPLEMENT(TaskResults)
+#endif

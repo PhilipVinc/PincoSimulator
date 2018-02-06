@@ -153,6 +153,7 @@ set(GPU_SOURCE_FILES
 
 set(MPI_SOURCE_FILES
         src/Libraries/eigen_boost_serialization.hpp)
+        src/Libraries/eigen_boost_serialization.hpp src/Base/MPIManager/BoostSerializationArchiveFormats.hpp)
 
 
 if (COMPILE_GPU)

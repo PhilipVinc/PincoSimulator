@@ -17,6 +17,13 @@
 #include <vector>
 #include <cstdio>
 
+#ifdef MPI_SUPPORT
+#include "../Libraries/eigen_boost_serialization.hpp"
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/export.hpp>
+
+#endif
 
 
 class TaskResults : public TaskData
@@ -60,7 +67,7 @@ protected:
 private:
 
     // Datasets, and related informations.
-    std::vector<void*> datasets;
+    std::vector<void*> datasets; /*WARNING: Should not be serialized*/
     std::vector<size_t> datasetByteSizes;
     std::vector<size_t> datasetElementSize;
     std::vector<size_t> datasetFormat;
@@ -68,7 +75,58 @@ private:
     // Dimensionality data. Required when writing register files.
     std::vector<size_t> dimensionsOfDatasets;
     std::vector<size_t> dimensionalityData;
+
+#ifdef MPI_SUPPORT
+    friend class boost::serialization::access;
+    template<class Archive> void save(Archive & ar, const unsigned int version)
+    {
+        ar & computation_speed;
+        ar & numberOfDatasets;
+        ar & namesOfDatasets;
+        ar & id;
+        ar & datasetByteSizes;
+        ar & datasetElementSize;
+        ar & datasetFormat;
+        ar & dimensionsOfDatasets;
+        ar & dimensionalityData;
+        ar & datasets;
+    }
+
+    template<class Archive> void load(Archive & ar, const unsigned int version)
+    {
+        ar & computation_speed;
+        ar & numberOfDatasets;
+        ar & namesOfDatasets;
+        ar & id;
+        ar & datasetByteSizes;
+        ar & datasetElementSize;
+        ar & datasetFormat;
+        ar & dimensionsOfDatasets;
+        ar & dimensionalityData;
+        ar & datasets;
+    }
+
+    template<class Archive>
+    void serializeLocalData(Archive & ar, const unsigned int version)
+    {
+        ar & computation_speed;
+        ar & numberOfDatasets;
+        ar & namesOfDatasets;
+        ar & id;
+        ar & datasetByteSizes;
+        ar & datasetElementSize;
+        ar & datasetFormat;
+        ar & dimensionsOfDatasets;
+        ar & dimensionalityData;
+        ar & datasets;
+    }
+
+#endif
 };
+
+#ifdef MPI_SUPPORT
+BOOST_CLASS_EXPORT_KEY2(TaskResults, "TaskResults")
+#endif
 
 typedef Base::TFactory<std::string, TaskResults, const size_t, const std::string*> ResultsFactory;
 

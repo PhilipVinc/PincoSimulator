@@ -11,6 +11,10 @@
 #include "Base/NoisyMatrix.hpp"
 #include "TWMCTaskData.hpp"
 
+#ifdef MPI_SUPPORT
+BOOST_CLASS_EXPORT_IMPLEMENT(TWMCResults)
+#endif
+
 
 TWMCResults::TWMCResults(const TWMCTaskData* _taskData) :
 		TWMCResults(_taskData->systemData->nx, _taskData->systemData->ny,

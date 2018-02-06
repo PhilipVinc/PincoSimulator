@@ -16,6 +16,11 @@
 
 class TWMCTaskData;
 
+#ifdef MPI_SUPPORT
+#include "../Base/MPIManager/BoostSerializationArchiveFormats.hpp"
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/export.hpp>
+#endif
 
 class TWMCResults : public TaskResults
 {
@@ -52,8 +57,66 @@ protected:
 
 
 private:
+#ifdef MPI_SUPPORT
+    friend class boost::serialization::access;
+    template<class Archive> void serialize(Archive & ar, const unsigned int version)
+    {
+
+        ar & beta_t;
+        ar & complexMatrices;
+        ar & realMatrices;
+
+        ar & work_t;
+        ar & area_t;
+
+        ar & frames;
+        ar & extraDataMemory[0];
+        ar & extraDataMemory[1];
+
+        ar & boost::serialization::base_object<TaskResults>(*this);
+    };
+
 
 
 };
+
+#ifdef MPI_SUPPORT
+BOOST_CLASS_EXPORT_KEY2(TWMCResults, "TWMCResults")
+#endif
+
+#ifdef MPI_SUPPORT
+
+// Support for serializing NoisyMatrix, as it has no default constructor
+namespace boost {
+    namespace serialization {
+        template<class Archive>
+        inline void save_construct_data(
+                Archive & ar, const TWMCResults * t, const unsigned int file_version
+        ){
+            // save data required to construct instance
+            ar & t->nx;
+            ar & t->ny;
+            ar & t->frames;
+            ar & t->cellSz;
+        }
+
+        template<class Archive>
+        inline void load_construct_data(
+                Archive & ar, TWMCResults * t, const unsigned int file_version
+        ){
+            // retrieve data from archive required to construct new instance
+            size_t nx;	ar & nx;
+            size_t ny;  ar & ny;
+            size_t frames; ar & frames;
+            size_t cellSz; ar & cellSz;
+
+            // invoke inplace constructor to initialize instance of my_class
+            ::new(t)TWMCResults(nx, ny, frames, cellSz);
+        }
+    }} // namespace ...
+#endif
+
+
+
 
 #endif /* TWMCResults_hpp */
