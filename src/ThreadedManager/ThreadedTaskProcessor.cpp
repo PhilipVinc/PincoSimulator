@@ -16,12 +16,12 @@
 #include <numeric>
 
 
-ThreadedTaskProcessor::ThreadedTaskProcessor(const Settings* settings, std::string solverName) :
-		TaskProcessor(settings, solverName)
+ThreadedTaskProcessor::ThreadedTaskProcessor(std::string solverName, int _processes, int _max_processes) :
+		TaskProcessor(solverName)
 {
 	size_t n = std::thread::hardware_concurrency();
 	size_t nset = 0;
-	int ntmp = settings->get<int>("processes", -1);
+	int ntmp = _processes;
 	if (ntmp == -1)
 		nset = 1000;
 	else
@@ -34,9 +34,9 @@ ThreadedTaskProcessor::ThreadedTaskProcessor(const Settings* settings, std::stri
     nset = nset == 0? 20 : nset;
     nThreads = (n == 0 ? 20 : std::min(n, nset) );
 #endif
-	maxProcesses = settings->get<size_t>("max_processes");
+	maxProcesses = _max_processes;
 	if (maxProcesses == 0)
-		maxProcesses = 3*n;
+		maxProcesses = 4*n;
 }
 
 ThreadedTaskProcessor::~ThreadedTaskProcessor()

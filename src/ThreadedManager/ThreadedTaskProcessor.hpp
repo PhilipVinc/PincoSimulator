@@ -21,7 +21,7 @@ class WorkerThread;
 class ThreadedTaskProcessor : public TaskProcessor
 {
 public:
-    ThreadedTaskProcessor(const Settings* settings, std::string solverName);
+	ThreadedTaskProcessor(std::string solverName, int _processes, int _max_processes = 0);
     virtual ~ThreadedTaskProcessor();
 
     void Setup();

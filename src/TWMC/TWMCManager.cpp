@@ -49,7 +49,9 @@ void TWMCManager::Setup() {
     _dataStore = new PincoFormatDataStore(settings, settings->GetRootFolder());
 
 	_saver = new ResultsSaver(settings, _dataStore);
-	_processor = new ThreadedTaskProcessor(settings, solverName);
+	_processor = new ThreadedTaskProcessor(solverName,
+                                           settings->get<int>("processes", -1),
+                                           settings->get<int>("max_processes", -1));
 
 	_processor->SetConsumer(_saver);
 	_processor->Setup();
@@ -76,7 +78,7 @@ void TWMCManager::ManagerLoop() {
 		tmp->initialCondition = TWMCTaskData::InitialConditions ::ReadFromSettings;
 		tmp->rngSeed = seedGenerator();
 		tasks[i] = tmp;
-	}
+    }
 
     // Time
     chrono::system_clock::time_point startTime = chrono::system_clock::now();

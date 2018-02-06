@@ -4,8 +4,8 @@
 
 #include "TaskProcessor.hpp"
 
-TaskProcessor::TaskProcessor(const Settings *settings, std::string solverName)  :
-		_settings(settings), _solverName(solverName)
+TaskProcessor::TaskProcessor(std::string solverName)  :
+		_solverName(solverName)
 {
 
 }

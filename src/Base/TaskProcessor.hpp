@@ -20,7 +20,7 @@ class Solver;
 class TaskProcessor : public ITaskConsumer
 {
 public:
-    TaskProcessor(const Settings* settings, std::string solverName);
+	TaskProcessor(std::string solverName);
     //~TaskProcessor();
 
 	virtual void Update() = 0;
@@ -28,7 +28,6 @@ public:
 	void SetConsumer(IResultConsumer* consumer);
 	// Missing: some way to feed forward the results to the
 protected:
-    const Settings* _settings;
     const std::string _solverName;
 
 	IResultConsumer* _consumer;
