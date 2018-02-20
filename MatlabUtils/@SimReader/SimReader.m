@@ -32,11 +32,14 @@ classdef (Abstract) SimReader < handle
         chunkNumbers;
         chunksToRead;
         chunkData;
+        chunkTrajN;
 
         varTypes;
         varN;
 
         keepInMemory = false;
+        forceAnalysis = false;
+        trajsToKeep = 0;
     end
     
     properties (Access = protected, Constant=true)
@@ -66,6 +69,8 @@ classdef (Abstract) SimReader < handle
             p.KeepUnmatched = true;
             addRequired(p,'simPath', @isstr);
             addParameter(p,'SaveTrajectories', false, @islogical);
+            addParameter(p,'Trajectories', 0, @isnumeric);
+            addParameter(p,'Analyze', false, @islogical);
             parse(p, simPath, varargin{:});
             pars=p.Results;
             
@@ -81,6 +86,14 @@ classdef (Abstract) SimReader < handle
             
             obj.simPath = pars.simPath;
             obj.keepInMemory = pars.SaveTrajectories;
+            obj.trajsToKeep = pars.Trajectories;
+            if (obj.keepInMemory && obj.trajsToKeep == 0)
+                obj.trajsToKeep = intmax;
+            elseif (~obj.keepInMemory && obj.trajsToKeep ~= 0)
+                obj.keepInMemory = true;
+            end
+            
+            obj.forceAnalysis = pars.Analyze;
             obj.params = [];
             
             obj.magicSignature = [137; 80; 78; 67; 13; 10; 26; 10];
@@ -112,6 +125,7 @@ classdef (Abstract) SimReader < handle
             obj.ReadDatFiles();
             
             obj.chunkData = cell(1, length(obj.chunkNumbers));
+            obj.chunkTrajN = zeros(1, length(obj.chunkNumbers));
             for i=1:length(obj.chunkNumbers)
                 obj.ReadAllChunk(i);
             end
@@ -143,7 +157,7 @@ classdef (Abstract) SimReader < handle
         output = ReadSimulationRegister(obj);
         output = ReadIniFile(obj);
         output = ReadTrajectoriesInRegister( obj );
-        output = ReadAllChunk( obj, chunkId );
+        nTrajsRead = ReadAllChunk( obj, chunkId, nMaxTrajsToLoad );
         output = MergeChunksData( obj );
         output = ReadDatFiles( obj );
         output = AverageMergeChunks( obj );
@@ -152,6 +166,8 @@ classdef (Abstract) SimReader < handle
         output = EstimateAnalizedFolder(obj);
         output = ReadAnalizeStoreData( obj );
         
+        loaded = CheckLoadAnalyzedData(obj);
+
         res = ConvertInterleavedToComplex( obj, data, condition );
         
         function cp = ChunkIndexPath(obj, id)

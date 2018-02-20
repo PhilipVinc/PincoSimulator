@@ -4,7 +4,10 @@
 	"inputs":
 	[
 		{"name":"filename", "kind":"required", "type":"folderpath"},
-		{"name":"varargin", "kind":"optional", "multiplicity":"append"}
+		{"name":"varargin", "kind":"optional", "multiplicity":"append"},
+		{"name":"Analyze", "kind":"namevalue", "type":"logical", "multiplicity":"append"},
+		{"name":"StoreTrajectories", "kind":"namevalue", "type":"logical", "multiplicity":"append"},
+		{"name":"Trajectories", "kind":"namevalue", "type":"numeric", "multiplicity":"append"}
 	]
 },
 "LiebReader":
@@ -12,7 +15,10 @@
 	"inputs":
 	[
 		{"name":"filename", "kind":"required", "type":"folderpath"},
-		{"name":"varargin", "kind":"optional", "multiplicity":"append"}
+		{"name":"varargin", "kind":"optional", "multiplicity":"append"},
+		{"name":"Analyze", "kind":"namevalue", "type":"logical", "multiplicity":"append"},
+		{"name":"StoreTrajectories", "kind":"namevalue", "type":"logical", "multiplicity":"append"},
+		{"name":"Trajectories", "kind":"namevalue", "type":"numeric", "multiplicity":"append"}
 	]
 },
 "ThermoReader":
@@ -20,7 +26,10 @@
 	"inputs":
 	[
 		{"name":"filename", "kind":"required", "type":"folderpath"},
-		{"name":"varargin", "kind":"optional", "multiplicity":"append"}
+		{"name":"varargin", "kind":"optional", "multiplicity":"append"},
+		{"name":"Analyze", "kind":"namevalue", "type":"logical", "multiplicity":"append"},
+		{"name":"StoreTrajectories", "kind":"namevalue", "type":"logical", "multiplicity":"append"},
+		{"name":"Trajectories", "kind":"namevalue", "type":"numeric", "multiplicity":"append"}
 	]
 },
 "ThermoReader.ReadFolder":
@@ -28,7 +37,10 @@
 	"inputs":
 	[
 		{"name":"filename", "kind":"required", "type":"folderpath"},
-		{"name":"varargin", "kind":"optional", "multiplicity":"append"}
+		{"name":"varargin", "kind":"optional", "multiplicity":"append"},
+		{"name":"Analyze", "kind":"namevalue", "type":"logical", "multiplicity":"append"},
+		{"name":"StoreTrajectories", "kind":"namevalue", "type":"logical", "multiplicity":"append"},
+		{"name":"Trajectories", "kind":"namevalue", "type":"numeric", "multiplicity":"append"}
 	]
 },
 "LiebReader.ReadFolder":
@@ -36,7 +48,10 @@
 	"inputs":
 	[
 		{"name":"filename", "kind":"required", "type":"folderpath"},
-		{"name":"varargin", "kind":"optional", "multiplicity":"append"}
+		{"name":"varargin", "kind":"optional", "multiplicity":"append"},
+		{"name":"Analyze", "kind":"namevalue", "type":"logical", "multiplicity":"append"},
+		{"name":"StoreTrajectories", "kind":"namevalue", "type":"logical", "multiplicity":"append"},
+		{"name":"Trajectories", "kind":"namevalue", "type":"numeric", "multiplicity":"append"}
 	]
 },
 "TWMCReader.ReadFolder":
@@ -44,7 +59,10 @@
 	"inputs":
 	[
 		{"name":"filename", "kind":"required", "type":"folderpath"},
-		{"name":"varargin", "kind":"optional", "multiplicity":"append"}
+		{"name":"varargin", "kind":"optional", "multiplicity":"append"},
+		{"name":"Analyze", "kind":"namevalue", "type":"logical", "multiplicity":"append"},
+		{"name":"StoreTrajectories", "kind":"namevalue", "type":"logical", "multiplicity":"append"},
+		{"name":"Trajectories", "kind":"namevalue", "type":"numeric", "multiplicity":"append"}
 	]
 },
 "ThermoReader.AddTrajectories":

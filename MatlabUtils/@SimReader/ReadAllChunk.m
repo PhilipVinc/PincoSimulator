@@ -1,7 +1,14 @@
-function output = ReadAllChunk( obj, chunkId )
+function nTrajsRead = ReadAllChunk( obj, chunkId, maxTrajs )
 %READALLCHUNK Summary of this function goes here
 %   Detailed explanation goes here
     
+    if nargin < 3
+        maxTrajs = intmax;
+    end
+    if maxTrajs < 0
+        maxTrajs = intmax;
+    end
+
     % Read the index file
     iF = fopen(obj.ChunkIndexPath(chunkId), 'r');
     entrySize = 1+2*obj.varN;    
@@ -65,7 +72,7 @@ function output = ReadAllChunk( obj, chunkId )
     while (true)
         % Read the entry in the chunk index
         entryData = fread(iF, entrySize, 'uint64');
-        if isempty(entryData)
+        if (isempty(entryData) || kn == maxTrajs)
             break;
         end 
         kn = kn+1;
@@ -83,7 +90,6 @@ function output = ReadAllChunk( obj, chunkId )
             k_traj = reshape(trajData, [nxy(i), trajLengths(i)]);
             data{i}(:,:,kn) = k_traj;
         end
-        
     end            
 
     
@@ -91,9 +97,8 @@ function output = ReadAllChunk( obj, chunkId )
         fclose(dF{i});
     end
     fclose(iF);
-    
-    obj.params.n_traj = kn;
+    obj.chunkTrajN(chunkId) = kn;
     obj.chunkData{chunkId} = data;
-    output = 'ok';
+    nTrajsRead = kn;
 end
 

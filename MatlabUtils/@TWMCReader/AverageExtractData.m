@@ -49,7 +49,7 @@ function res = AverageExtractData( obj, data, params )
         res.ave.(nameStd) = std(varData,0,3);
         % Workaround to no license of signal processing toolbox
         % res.ave.(nameAvesq) = (rssq(varData,3).^2)./n_traces;
-        res.ave.(nameAvesq) = sum(varData.^2, 3)./n_traces
+        res.ave.(nameAvesq) = sum(varData.^2, 3)./n_traces;
     end
 
     
@@ -58,12 +58,21 @@ function res = AverageExtractData( obj, data, params )
     n_t = data{trajId}.*conj(data{trajId}) -1/2;
     % Average across traces and cavities.
     n_i_t = squeeze(mean(n_t,3));
+    n_i_t_ave = squeeze(mean(n_t,3));
+    n_i_t_avesq = squeeze(mean(n_t.^2, 3));
+
     n_a_t=squeeze(mean(mean(n_t,3),1));
+    n_a_t_ave =squeeze(mean(mean(n_t,3),1));
+    n_a_t_avesq =squeeze(mean(mean(n_t.^2,3),1));
+    n_a_t_normAve = size(n_t, 1);
+    
     % Compute the standard deviation (Spread) of n(t) for every cavity.
-    std_n_t = std(n_t,0,3);
-    %n_t_avesq = (rssq(n_t,3).^2)./n_traces;
+    % n_i_t_std = std(n_t,0,3);
+    % std_n_i_t=n_i_t_std;
+    % n_a_t_std = 
+    % n_t_avesq = (rssq(n_t,3).^2)./n_traces;
     % Error for the averaged cavities.
-    std_n_a_t = sqrt(sum(std_n_t.^2,1))/nx;
+    % std_n_a_t = sqrt(sum(std_n_i_t.^2,1))/nx;
     
     % G_2(0)
     tmp=mean(mean(abs(data{trajId}).^4,3),1);
@@ -195,16 +204,18 @@ function res = AverageExtractData( obj, data, params )
     %%%-----------------------------------------------------------------%%%
     %%%                           Save back                             %%%
     %%%-----------------------------------------------------------------%%%
-    res.ave.n_i_t = n_i_t;
-    res.ave.n_t = n_a_t;  %res.ave.n_t_std = std_n_a_t;
+    res.ave.n_i_t = n_i_t;  res.ave.n_i_t_avesq = n_i_t_avesq; 
+
+    res.ave.n_t = n_a_t; res.ave.n_t_avesq = n_a_t_avesq; res.ave.n_t_normAve = n_a_t_normAve;
+
     res.ave.g2_t = g2_t;  %res.ave.g2_t_std = g2_tErr;
     res.ave.nk0_t = nk0_t;  %res.ave.nk0_t_std = nk0_tErr;
     res.ave.nk_xy_t = n_kxy_t;
 
     % And the cut at the last 3/4 of times, averaged, for the steady state.
     res.ave.n_end = mean(n_a_t(t_cut:end));
-    res.ave.std_n_end = sqrt(sum(std_n_a_t(t_cut:end).^2))/( ...
-        t_length-t_cut);
+    %res.ave.std_n_end = sqrt(sum(std_n_a_t(t_cut:end).^2))/( ...
+    %    t_length-t_cut);
     res.ave.g2_end = mean(g2_t(t_cut:end));
     res.ave.g2_endErr = sqrt(sum(g2_tErr(t_cut:end).^2))/( ...
         t_length-t_cut);

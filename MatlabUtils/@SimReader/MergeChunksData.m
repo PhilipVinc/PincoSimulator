@@ -14,6 +14,9 @@ function output = MergeChunksData( obj )
     
     chunkLenghts = zeros(1, nChunks);
     for i=1:nChunks
+        if isempty(obj.chunkData{i})
+            continue;
+        end
         chuSiz = size(obj.chunkData{i}{1});
         chunkLenghts(i) = chuSiz(end);
     end
@@ -34,6 +37,9 @@ function output = MergeChunksData( obj )
         
         k_t=1;
         for j = 1:nChunks
+            if isempty(obj.chunkData{j})
+                continue;
+            end
             obj.data{i}(:,:,k_t:(k_t+chunkLenghts(j)-1)) = obj.chunkData{j}{i};
             k_t = k_t + chunkLenghts(j);
             
