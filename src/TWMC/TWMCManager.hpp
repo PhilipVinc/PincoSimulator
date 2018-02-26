@@ -12,8 +12,10 @@
 
 class DataStore;
 class ThreadedTaskProcessor;
+class TaskProcessor;
 class ResultsSaver;
 class TWMCSystemData;
+class TWMCResults;
 
 class TWMCManager : public Manager {
 
@@ -28,8 +30,9 @@ protected:
 private:
 	DataStore * _dataStore;
 	ResultsSaver* _saver;
-	ThreadedTaskProcessor* _processor;
+	TaskProcessor* _processor;
 
+	TWMCResults* rs;
     TWMCSystemData* _sysData;
     std::string solverName;
 
@@ -38,6 +41,9 @@ private:
 };
 
 static ManagerFactory::Registrator<TWMCManager> TWMCBaseSolver= ManagerFactory::Registrator<TWMCManager>("TWMC");
+
+// Retrocompatibility fix
+static ManagerFactory::Registrator<TWMCManager> TWMCBaseSolverBackup= ManagerFactory::Registrator<TWMCManager>("TWMCThread");
 
 
 #endif //SIMULATOR_TWMCMANAGER_HPP

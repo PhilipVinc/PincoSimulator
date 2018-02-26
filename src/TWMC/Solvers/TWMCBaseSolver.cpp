@@ -100,7 +100,6 @@ std::vector<TaskResults*> TWMCBaseSolver::Compute(const std::vector<TaskData *> 
 	for (size_t i =0; i < tasks.size(); i++ )
 	{
 		TWMCTaskData* task = static_cast<TWMCTaskData*>(tasks[i]);
-
 		// Check if the system is always the same
 		if (task->systemData != lastSharedSystemData)
 		{

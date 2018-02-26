@@ -14,3 +14,10 @@ Manager::Manager(const Settings* _settings)
 {
     settings = _settings;
 }
+
+#ifdef MPI_SUPPORT
+void Manager::SetMPICommunicator(mpi::communicator* _comm)
+{
+    comm = _comm;
+}
+#endif

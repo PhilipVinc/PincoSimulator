@@ -59,7 +59,7 @@ protected:
 private:
 #ifdef MPI_SUPPORT
     friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int version)
+/*     template<class Archive> void serialize(Archive & ar, const unsigned int version)
     {
 
         ar & beta_t;
@@ -75,13 +75,53 @@ private:
 
         ar & boost::serialization::base_object<TaskResults>(*this);
     };
+*/
+    /*template<class Archive> void save(Archive & ar, const unsigned int version)
+     {
+         ar & beta_t;
+         ar & complexMatrices;
+         ar & realMatrices;
 
+         ar & work_t;
+         ar & area_t;
+
+         ar & nx;
+         ar & ny;
+         ar & cellSz;
+         ar & nxy;
+         ar & frames;
+         ar & extraDataMemory[0];
+         ar & extraDataMemory[1];
+
+         ar & boost::serialization::base_object<TaskResults>(*this);
+     }
+
+     template<class Archive> void load(Archive & ar, const unsigned int version)
+     {
+         ar & beta_t;
+         ar & complexMatrices;
+         ar & realMatrices;
+
+         ar & work_t;
+         ar & area_t;
+
+         ar & nx;
+         ar & ny;
+         ar & cellSz;
+         ar & nxy;
+         ar & frames;
+         ar & extraDataMemory[0];
+         ar & extraDataMemory[1];
+
+         ar & boost::serialization::base_object<TaskResults>(*this);
+     }*/
+#endif
 
 
 };
 
 #ifdef MPI_SUPPORT
-BOOST_CLASS_EXPORT_KEY2(TWMCResults, "TWMCResults")
+//BOOST_CLASS_EXPORT_KEY2(TWMCResults, "TWMCResults")
 #endif
 
 #ifdef MPI_SUPPORT

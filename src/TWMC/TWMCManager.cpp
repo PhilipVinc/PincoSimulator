@@ -1,6 +1,8 @@
 //
 // Created by Filippo Vicentini on 23/12/17.
 //
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 #include "TWMCManager.hpp"
 
@@ -17,19 +19,21 @@
 #include <vector>
 #include <chrono>
 
+
+#ifdef MPI_SUPPORT
+#include "Base/MPIManager/MPIProcessor.hpp"
+#endif
+
+
 TWMCManager::TWMCManager(const Settings *settings) : Manager(settings) {
-	Setup();
-}
-
-TWMCManager::~TWMCManager() {
-	delete _processor;
-	delete _saver;
-	delete _dataStore;
-}
-
-void TWMCManager::Setup() {
-	// Choose the solver
+    // Choose the solver
     _sysData = new TWMCSystemData(settings);
+    // TODO: Retrocompatibility fix
+    // If we are running old simulations, then PBC is sottointesa.
+    if (settings->get<string>("Manager") == "TWMCThread")
+    {
+        _sysData->PBC = true;
+    }
     if (_sysData->latticeName == "lieb")
         solverName = "TWMCLieb";
     else if (_sysData->PBC ) {
@@ -44,14 +48,57 @@ void TWMCManager::Setup() {
     }
 
     std::cout << "Using Solver: " << solverName << std::endl;
+
+}
+
+TWMCManager::~TWMCManager() {
+	delete _processor;
+	delete _saver;
+	delete _dataStore;
+}
+
+#ifdef MPI_SUPPORT
+#include <fstream>
+// include headers that implement a archive in simple text format
+
+#include "TWMCResults.hpp"
+#endif
+
+void TWMCManager::Setup() {
+    /*
+#ifdef MPI_SUPPORT
+    std::ofstream ofs("filename");
+    {
+        boost::archive::text_oarchive oa(ofs);
+        oa << _sysData;
+    }
+
+    delete _sysData;
+    {
+        std::ifstream ifs("filename");
+        boost::archive::text_iarchive ia(ifs);
+        ia >> _sysData;
+    }
+//#include "TWMCResults.hpp"
+//    rs = new TWMCResults(1,1,1,1);
+
+#endif*/
+
     seedGenerator = mt19937(settings->GlobalSeed());
 
     _dataStore = new PincoFormatDataStore(settings, settings->GetRootFolder());
 
 	_saver = new ResultsSaver(settings, _dataStore);
-	_processor = new ThreadedTaskProcessor(solverName,
+
+#ifdef MPI_SUPPORT
+    MPIProcessor* mpiManager = new MPIProcessor(solverName, 3, 3);
+    mpiManager->ProvideMPICommunicator(comm);
+    _processor = mpiManager;
+#else
+    _processor = new ThreadedTaskProcessor(solverName,
                                            settings->get<int>("processes", -1),
                                            settings->get<int>("max_processes", -1));
+#endif
 
 	_processor->SetConsumer(_saver);
 	_processor->Setup();
@@ -80,6 +127,8 @@ void TWMCManager::ManagerLoop() {
 		tasks[i] = tmp;
     }
 
+
+
     // Time
     chrono::system_clock::time_point startTime = chrono::system_clock::now();
     chrono::system_clock::time_point lastPrintTime = startTime;
@@ -88,7 +137,9 @@ void TWMCManager::ManagerLoop() {
     // -----end time
 
     _processor->EnqueueTasks(tasks);
-	while(_saver->savedItems < nTaskToEnqueue)
+    _processor->AllProducersHaveBeenTerminated();
+
+    while(_saver->savedItems < nTaskToEnqueue)
 	{
 		_processor->Update();
 		_saver->Update();
@@ -117,7 +168,5 @@ void TWMCManager::ManagerLoop() {
             lastPrintTime = now;
         }
 	}
-	_processor->AllProducersHaveBeenTerminated();
-
 
 }

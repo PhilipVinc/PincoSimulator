@@ -66,7 +66,21 @@ if (COMPILE_MPI)
     message("Enabling MPI Support")
     add_definitions(-DMPI_SUPPORT)
 
-    list(APPEND BOOST_PACKAGES serialization )
+    # Find the mpi implementation linker flags and libraries (this is not the best way
+    # because I should be changing the compiler...
+    execute_process(COMMAND mpic++ --showme:compile OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE mpi_compile_flags)
+    execute_process(COMMAND mpic++ --showme:link OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE mpi_linker_flags)
+    message("MPIC++ Compiler flags: ${mpi_compile_flags}")
+    message("MPIC++ Linker flags: ${mpi_linker_flags}")
+
+    # Append compile flags
+    set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} ${mpi_compile_flags} ")
+
+    # Append Linker flags (I could also set flags per-target...
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${mpi_linker_flags}")
+    #set_target_properties(sim PROPERTIES LINK_FLAGS "${mpi_linker_flags}")
+
+    list(APPEND BOOST_PACKAGES serialization mpi )
     message("${BOOST_PACKAGES}")
 
 endif (COMPILE_MPI)
@@ -103,7 +117,7 @@ message(found ${FFTW_LIBRARIES})
 
 
 
-set(LINKING SHARED)
+set(LINKING STATIC)
 
 # Src Folders
 include_directories(src)
@@ -152,7 +166,8 @@ set(GPU_SOURCE_FILES
         src/TWMC/Solvers/TWMCBaseGPU.cpp src/TWMC/Solvers/TWMCBaseGPU.hpp)
 
 set(MPI_SOURCE_FILES
-        src/Libraries/eigen_boost_serialization.hpp)
+        src/Base/MPIManager/MPINodeManager.cpp src/Base/MPIManager/MPINodeManager.hpp
+        src/Base/MPIManager/MPIProcessor.cpp src/Base/MPIManager/MPIProcessor.hpp
         src/Libraries/eigen_boost_serialization.hpp src/Base/MPIManager/BoostSerializationArchiveFormats.hpp)
 
 
@@ -166,7 +181,7 @@ endif(COMPILE_GPU)
 if (COMPILE_MPI)
     # Append MPI Source FIles
     message("Adding MPI Files")
-    set(SOURCE_FILES ${SOURCE_FILES} ${MPI_SOURCE_FILES})
+    set(SOURCE_FILES ${SOURCE_FILES} ${MPI_SOURCE_FILES} src/TWMC/TWMCSerializators.hpp src/TWMC/TWMCSerializators.cpp src/Base/MPIManager/MPIPincoTags.hpp)
 endif(COMPILE_MPI)
 
 add_executable(sim ${SOURCE_FILES})

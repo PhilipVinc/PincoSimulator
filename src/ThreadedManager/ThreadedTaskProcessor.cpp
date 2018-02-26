@@ -111,7 +111,6 @@ void ThreadedTaskProcessor::Update()
 		cout << "Deactivating thread #" << th_id << endl;
 		JoinThread(th_id);
 	}
-
 }
 
 // Take a task from dispatchedTasks to execute it (called by a worker)

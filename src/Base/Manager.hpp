@@ -14,6 +14,12 @@
 #include <stdio.h>
 #include <string>
 
+#ifdef MPI_SUPPORT
+#include <boost/mpi/communicator.hpp>
+namespace mpi = boost::mpi;
+#endif
+
+
 class Settings;
 class DataSaver;
 class TaskData;
@@ -26,13 +32,22 @@ public:
     Manager(const Settings* settings);
     virtual ~Manager() {};
 
+    virtual void Setup() {};
     virtual void ManagerLoop() = 0;
 
 protected:
     const Settings* settings;
 
 private:
-    
+
+#ifdef MPI_SUPPORT
+public:
+    void SetMPICommunicator(mpi::communicator* _comm);
+protected:
+    mpi::communicator* comm;
+#endif
+
+
 };
 
 typedef Base::TFactory<std::string, Manager, Settings*> ManagerFactory;

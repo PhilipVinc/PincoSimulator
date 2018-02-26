@@ -12,7 +12,7 @@
 #include "TWMCTaskData.hpp"
 
 #ifdef MPI_SUPPORT
-BOOST_CLASS_EXPORT_IMPLEMENT(TWMCResults)
+//BOOST_CLASS_EXPORT_IMPLEMENT(TWMCResults)
 #endif
 
 

@@ -36,7 +36,6 @@ public:
 
     size_t NumberOfDataSets() const;
     const std::vector<std::string>& NamesOfDatasets() const;
-
     const std::string NameOfDataset(size_t datasetId) const;
     size_t DataSetSize(size_t id) const;
     size_t ElementsInDataSet(size_t id) const;
@@ -51,13 +50,14 @@ public:
     void AddResult(std::string name, void* memAddr, size_t byteSize, size_t elSize,
                    size_t format, std::vector<size_t> dimensions);
 
-
     // Serialization and deserialization
     const virtual unsigned int SerializingExtraDataOffset()const;
     const virtual void* SerializeExtraData()const;
     virtual void DeSerializeExtraData(void* data, unsigned int length);
-    
+
+    // Properties
     float computation_speed = 0;
+
 
 protected:
     size_t numberOfDatasets = 0;

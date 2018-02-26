@@ -24,8 +24,8 @@ public:
 	ThreadedTaskProcessor(std::string solverName, int _processes, int _max_processes = 0);
     virtual ~ThreadedTaskProcessor();
 
-    void Setup();
-	virtual void Update() final ;
+    virtual void Setup() final;
+	virtual void Update() final;
 
 
 	// -------- Called From Workers ---------- //
@@ -41,7 +41,7 @@ public:
     // Method called by a thread to inform the manager that he is now dead
     // and can be joined.
     void ReportThreadTermination(size_t th_id);
-	virtual void AllProducersHaveBeenTerminated();
+	virtual void AllProducersHaveBeenTerminated() final;
 
     void Terminate();
 	void TerminateWhenDone();
@@ -105,8 +105,8 @@ private:
 
 public:
 	void ReportAverageSpeed(float speed);
-	size_t NumberOfCompletedTasks();
-	float Progress();
+	virtual size_t NumberOfCompletedTasks() final;
+	virtual float Progress() final;
 
 };
 

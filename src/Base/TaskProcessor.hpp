@@ -21,12 +21,19 @@ class TaskProcessor : public ITaskConsumer
 {
 public:
 	TaskProcessor(std::string solverName);
-    //~TaskProcessor();
+    virtual ~TaskProcessor() {};
 
+	virtual void Setup() = 0;
 	virtual void Update() = 0;
 
+	virtual void AllProducersHaveBeenTerminated() = 0;
 	void SetConsumer(IResultConsumer* consumer);
 	// Missing: some way to feed forward the results to the
+
+	virtual size_t NumberOfCompletedTasks() {return 0;};
+	virtual float Progress() { return 0;};
+
+
 protected:
     const std::string _solverName;
 

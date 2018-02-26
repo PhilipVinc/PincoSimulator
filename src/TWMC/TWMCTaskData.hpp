@@ -12,13 +12,14 @@
 #ifdef MPI_SUPPORT
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/export.hpp>
-
 #endif
 
 
 class TWMCTaskData : public TaskData
 {
 public:
+
+	TWMCTaskData();
 	TWMCSystemData* systemData;
 
 	float_p t_start;
@@ -35,7 +36,8 @@ protected:
 private:
 #ifdef MPI_SUPPORT
 	friend class boost::serialization::access;
-	template<class Archive> void serialize(Archive & ar, const unsigned int version)
+	//template<class Archive> void serialize(Archive & ar, const unsigned int version);
+    /*
 	{
 		ar & boost::serialization::base_object<TaskData>(*this);
 		ar & t_start;
@@ -43,13 +45,26 @@ private:
 		ar & initialCondition;
 		ar & rngSeed;
 		ar & systemData;
-	}
+	}*/
 #endif
 
 };
 
 #ifdef MPI_SUPPORT
-    BOOST_CLASS_EXPORT_KEY2(TWMCTaskData, "TWMCTaskData")
+//    BOOST_CLASS_EXPORT_KEY2(TWMCTaskData, "TWMCTaskData")
+//namespace boost {
+//	namespace serialization {
+//		template<>
+//		struct guid_defined<TWMCTaskData> : boost::mpl::true_ {
+//		};
+//
+//		template<>
+//		inline const char *guid<TWMCTaskData>() {
+//			return "TWMCTaskData";
+//		}
+//	} /* serialization */
+//} /* boost */
+///**/
 #endif
 
 

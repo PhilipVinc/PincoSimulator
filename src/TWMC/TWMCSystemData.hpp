@@ -19,7 +19,8 @@
 
 
 class Settings;
-class NoisyMatrix;
+//class NoisyMatrix;
+#include "Base/NoisyMatrix.hpp" //TODO Remove include
 
 
 using namespace std;
@@ -73,9 +74,11 @@ public:
 
 private:
 #ifdef MPI_SUPPORT
-	friend class boost::serialization::access;
-	template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
+	//friend class boost::serialization::access;
+
+	//template<class Archive>
+    //void serialize(Archive & ar, const unsigned int version);
+    /*
     {
         ar & latticeName;
         ar & nx;
@@ -105,7 +108,7 @@ private:
         ar & frame_steps;
         ar & PBC;
         ar & dimension;
-    }
+    }*/
 #endif
 
 };
