@@ -21,6 +21,7 @@ function output = AverageMergeChunks( obj )
 
     %Remove the std quantities from the averaged ones
     stdQuanNames = quanNames(endsWith(quanNames, '_std'));
+    endQuanNames = quanNames(endsWith(quanNames, '_end'));
     quanNames(endsWith(quanNames, '_std')) = [];
 
     aveSqValNames = quanNames(endsWith(quanNames, '_avesq'));
@@ -104,7 +105,28 @@ function output = AverageMergeChunks( obj )
         rmfield(averaged, val);
         rmfield(averaged, strrep(val, '_avesq', '_normAve'));
     end    
-    
+
+    %% calc errors for _end values
+    for jj=1:length(endQuanNames)
+        val = endQuanNames{jj};
+        tVal = strrep(val, '_end', '_t');
+        valErr = strrep(val, '_end', '_end_err');
+        if isfield(averaged, tVal)
+            data = averaged.(tVal);
+            sz = size(data);
+            if length(sz) == 1
+                averaged.(val) = mean(data(params.t_cut:end));
+                averaged.(valErr) = std(data(params.t_cut:end));
+            elseif length(sz) == 2
+                averaged.(val) = mean(data(:,params.t_cut:end));
+                averaged.(valErr) = std(data(:,params.t_cut:end));
+            elseif length(sz) == 3
+                averaged.(val) = mean(data(:,:,params.t_cut:end));
+                averaged.(valErr) = std(data(:,:,params.t_cut:end));
+            end
+        end
+    end
+
     aveDataPath = fullfile(obj.averagedPath, obj.fileAveragedFileName);
     fprintf(['Done!\n\tSaving...']);
     save(aveDataPath,'averaged', 'params');

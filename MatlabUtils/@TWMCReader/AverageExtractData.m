@@ -32,7 +32,7 @@ function res = AverageExtractData( obj, data, params )
     n_traces = size(data{trajId},3);
     t_cut = floor(cutFrac*t_length);
     cutted_frames = t_length-t_cut+1;
-    
+    res.params.t_cut = t_cut;
     
     % Compute the average and std of the Random (Disordered) Matrices
     for i=1:length(randomVarNames)
@@ -205,15 +205,14 @@ function res = AverageExtractData( obj, data, params )
     %%%                           Save back                             %%%
     %%%-----------------------------------------------------------------%%%
     res.ave.n_i_t = n_i_t;  res.ave.n_i_t_avesq = n_i_t_avesq; 
-
     res.ave.n_t = n_a_t; res.ave.n_t_avesq = n_a_t_avesq; res.ave.n_t_normAve = n_a_t_normAve;
+    res.ave.n_end = mean(n_a_t(t_cut:end));
 
     res.ave.g2_t = g2_t;  %res.ave.g2_t_std = g2_tErr;
     res.ave.nk0_t = nk0_t;  %res.ave.nk0_t_std = nk0_tErr;
     res.ave.nk_xy_t = n_kxy_t;
 
     % And the cut at the last 3/4 of times, averaged, for the steady state.
-    res.ave.n_end = mean(n_a_t(t_cut:end));
     %res.ave.std_n_end = sqrt(sum(std_n_a_t(t_cut:end).^2))/( ...
     %    t_length-t_cut);
     res.ave.g2_end = mean(g2_t(t_cut:end));
