@@ -151,4 +151,3 @@ vector<vector<float_p>> TWMCSystemData::GetStoredVariableEvolution(const NoisyMa
     }
     return result;
 }
-
