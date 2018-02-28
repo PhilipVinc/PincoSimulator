@@ -1,17 +1,22 @@
 //
 // Created by Filippo Vicentini on 30/01/18.
 //
-#include <sstream>
-#include <boost/archive/binary_oarchive.hpp>
 
 #include "MPINodeManager.hpp"
-#include "../Settings.hpp"
-#include "../FileFormats/DataStore.hpp"
+
 #include "MPIPincoTags.hpp"
-#include <iostream>
+
+#include "../FileFormats/DataStore.hpp"
 #include "../../ThreadedManager/ThreadedTaskProcessor.hpp"
+
+#include <sstream>
 #include <fstream>
+#include <iostream>
+#include <boost/archive/binary_oarchive.hpp>
+
+
 using namespace std;
+
 
 MPINodeManager::MPINodeManager(mpi::communicator* _comm) : comm(_comm)  {
 
@@ -72,11 +77,6 @@ void MPINodeManager::ManagerLoop() {
                 cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop(). - Has received " <<
                       commRecvBuffers[i]->size()<<" tasks. Enqueing..."  << endl;
 
-                /*std::ofstream ofs("#"+to_string(comm->rank()) + "data");
-                {
-                    boost::archive::text_oarchive oa(ofs);
-                    oa << *commRecvBuffers[i];
-                }*/
                 receivedTasks += commRecvBuffers[i]->size();
 
                 _processor->EnqueueTasks(*commRecvBuffers[i]);
@@ -91,63 +91,67 @@ void MPINodeManager::ManagerLoop() {
         // 3 - Dequeue Results that were provided by the Solvers and send them
         size_t dequeuedResults = 0;
         size_t IDEALSIZE = 102;
-        if (commSendBuffers.size() == 0)
+        if (commSendRequests.size() == 0)
              dequeuedResults = enqueuedTasks.try_dequeue_bulk( tmpTasksToSend.begin() + tasksInBuffer,
                                                                IDEALSIZE - tasksInBuffer);
-        cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop(). - Dequeued " << dequeuedResults << " results." << endl;
         if (dequeuedResults != 0)
         {
             tasksInBuffer += dequeuedResults;
+            totalDequeued += dequeuedResults;
 
             if ( tasksInBuffer == IDEALSIZE || tasksInBuffer >= receivedTasks - sentResults )
             {
+                cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop(). - sending " << tasksInBuffer << " results." << endl;
 
                 std::vector<TaskResults*> *data = new std::vector<TaskResults*>(tmpTasksToSend.begin(),
                                                                                 tmpTasksToSend.begin()+tasksInBuffer);
+                sentResults += tasksInBuffer;
+
+                // Encode the data in a buffer and free the memory
+                auto t1 = MPI_Wtime();
+                std::ostringstream *oss = new std::ostringstream();
+                {
+                    boost::archive::binary_oarchive oa(*oss);
+                    oa << data;
+                }
+                for (int j=0; j< data->size(); j++)
+                {
+                    delete (*data)[j];
+                }
+                delete data;
+
+                auto t2 = MPI_Wtime();
                 tasksInBuffer = 0;
-                sentResults += dequeuedResults;
 
-                std::ostringstream oss;
-                boost::archive::binary_oarchive oa(oss);
-                oa << data;
-                std::cout << "The number of bytes taken for an archive is " << oss.str().size() << "\n";
+                commSendBuffers.push_back(oss);
+                MPI_Request *iReq = new MPI_Request;
+                commSendRequests.push_back(iReq);
 
 
-                commSendBuffers.push_back(data);
-                commSendRequests.push_back(comm->isend(MASTER_RANK,TASKRESULTS_VECTOR_MESSAGE_TAG,*data));
-
-
-                std::ofstream ofs("Result"+to_string(commSendRequests.size()));
-                boost::archive::text_oarchive ob(ofs);
-                ob << *data ;
+                MPI_Isend(oss->str().c_str(), oss->str().size(),
+                          MPI_BYTE, MASTER_RANK, TASKRESULTS_VECTOR_MESSAGE_TAG,
+                          *comm, iReq);
             }
 
         }
 
-        // 3 - Test Async receive requests from master
-        for (int i = 0; i < commSendRequests.size(); i++)
+        // 3 - Test Async result send requests to master
+        for (int i=0; i < commSendRequests.size(); i++)
         {
-            cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop() - Testing send req #" << i << endl;
-            auto res = commSendRequests[i].test();
-            if (res)
+            //cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop() - Testing send req #" << i << endl;
+            MPI_Status status; int done;
+            MPI_Test(commSendRequests[i], &done, &status);
+            if (done)
             {
-                cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop() - Has sent #" << i << endl;
-                auto data = *commSendBuffers[i];
-                //cout << "#" << comm->rank() << " - cleaning up " << data.size() << endl;
-                for (int j=0; j< data.size(); j++)
-                {
-                    //cout << "deleting res# "<< data[j]->GetId() << endl;
-                    delete data[j];
-                }
+                //cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop() - Has sent #" << i << endl;
+                delete commSendBuffers[i];
                 commSendBuffers.erase(commSendBuffers.begin()+i);
                 commSendRequests.erase(commSendRequests.begin()+i);
-                //cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop() - Has cleaned up #"<< i << endl;
                 i--;
             }
         }
 
         // 5 - Receive Miscellaneuous Messages
-        //while ( auto message = comm->iprobe())
         if (auto message = comm->iprobe())
         {
             auto msg = *message;
@@ -196,7 +200,7 @@ void MPINodeManager::ManagerLoop() {
             }
         }
 
-        sleep(1);
+        //usleep(1000);
     }
 }
 

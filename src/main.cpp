@@ -21,6 +21,7 @@ int main(int argc, char * argv[])
 #ifdef MPI_SUPPORT
     mpi::environment env(boost::mpi::threading::level::funneled);
     mpi::communicator world;
+
     std::cout << "I am process " << world.rank() << " of " << world.size()
               << " with comm #"<< &world << "."<< std::endl;
     char hostname[256];

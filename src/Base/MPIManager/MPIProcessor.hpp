@@ -10,7 +10,10 @@
 
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/communicator.hpp>
+
 #include <queue>
+
+
 namespace mpi = boost::mpi;
 
 
@@ -41,14 +44,21 @@ protected:
 
     mpi::communicator* comm;
 
+    // Nodes and their performance
+    std::vector<int> activeNodes;
     std::vector<int> nodeRank;
     std::vector<size_t> tasksSentToNode;
     std::vector<size_t> resultsReceivedFromNode;
-    std::vector<bool> recvListeningToNode;
+
+    // MPI Send TaskData elements
     std::vector<mpi::request> commSendRequests;
-    std::vector<mpi::request> commRecvRequests;
-    std::vector<std::vector<TaskResults*>*> commRecvBuffers;
     std::vector<std::vector<TaskData*>> commSendBuffers;
+
+    //MPI Receuve Buffers and flags
+    std::vector<bool> recvListeningToNode;
+    std::vector<char*> commRecvBuffers;
+    std::vector<size_t> commRecvBuffersSize;
+    std::vector<MPI_Request*> commRecvRequests;
 
     std::vector<mpi::request> miscSendReqs;
 

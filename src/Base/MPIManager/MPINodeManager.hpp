@@ -11,11 +11,14 @@
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/communicator.hpp>
 #include <string>
-namespace mpi = boost::mpi;
-
+#include <sstream>
 
 class Settings;
 class DataStore;
+
+
+namespace mpi = boost::mpi;
+
 
 class MPINodeManager : public IResultConsumer
 {
@@ -41,16 +44,17 @@ private:
 
     std::vector<TaskResults*> tmpTasksToSend;
     size_t tasksInBuffer = 0;
+    size_t totalDequeued = 0;
 
     bool terminate = false;
     bool quit = false;
 
     std::string _solverName;
 
-    std::vector<mpi::request> commSendRequests;
     std::vector<mpi::request> commRecvRequests;
     std::vector<std::vector<TaskData*>*> commRecvBuffers;
-    std::vector<std::vector<TaskResults*>*> commSendBuffers;
+    std::vector<std::ostringstream*> commSendBuffers;
+    std::vector<MPI_Request*> commSendRequests;
 
     std::vector<TaskData*> recvBuffer;
     bool receiving = false;

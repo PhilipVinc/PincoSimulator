@@ -19,7 +19,7 @@ void ResultsSaver::Update() {
 	for (size_t i = 0; dequeuedTasks != i; i++)
 	{
 		SaveData(tmpTasksToSave[i]);
-		delete tmpTasksToSave[i];
+        delete tmpTasksToSave[i];
 	}
 
 	if (dequeuedTasks == 0 && terminate == true) {

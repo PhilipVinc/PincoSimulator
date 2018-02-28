@@ -169,4 +169,11 @@ void TWMCManager::ManagerLoop() {
         }
 	}
 
+    auto now = chrono::system_clock::now();
+    chrono::system_clock::duration elapsed = now-startTime;
+    int deltaTc = chrono::duration_cast<chrono::seconds>(elapsed).count();
+
+    std::string msgString = string_format("Finished in %i seconds. ",  deltaTc);
+    cout << msgString << endl;
+
 }

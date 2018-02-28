@@ -4,26 +4,21 @@
 
 #include "MPIProcessor.hpp"
 
-#include <boost/mpi/environment.hpp>
-#include <boost/mpi/communicator.hpp>
+#include "MPIPincoTags.hpp"
+#include "TWMC/TWMCResults.hpp"
+
+// serialization archive used
+#include <boost/archive/binary_iarchive.hpp>
+
+#include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <numeric>
-#include <algorithm>
-
-
-#ifdef MPI_SUPPORT
-#include <fstream>
-// include headers that implement a archive in simple text format
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include "TWMC/TWMCResults.hpp"
-#include "MPIPincoTags.hpp"
-
-#endif
 
 
 namespace mpi = boost::mpi;
 using namespace std;
+
 
 MPIProcessor::MPIProcessor(std::string solverName, int nodes, int processesPerNode) :
         TaskProcessor(solverName),
@@ -52,11 +47,13 @@ void MPIProcessor::ProvideMPICommunicator(mpi::communicator* _comm)
         cout << "#" << comm->rank() << " - send to " << i << " has finished." << endl;
 
         nodeRank.push_back(i);
+        activeNodes.push_back(nodeRank.size()-1);
         tasksSentToNode.push_back(0);
         resultsReceivedFromNode.push_back(0);
         recvListeningToNode.push_back(false);
-        commRecvRequests.push_back(mpi::request()); // Fill with null requests
+        commRecvRequests.push_back(nullptr); // Fill with null requests
         commRecvBuffers.push_back(nullptr); // Fill with null requests
+        commRecvBuffersSize.push_back(0); // Fill with null requests
     }
     nNodes = nodeRank.size();
 }
@@ -70,7 +67,7 @@ void MPIProcessor::Update()
 {
     cout << "Main MPI PROCESSOR::Update()" << endl;
     // 1 - Send the tasks to all the processors
-    const size_t maxTasks = 1024*nNodes;
+    const size_t maxTasks = 1024*activeNodes.size();
     std::vector<TaskData*> tasks = std::vector<TaskData*>(maxTasks, NULL);
     //TODO : add consumer token
     size_t dequeuedTasks = enqueuedTasks.try_dequeue_bulk(tasks.begin(), maxTasks);
@@ -85,18 +82,15 @@ void MPIProcessor::Update()
             auto data = std::vector<TaskData *>(tasks.begin() + n, tasks.begin() + n + nn);
             commSendBuffers.push_back(data);
 
-            /*std::ofstream ofs("filename");
-            {
-                boost::archive::text_oarchive oa(ofs);
-                oa << data;
-            }*/
+            int nodeId = activeNodes[nodes];
 
-            cout << "Master: Sending " << nn << " tasks to #" << nodeRank[nodes] << endl;
-            commSendRequests.push_back(comm->isend(nodeRank[nodes], TASKDATA_VECTOR_MESSAGE_TAG, data));
+            cout << "Master: Sending " << nn << " tasks to #" << nodeRank[nodeId] << endl;
+            commSendRequests.push_back(comm->isend(nodeRank[nodeId], TASKDATA_VECTOR_MESSAGE_TAG, data));
+            cout << "Master - Created isend to #" << nodeRank[nodeId] << endl;
+
             tasksSentToNode[nodes] += nn;
             nodes++;
-            nodes = nodes % nodeRank.size();
-            cout << "Master - Created isend to #" << nodeRank[nodes] << endl;
+            nodes = nodes % activeNodes.size();
 
         }
         // Done creating the send requests. Now test them
@@ -106,75 +100,73 @@ void MPIProcessor::Update()
     }
 
     // 2 - Try to receive everything
-    for (size_t n=0; n < nodeRank.size(); n++)
+    for (size_t in=0; in < activeNodes.size(); in++)
     {
-        // If we are not listening, start listening
-        if(recvListeningToNode[n] != true)
-        {
-            cout << "Master: Starting to listen for results from #" << nodeRank[n] << "." <<endl;
+        int n = activeNodes[in];
 
-            const size_t maxTasks = 1024; // maximum number of transmitted tasks
-            std::vector<TaskResults*> *tasks = new std::vector<TaskResults*>(maxTasks, NULL); //must be deallocated
+        if (recvListeningToNode[n] != true) {
+            MPI_Status status;
+            int flag;
+            MPI_Iprobe(nodeRank[n], TASKRESULTS_VECTOR_MESSAGE_TAG, *comm, &flag, &status);
+            if (flag) {
+                cout << "Master: got message from #" << nodeRank[n] << ". Posting receive" << endl;
+                int msgSize;
+                MPI_Get_count(&status, MPI_BYTE, &msgSize);
+                char *data = new char[msgSize];
 
-            commRecvBuffers[n] = tasks;
-            commRecvRequests[n] = comm->irecv(nodeRank[n], TASKRESULTS_VECTOR_MESSAGE_TAG, *tasks);
-            recvListeningToNode[n] = true;
-            commRecvRequests[n].test();
+                MPI_Request *iReq = new MPI_Request;
+                commRecvRequests[n] = iReq;
+                commRecvBuffers[n] = data;
+                commRecvBuffersSize[n] = msgSize;
+
+                MPI_Irecv(data, msgSize, MPI_BYTE, nodeRank[n], TASKRESULTS_VECTOR_MESSAGE_TAG, *comm, iReq);
+                recvListeningToNode[n] = true;
+            }
         }
     }
     // 3 - Check for sent stuff
-    cout << "Master - Checking for Sent stuff." <<endl;
-    for (int i=0; i < commSendRequests.size(); i++)
-    {
-        cout << "Master - Checking for req "<< i <<endl;
-        auto res = commSendRequests[i].test();
-        if (res) {
-            cout << "Master - has sent." <<endl;
-            commSendRequests.erase(commSendRequests.begin() + i);
-            commSendBuffers.erase(commSendBuffers.begin() + i);
-            i--;
+    if (commSendRequests.size() != 0) {
+        //cout << "Master - Checking for Sent stuff." << endl;
+        for (int i = 0; i < commSendRequests.size(); i++) {
+            //cout << "Master - Checking for req " << i << endl;
+            auto res = commSendRequests[i].test();
+            if (res) {
+                //cout << "Master - has sent." << endl;
+                commSendRequests.erase(commSendRequests.begin() + i);
+                commSendBuffers.erase(commSendBuffers.begin() + i);
+                i--;
+            }
         }
     }
 
-    // 4 - Check for received stuff
-    for (int n=0; n < nodeRank.size(); n++)
+    // 4 - Check for received stuff (all nodes. also inactive)
+    for (size_t n=0; n < nodeRank.size(); n++)
     {
+        //int n = activeNodes[in];
         // If we are not listening, start listening
-        if (recvListeningToNode[n] == true) {
-            cout << "Master: Listening to #"<<nodeRank[n]<< " ."<<endl;
-            auto res = commRecvRequests[n].test();
+        if (recvListeningToNode[n] == true)
+        {
+            int flag; MPI_Status status;
+            MPI_Test(commRecvRequests[n], &flag, &status);
+            if (flag)
+            {
+                std::istringstream iss(string(commRecvBuffers[n] , commRecvBuffersSize[n]));
+                boost::archive::binary_iarchive ia(iss);
 
-            if (res) {
-                cout << "Master: Received "<<commRecvBuffers[n]->size()<<" results from #" << nodeRank[n] << "." << endl;
-                resultsReceivedFromNode[n] += commRecvBuffers[n]->size();
+                //cout << "Master: start decoding" << endl;
+                std::vector<TaskResults*> *taskss = new std::vector<TaskResults*>(maxTasks, NULL); //must be deallocated
+                ia >> taskss;
+                resultsReceivedFromNode[n] += taskss->size();
+                cout << "Master: Received "<<commRecvBuffersSize[n]<<" bytes ("<<taskss->size()<<") of results from #" << nodeRank[n] << "." << endl;
+                this->_consumer->EnqueueTasks(*taskss);
+
+                delete[] commRecvBuffers[n];
                 recvListeningToNode[n] = false;
-                this->_consumer->EnqueueTasks(*(commRecvBuffers[n]));
-                delete commRecvBuffers[n]; //deallocate
             }
         }
     }
 
     // 5 - Receive Miscellaneuous Messages
-    if (auto message = comm->iprobe())
-    {
-        auto msg = *message;
-        cout << "Master - I've got a message with tag: " << msg.tag() << endl;
-        if(recvListeningToNode[0]) {
-            commRecvRequests[0].wait();
-            cout << "Master: Received "<<commRecvBuffers[0]->size()<<" results from #" << nodeRank[0] << "." << endl;
-            resultsReceivedFromNode[0] += commRecvBuffers[0]->size();
-            recvListeningToNode[0] = false;
-            this->_consumer->EnqueueTasks(*(commRecvBuffers[0]));
-            delete commRecvBuffers[0]; //deallocate
-        }
-    }
-
-    if (auto message = comm->iprobe(MPI_ANY_SOURCE, TASKRESULTS_VECTOR_MESSAGE_TAG))
-    {
-        auto msg = *message;
-
-    }
-
     while ( auto message = comm->iprobe(MPI_ANY_SOURCE, NODE_TERMINATED_MESSAGE_TAG) )
     {
         auto msg = *message;
@@ -191,7 +183,7 @@ void MPIProcessor::Update()
         SendTerminationMessage();
     }
 
-    sleep(1);
+    //usleep(1000000);
 }
 
 void MPIProcessor::AllProducersHaveBeenTerminated()
@@ -203,8 +195,9 @@ void MPIProcessor::AllProducersHaveBeenTerminated()
 void MPIProcessor::SendTerminationMessage()
 {
     cout << "--- --- --- --- Sending termination messages." << endl;
-    for (int i=0; i < nodeRank.size(); i++)
+    for (size_t in=0; in < activeNodes.size(); in++)
     {
+        int i = activeNodes[in];
         cout << "Master: - Sent termination message to #" << nodeRank[i] << " with nTasks = "<< tasksSentToNode[i] <<endl;
         miscSendReqs.push_back(comm->isend(nodeRank[i], TERMINATE_WHEN_DONE_MESSAGE_TAG, tasksSentToNode[i]));
     }
@@ -224,5 +217,13 @@ void MPIProcessor::NodeTerminated(size_t nodeId)
 {
     auto it = find(nodeRank.begin(), nodeRank.end(), nodeId);
     size_t n = std::distance( nodeRank.begin(), it );
-    nodeRank.erase(it);
+
+    for (int i = 0; i < activeNodes.size(); i++)
+    {
+        if (activeNodes[i] == n)
+        {
+            activeNodes.erase(activeNodes.begin()+i);
+            break;
+        }
+    }
 }
