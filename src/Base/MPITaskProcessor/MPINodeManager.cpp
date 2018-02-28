@@ -7,7 +7,7 @@
 #include "MPIPincoTags.hpp"
 
 #include "../FileFormats/DataStore.hpp"
-#include "../../ThreadedManager/ThreadedTaskProcessor.hpp"
+#include "../ThreadedManager/ThreadedTaskProcessor.hpp"
 
 #include <sstream>
 #include <fstream>
@@ -39,7 +39,7 @@ MPINodeManager::MPINodeManager(mpi::communicator* _comm) : comm(_comm)  {
 void MPINodeManager::ManagerLoop() {
 
     while(!quit) {
-        cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop()." << endl;
+        //cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop()." << endl;
 
         //size_t dequeuedTasks = enqueuedTasks.try_dequeue_bulk( tmpTasksToSend.begin(), 1024);
         //tmpTasksToSend.resize(dequeuedTasks);
@@ -70,12 +70,12 @@ void MPINodeManager::ManagerLoop() {
         // 2 - Get TaskData : Test Async receive requests from master and add them
         for (int i = 0; i < commRecvRequests.size(); i++)
         {
-            cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop(). - Testing recv req."
-                 << endl;
+            //cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop(). - Testing recv req."
+                 //<< endl;
             auto res = commRecvRequests[i].test();
             if (res) {
-                cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop(). - Has received " <<
-                      commRecvBuffers[i]->size()<<" tasks. Enqueing..."  << endl;
+                //cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop(). - Has received " <<
+                //      commRecvBuffers[i]->size()<<" tasks. Enqueing..."  << endl;
 
                 receivedTasks += commRecvBuffers[i]->size();
 
@@ -83,7 +83,7 @@ void MPINodeManager::ManagerLoop() {
                 commRecvRequests.erase(commRecvRequests.begin() + i);
                 commRecvBuffers.erase(commRecvBuffers.begin() + i);
                 i--;
-                cout << "#" << comm->rank() << " - Done."<< endl;
+                //cout << "#" << comm->rank() << " - Done."<< endl;
                 receiving = false;
             }
         }
@@ -121,6 +121,8 @@ void MPINodeManager::ManagerLoop() {
                 delete data;
 
                 auto t2 = MPI_Wtime();
+                //std::cout << "The number of Mbytes taken for an archive of "<< tasksInBuffer<<" elements is " << oss->str().size()/1024/1024 <<
+                //" or "<< oss->str().size() << " bytes  - encoded in " << t2-t1 << " s." << endl;
                 tasksInBuffer = 0;
 
                 commSendBuffers.push_back(oss);

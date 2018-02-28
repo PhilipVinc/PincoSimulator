@@ -65,7 +65,7 @@ void MPIProcessor::Setup()
 
 void MPIProcessor::Update()
 {
-    cout << "Main MPI PROCESSOR::Update()" << endl;
+    //cout << "Main MPI PROCESSOR::Update()" << endl;
     // 1 - Send the tasks to all the processors
     const size_t maxTasks = 1024*activeNodes.size();
     std::vector<TaskData*> tasks = std::vector<TaskData*>(maxTasks, NULL);
