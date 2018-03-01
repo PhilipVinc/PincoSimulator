@@ -35,7 +35,7 @@ DataStore::DataStore(const Settings* settings, string folderName)
 }
 
 
-bool DataStore::SaveTaskResults(TaskResults* task)
+bool DataStore::SaveTaskResults(std::unique_ptr<TaskResults> const& task)
 {
     StoreDataSimple(task);
     return true;

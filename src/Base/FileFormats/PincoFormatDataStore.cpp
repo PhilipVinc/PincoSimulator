@@ -69,12 +69,12 @@ ChunkFileSet* PincoFormatDataStore::GetWritableChunk()
 }
 
 
-void PincoFormatDataStore::Initialise(TaskResults* results) {
+void PincoFormatDataStore::Initialise(std::unique_ptr<TaskResults> const& results) {
 	datasetN = results->NumberOfDataSets();
 	initialised = true;
 }
 
-void PincoFormatDataStore::StoreDataSimple(TaskResults *results)
+void PincoFormatDataStore::StoreDataSimple(std::unique_ptr<TaskResults> const& results)
 {
 	if (!initialised) { Initialise(results);};
     ChunkFileSet * cnk = GetWritableChunk();
@@ -82,7 +82,7 @@ void PincoFormatDataStore::StoreDataSimple(TaskResults *results)
     cRegister->RegisterStoredData(results, cnk->GetId(), offset, Settings::SaveSettings::saveIdFiles);
 }
 
-void PincoFormatDataStore::StoreDataComplex(TaskResults *results)
+void PincoFormatDataStore::StoreDataComplex(std::unique_ptr<TaskResults> const& results)
 {
 	if (!initialised) { Initialise(results);};
 	ChunkFileSet * cnk = GetWritableChunk();

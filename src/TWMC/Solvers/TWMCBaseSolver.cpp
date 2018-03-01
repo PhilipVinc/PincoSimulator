@@ -93,10 +93,10 @@ void TWMCBaseSolver::Setup() {
 	fft_norm_factor = data->nxy;
 }
 
-std::vector<TaskResults*> TWMCBaseSolver::Compute(const std::vector<std::unique_ptr<TaskData>>& tasks)
+std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(const std::vector<std::unique_ptr<TaskData>>& tasks)
 {
 	//cout << "computing" <<endl;
-	std::vector<TaskResults*> allResults;
+	std::vector<std::unique_ptr<TaskResults>> allResults;
 	for (size_t i =0; i < tasks.size(); i++ )
 	{
 		TWMCTaskData* task = static_cast<TWMCTaskData*>(tasks[i].get());
@@ -109,7 +109,6 @@ std::vector<TaskResults*> TWMCBaseSolver::Compute(const std::vector<std::unique_
 
 		// Setup the single simulation
 		TWMCResults* res = new TWMCResults(task);
-		allResults.push_back(res);
 		unsigned int seed = task->rngSeed;
 		res->SetId(seed);
 		auto initialCondition = TWMCTaskData::InitialConditions::ReadFromSettings;
@@ -240,6 +239,7 @@ std::vector<TaskResults*> TWMCBaseSolver::Compute(const std::vector<std::unique_
 			t += data->dt;
 			i_step++;
 		}
+		allResults.push_back(std::unique_ptr<TaskResults>(res));
 	}
 	return allResults;
 }

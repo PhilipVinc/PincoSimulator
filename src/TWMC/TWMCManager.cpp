@@ -5,6 +5,7 @@
 #include "TWMCManager.hpp"
 
 #include "Base/FileFormats/PincoFormatDataStore.hpp"
+#include "Base/TaskResults.hpp"
 
 #include "TWMC/TWMCSystemData.hpp"
 #include "TWMC/TWMCTaskData.hpp"

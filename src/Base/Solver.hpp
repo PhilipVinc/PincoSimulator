@@ -20,7 +20,7 @@ public:
 	virtual ~Solver() {};
 
     virtual void Setup() {};
-    virtual std::vector<TaskResults*> Compute(const std::vector<std::unique_ptr<TaskData>>& tasks) = 0;
+    virtual std::vector<std::unique_ptr<TaskResults>> Compute(const std::vector<std::unique_ptr<TaskData>>& tasks) = 0;
 
 	virtual float ApproximateComputationProgress() const {return 0.0;} ;
 	size_t nTasksToRequest = 1;

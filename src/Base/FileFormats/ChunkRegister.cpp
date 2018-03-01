@@ -139,7 +139,7 @@ size_t ChunkRegister::CheckRegisterVersion()
     return fileVersion;
 }
 
-void ChunkRegister::InitializeRegisterHeader(TaskResults* results)
+void ChunkRegister::InitializeRegisterHeader(std::unique_ptr<TaskResults> const& results)
 {
     // -- Initialize the file
     // 1) write the magic 8 bytes
@@ -290,7 +290,7 @@ inline void ChunkRegister::GoToCurrentWritePosition()
     fseek(registerFile, storedEntries*sizeOfTrajEntry + trajDataBegin, SEEK_SET);
 }
 
-void ChunkRegister::RegisterStoredData(TaskResults* results,
+void ChunkRegister::RegisterStoredData(std::unique_ptr<TaskResults> const& results,
                                        size_t chunkId,
                                        size_t chunkOffset,
                                        Settings::SaveSettings saveType)

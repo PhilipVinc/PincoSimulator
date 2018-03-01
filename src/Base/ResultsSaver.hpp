@@ -22,12 +22,12 @@ public:
 protected:
 	const Settings* _settings;
 	DataStore* _dataStore;
-	void SaveData(TaskResults *results);
+	void SaveData(std::unique_ptr<TaskResults> const &results);
 
 
 	virtual void AllProducersHaveBeenTerminated();
 private:
-	std::vector<TaskResults*> tmpTasksToSave;
+	std::vector<std::unique_ptr<TaskResults>> tmpTasksToSave;
 
 	bool terminate = false;
 

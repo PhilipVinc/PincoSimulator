@@ -36,8 +36,8 @@ public:
 	// -------------------------------------- //
 
     // Return a completed task, to add it to elaboratedTasks
-    void GiveResults(size_t th_id, TaskResults* task);
-    void GiveResults(size_t th_id, std::vector<TaskResults*> tasks);
+    void GiveResults(size_t th_id, std::unique_ptr<TaskResults> task);
+    void GiveResults(size_t th_id, std::vector<std::unique_ptr<TaskResults>>&& tasks);
     // Method called by a thread to inform the manager that he is now dead
     // and can be joined.
     void ReportThreadTermination(size_t th_id);

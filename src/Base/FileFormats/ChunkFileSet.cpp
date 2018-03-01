@@ -104,7 +104,7 @@ inline FILE* ChunkFileSet::GetFile(size_t datasetId)
 }
 
 // To delete
-size_t ChunkFileSet::WriteToChunk(TaskResults* results)
+size_t ChunkFileSet::WriteToChunk(std::unique_ptr<TaskResults> const& results)
 {
     buffer[0] = results->GetId();
     for (size_t i = 0; i!=N; i++)

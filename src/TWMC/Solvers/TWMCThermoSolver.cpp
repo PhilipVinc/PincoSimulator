@@ -94,9 +94,9 @@ void TWMCThermoSolver::Setup() {
     fft_norm_factor = data->nxy;
 }
 
-std::vector<TaskResults*> TWMCThermoSolver::Compute(const std::vector<std::unique_ptr<TaskData>>& tasks)
+std::vector<std::unique_ptr<TaskResults>> TWMCThermoSolver::Compute(const std::vector<std::unique_ptr<TaskData>>& tasks)
 {
-    std::vector<TaskResults*> allResults;
+    std::vector<std::unique_ptr<TaskResults>> allResults;
     for (size_t i =0; i < tasks.size(); i++ )
     {
         TWMCTaskData* task = static_cast<TWMCTaskData*>(tasks[i].get());
@@ -110,7 +110,7 @@ std::vector<TaskResults*> TWMCThermoSolver::Compute(const std::vector<std::uniqu
 
         // Setup the single simulation
         TWMCResults* res = new TWMCResults(task);
-        allResults.push_back(res);
+        //allResults.push_back(res);
         unsigned int seed = task->rngSeed;
         res->SetId(seed);
         auto initialCondition = TWMCTaskData::InitialConditions::ReadFromSettings;
@@ -298,6 +298,7 @@ std::vector<TaskResults*> TWMCThermoSolver::Compute(const std::vector<std::uniqu
             t += data->dt;
             i_step++;
         }
+        allResults.push_back(std::unique_ptr<TaskResults>(res));
     }
     return allResults;
 }

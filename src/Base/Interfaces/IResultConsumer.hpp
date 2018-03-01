@@ -8,15 +8,19 @@
 
 #include "Libraries/concurrentqueue.h"
 
-#include "../TaskResults.hpp"
-
+#include <memory>
 #include <vector>
+
+
+class TaskResults;
+
 
 class IResultConsumer {
 public:
 	// Inherited public methods
-	void EnqueueTasks(std::vector<TaskResults*> tasks);
-	void EnqueueTasks(std::vector<TaskResults*> tasks, size_t prodID);
+	void EnqueueTasks(std::vector<std::unique_ptr<TaskResults>>&& tasks);
+	void EnqueueTasks(std::vector<std::unique_ptr<TaskResults>>&& tasks,
+	                  size_t prodID);
 
 	size_t RequestProducerID();
 
@@ -28,7 +32,7 @@ protected:
 	virtual void AllProducersHaveBeenTerminated() = 0;
 	// Queue of tasks that are waiting to be executed by a worker.
 	// Fed by Manager, Eaten by Workers
-	moodycamel::ConcurrentQueue<TaskResults*> enqueuedTasks;
+	moodycamel::ConcurrentQueue<std::unique_ptr<TaskResults>> enqueuedTasks;
 	size_t nEnqueuedTasks = 0;
 
 	// Producers registered with a token. The producer ID is the index

@@ -6,12 +6,18 @@
 #include "Settings.hpp"
 #include "FileFormats/DataStore.hpp"
 
+#include "TaskResults.hpp"
+
+#include <fstream>
+#include <iostream>
 
 ResultsSaver::ResultsSaver(const Settings *settings, DataStore *dataStore) {
 	_settings = settings;
 	_dataStore = dataStore;
 
-	tmpTasksToSave = std::vector<TaskResults*>(1024,NULL);
+	while (tmpTasksToSave.size() < 1024) {
+		tmpTasksToSave.emplace_back(nullptr);
+	}
 }
 
 void ResultsSaver::Update() {
@@ -19,7 +25,6 @@ void ResultsSaver::Update() {
 	for (size_t i = 0; dequeuedTasks != i; i++)
 	{
 		SaveData(tmpTasksToSave[i]);
-        delete tmpTasksToSave[i];
 	}
 
 	if (dequeuedTasks == 0 && terminate == true) {
@@ -28,7 +33,7 @@ void ResultsSaver::Update() {
 	}
 }
 
-void ResultsSaver::SaveData(TaskResults *results)
+void ResultsSaver::SaveData(std::unique_ptr<TaskResults> const &results)
 {
 	_dataStore->SaveTaskResults(results);
 	savedItems++;

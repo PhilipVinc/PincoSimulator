@@ -11,6 +11,7 @@
 #include "ThreadedTaskProcessor.hpp"
 #include "Base/Solver.hpp"
 #include "Base/TaskData.hpp"
+#include "../TaskResults.hpp"
 #include <iostream>
 
 
@@ -54,8 +55,8 @@ void WorkerThread::WorkerLoop()
             }
 
 	        computing = true;
-            std::vector<TaskResults*> results = _solver->Compute(_currentTasks);
-            _manager->GiveResults(_id, results);
+            std::vector<unique_ptr<TaskResults>> results = _solver->Compute(_currentTasks);
+            _manager->GiveResults(_id, std::move(results));
 	        computing = false;
 
             if (profileEnabled)

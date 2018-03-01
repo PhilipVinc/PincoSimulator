@@ -31,7 +31,7 @@ public:
     ~TWMCLiebSolver();
 
     virtual void Setup() final;
-    virtual std::vector<TaskResults*> Compute(const std::vector<std::unique_ptr<TaskData>>& tasks) final;
+    virtual std::vector<std::unique_ptr<TaskResults>> Compute(const std::vector<std::unique_ptr<TaskData>>& tasks) final;
 
     virtual float ApproximateComputationProgress() const final;
 

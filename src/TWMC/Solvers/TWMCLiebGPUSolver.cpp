@@ -248,7 +248,7 @@ void TWMCLiebGPUSolver::Setup() {
 //
 // The Truncated Wigner Evolution Method for a Lieb Lattice.
 //
-std::vector<TaskResults*> TWMCLiebGPUSolver::Compute(const std::vector<TaskData *> tasks)
+std::vector<std::unique_ptr<TaskResults>> TWMCLiebGPUSolver::Compute(const std::vector<TaskData *> tasks)
 {
     // Profiling
     completedTasks = 0;

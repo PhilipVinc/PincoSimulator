@@ -9,6 +9,7 @@
 #ifndef ChunkFileSet_hpp
 #define ChunkFileSet_hpp
 
+#include <memory>
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -27,7 +28,7 @@ public:
 	~ChunkFileSet();
     
     FILE* GetFile(size_t datasetId);
-    size_t WriteToChunk(TaskResults* results);
+    size_t WriteToChunk(std::unique_ptr<TaskResults> const& results);
     void FlushData();
     bool IsChunkBig();
     

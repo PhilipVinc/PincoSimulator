@@ -127,13 +127,12 @@ std::vector<std::unique_ptr<TaskData>> ThreadedTaskProcessor::GetDispatchedTasks
 	return tasks;
 }
 
-void ThreadedTaskProcessor::GiveResults(size_t th_id, std::vector<TaskResults*> res)
+void ThreadedTaskProcessor::GiveResults(size_t th_id, std::vector<std::unique_ptr<TaskResults>>&& res)
 {
 	workerCompletedTasks[th_id] += res.size();
-	if (_consumer != nullptr) {
-		_consumer->EnqueueTasks(res, workerProducerID[th_id]);
-	} else {
-		std::for_each(res.begin(), res.end(), std::default_delete<TaskResults>());
+	if (_consumer != nullptr)
+	{
+		_consumer->EnqueueTasks(std::move(res), workerProducerID[th_id]);
 	}
 }
 
