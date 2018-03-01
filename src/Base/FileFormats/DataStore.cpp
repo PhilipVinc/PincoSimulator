@@ -60,9 +60,8 @@ void DataStore::SaveFile(string fileName, vector<float_p> data)
     //FILE* f = fopen(pp.string().c_str(), "w+");
     ofstream f;
     f.open(pp.string(), ofstream::out);
-    for(int i =0; i< data.size(); i++)
-    {
-        f << data[i] << endl;
+    for (float_p i : data) {
+        f << i << endl;
     }
     f.close();
     //fwrite(data, sizeof(data), length, f);

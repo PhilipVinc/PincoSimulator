@@ -29,8 +29,8 @@ void TaskResults::AddResult(const std::string name, void* memAddr, size_t byteSi
 	AddResult(name, memAddr, byteSize, elSize, format, dimensions.size(), dimensions.data());
 }
 
-void TaskResults::AddResult(const std::string name, void* memAddr, size_t byteSize, size_t elSize, size_t format,
-                            size_t dimensions, const size_t* dimData)
+void TaskResults::AddResult(const std::string name, void* memAddr, size_t byteSize, size_t elSize,
+                            size_t format, size_t dimensions, const size_t* dimData)
 {
 	numberOfDatasets++;
 	namesOfDatasets.push_back(name);
