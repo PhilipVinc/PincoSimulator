@@ -15,8 +15,7 @@
 #include <string>
 
 #ifdef MPI_SUPPORT
-#include <boost/mpi/communicator.hpp>
-namespace mpi = boost::mpi;
+#include <mpi.h>
 #endif
 
 
@@ -42,9 +41,9 @@ private:
 
 #ifdef MPI_SUPPORT
 public:
-    void SetMPICommunicator(mpi::communicator* _comm);
+    void SetMPICommunicator(MPI_Comm* _comm);
 protected:
-    mpi::communicator* comm;
+    MPI_Comm* comm;
 #endif
 
 

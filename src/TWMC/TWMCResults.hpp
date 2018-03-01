@@ -17,7 +17,7 @@
 class TWMCTaskData;
 
 #ifdef MPI_SUPPORT
-#include "../Base/MPIManager/BoostSerializationArchiveFormats.hpp"
+#include "../Base/MPITaskProcessor/BoostSerializationArchiveFormats.hpp"
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/export.hpp>
 #endif

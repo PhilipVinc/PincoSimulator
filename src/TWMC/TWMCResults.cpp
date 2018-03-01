@@ -11,10 +11,6 @@
 #include "Base/NoisyMatrix.hpp"
 #include "TWMCTaskData.hpp"
 
-#ifdef MPI_SUPPORT
-//BOOST_CLASS_EXPORT_IMPLEMENT(TWMCResults)
-#endif
-
 
 TWMCResults::TWMCResults(const TWMCTaskData* _taskData) :
 		TWMCResults(_taskData->systemData->nx, _taskData->systemData->ny,
@@ -55,8 +51,6 @@ TWMCResults::TWMCResults(size_t _nx, size_t _ny, size_t _frames, size_t _cellSz 
 
 TWMCResults::~TWMCResults()
 {
-	//cout << "Deleting TWMCResult with ID: " << id << endl;
-    //delete[] beta_t;
 	for (int i = 0; i != complexMatrices.size(); i++)
 	{
         delete complexMatrices[i];

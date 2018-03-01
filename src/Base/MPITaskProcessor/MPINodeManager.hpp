@@ -8,8 +8,7 @@
 #include "../Interfaces/IResultConsumer.hpp"
 #include "../TaskProcessor.hpp"
 
-#include <boost/mpi/environment.hpp>
-#include <boost/mpi/communicator.hpp>
+#include <mpi.h>
 #include <string>
 #include <sstream>
 
@@ -17,13 +16,10 @@ class Settings;
 class DataStore;
 
 
-namespace mpi = boost::mpi;
-
-
 class MPINodeManager : public IResultConsumer
 {
 public:
-    MPINodeManager(mpi::communicator* _comm);
+    MPINodeManager(MPI_Comm* _comm);
     virtual ~MPINodeManager() {};
 
 
@@ -34,7 +30,8 @@ protected:
 
     virtual void AllProducersHaveBeenTerminated();
 private:
-    mpi::communicator* comm;
+    MPI_Comm* comm;
+    int rank;
 
     TaskProcessor* _processor;
 
@@ -51,10 +48,12 @@ private:
 
     std::string _solverName;
 
-    std::vector<mpi::request> commRecvRequests;
-    std::vector<std::vector<TaskData*>*> commRecvBuffers;
+    std::vector<MPI_Request> commRecvRequests;
+    std::vector<char*> commRecvBuffers;
+    std::vector<int> commRecvBuffersSize;
+
     std::vector<std::ostringstream*> commSendBuffers;
-    std::vector<MPI_Request*> commSendRequests;
+    std::vector<MPI_Request> commSendRequests;
 
     std::vector<TaskData*> recvBuffer;
     bool receiving = false;

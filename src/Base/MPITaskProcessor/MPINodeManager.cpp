@@ -7,83 +7,101 @@
 #include "MPIPincoTags.hpp"
 
 #include "../FileFormats/DataStore.hpp"
-#include "../ThreadedManager/ThreadedTaskProcessor.hpp"
+#include "../ThreadedTaskProcessor/ThreadedTaskProcessor.hpp"
 
 #include <sstream>
 #include <fstream>
 #include <iostream>
 #include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 
 using namespace std;
 
 
-MPINodeManager::MPINodeManager(mpi::communicator* _comm) : comm(_comm)  {
-
+MPINodeManager::MPINodeManager(MPI_Comm* _comm)  {
+    comm = _comm;
     tmpTasksToSend = std::vector<TaskResults*>(1024,NULL);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    cout << "#"<<comm->rank()<<" - MPINodeManager Created." << comm << endl;
+    cout << "#"<<rank<<" - MPINodeManager Created." << comm << endl;
 
-    cout << "#"<<comm->rank()<<" - receiving from master." << comm << endl;
-    comm->recv(MASTER_RANK, SOLVER_STRING_MESSAGE_TAG,_solverName);
-    cout << "#"<<comm->rank()<<" - Received solver:"<< _solverName << comm << endl;
+    cout << "#"<<rank<<" - receiving from master." << comm << endl;
 
-    cout << "#"<<comm->rank()<<" - Initializing the TaskProcessor-ParallelSolver" <<endl;
+    MPI_Status status;
+    MPI_Probe(MASTER_RANK, SOLVER_STRING_MESSAGE_TAG, MPI_COMM_WORLD, &status);
+    int stringLen; MPI_Get_count(&status, MPI_CHAR, &stringLen);
+    char* buf = new char[stringLen];
+    MPI_Recv(buf,stringLen,MPI_CHAR, status.MPI_SOURCE,status.MPI_TAG,
+    MPI_COMM_WORLD, &status);
+
+    _solverName = std::string(buf, stringLen); delete[] buf;
+
+    cout << "#"<<rank<<" - Received solver:"<< _solverName << endl;
+
+    cout << "#"<<rank<<" - Initializing the TaskProcessor-ParallelSolver" <<endl;
     _processor = new ThreadedTaskProcessor(_solverName, -1, -1);
     _processor->SetConsumer(this);
     _processor->Setup();
-    cout << "#"<<comm->rank()<<" - Done" <<endl;
+    cout << "#"<<rank<<" - Done" <<endl;
 }
 
 
 void MPINodeManager::ManagerLoop() {
 
     while(!quit) {
-        //cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop()." << endl;
+        //cout << "#" << rank << " - MPINodeManager::ManagerLoop()." << endl;
 
-        //size_t dequeuedTasks = enqueuedTasks.try_dequeue_bulk( tmpTasksToSend.begin(), 1024);
-        //tmpTasksToSend.resize(dequeuedTasks);
 
-        // self->SendData();
-
-        //tmpTasksToSend.resize(1024);
-
-        // 1 - Get TaskData : Create Async receive requests from master
-
-        /*
         const size_t maxTasks = 1024;
-        std::vector<TaskData *> *tasks = new std::vector<TaskData *>(maxTasks, NULL);
 
+        //std::vector<TaskData *> *tasks = new std::vector<TaskData *>(maxTasks, NULL);
+        // 1 - Get TaskData : Create Async receive requests from master
         if (!receiving) {
-        cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop(). - Creating irecv request"
-             << endl;
-            commRecvRequests.push_back(comm->irecv(MASTER_RANK, TASKDATA_VECTOR_MESSAGE_TAG, *tasks));
-            commRecvBuffers.push_back(tasks);
+            MPI_Status status;
+            int flag;
+            MPI_Iprobe(MPI_ANY_SOURCE, TASKDATA_VECTOR_MESSAGE_TAG,
+                       MPI_COMM_WORLD, &flag, &status);
+            if (flag) {
+                cout << "#" << rank << " - MPINodeManager::ManagerLoop(). - Creating irecv request" << endl;
+                int msgSize;
+                MPI_Get_count(&status, MPI_BYTE, &msgSize);
+                char *data = new char[msgSize];
+                commRecvRequests.emplace_back();
+                commRecvBuffers.push_back(data);
+                commRecvBuffersSize.push_back(msgSize);
+                MPI_Irecv(data, msgSize, MPI_BYTE, status.MPI_SOURCE,
+                          TASKDATA_VECTOR_MESSAGE_TAG, MPI_COMM_WORLD, &commRecvRequests.back());
 
-            mpi::test_all(commRecvRequests.begin(), commRecvRequests.end());
-            cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop(). - Created irecv request"
-             << endl;
-            cout << "#" << comm->rank() << " - Testing all isend." << endl;
-            receiving = true;
-        }*/
+                // Advance
+                MPI_Test(&commRecvRequests.back(), &flag, &status);
+                receiving = true;
+                cout << "#" << rank << " - MPINodeManager::ManagerLoop(). - Created irecv request"
+                     << endl;
+            }
+        }
 
         // 2 - Get TaskData : Test Async receive requests from master and add them
-        for (int i = 0; i < commRecvRequests.size(); i++)
-        {
-            //cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop(). - Testing recv req."
-                 //<< endl;
-            auto res = commRecvRequests[i].test();
-            if (res) {
-                //cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop(). - Has received " <<
-                //      commRecvBuffers[i]->size()<<" tasks. Enqueing..."  << endl;
+        for (int i = 0; i < commRecvRequests.size(); i++) {
+            int flag;
+            MPI_Status status;
+            MPI_Test(&commRecvRequests[i], &flag, &status);
+            if (flag) {
+                std::istringstream iss(string(commRecvBuffers[i], commRecvBuffersSize[i]));
+                boost::archive::binary_iarchive ia(iss);
 
-                receivedTasks += commRecvBuffers[i]->size();
+                //cout << "Master: start decoding" << endl;
+                std::vector<TaskData*> _tasks(maxTasks,NULL); //must be deallocated
+                ia >> _tasks;
 
-                _processor->EnqueueTasks(*commRecvBuffers[i]);
-                commRecvRequests.erase(commRecvRequests.begin() + i);
-                commRecvBuffers.erase(commRecvBuffers.begin() + i);
-                i--;
-                //cout << "#" << comm->rank() << " - Done."<< endl;
+                receivedTasks += _tasks.size();
+                cout << "#"<<rank<< " - Received " << commRecvBuffersSize[i] << " bytes ("
+                     << _tasks.size() << ") of taskData from Master." << endl;
+                this->_processor->EnqueueTasks(_tasks);
+
+                delete[] commRecvBuffers[i];
+                commRecvBuffers.erase(commRecvBuffers.begin()+i);
+                commRecvRequests.erase(commRecvRequests.begin()+i);
                 receiving = false;
             }
         }
@@ -101,7 +119,7 @@ void MPINodeManager::ManagerLoop() {
 
             if ( tasksInBuffer == IDEALSIZE || tasksInBuffer >= receivedTasks - sentResults )
             {
-                cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop(). - sending " << tasksInBuffer << " results." << endl;
+                cout << "#" << rank << " - MPINodeManager::ManagerLoop(). - sending " << tasksInBuffer << " results." << endl;
 
                 std::vector<TaskResults*> *data = new std::vector<TaskResults*>(tmpTasksToSend.begin(),
                                                                                 tmpTasksToSend.begin()+tasksInBuffer);
@@ -126,13 +144,12 @@ void MPINodeManager::ManagerLoop() {
                 tasksInBuffer = 0;
 
                 commSendBuffers.push_back(oss);
-                MPI_Request *iReq = new MPI_Request;
-                commSendRequests.push_back(iReq);
+                commSendRequests.emplace_back();
 
 
                 MPI_Isend(oss->str().c_str(), oss->str().size(),
                           MPI_BYTE, MASTER_RANK, TASKRESULTS_VECTOR_MESSAGE_TAG,
-                          *comm, iReq);
+                          MPI_COMM_WORLD, &commSendRequests.back());
             }
 
         }
@@ -140,12 +157,12 @@ void MPINodeManager::ManagerLoop() {
         // 3 - Test Async result send requests to master
         for (int i=0; i < commSendRequests.size(); i++)
         {
-            //cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop() - Testing send req #" << i << endl;
+            //cout << "#" << rank << " - MPINodeManager::ManagerLoop() - Testing send req #" << i << endl;
             MPI_Status status; int done;
-            MPI_Test(commSendRequests[i], &done, &status);
+            MPI_Test(&commSendRequests[i], &done, &status);
             if (done)
             {
-                //cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop() - Has sent #" << i << endl;
+                //cout << "#" << rank << " - MPINodeManager::ManagerLoop() - Has sent #" << i << endl;
                 delete commSendBuffers[i];
                 commSendBuffers.erase(commSendBuffers.begin()+i);
                 commSendRequests.erase(commSendRequests.begin()+i);
@@ -154,38 +171,16 @@ void MPINodeManager::ManagerLoop() {
         }
 
         // 5 - Receive Miscellaneuous Messages
-        if (auto message = comm->iprobe())
-        {
-            auto msg = *message;
-            cout << "#" << comm->rank() << " - I've got a message with tag: " << msg.tag() << endl;
-            // Check the tag
-            if (msg.tag() == TERMINATE_WHEN_DONE_MESSAGE_TAG)
-            {
-                cout << "#" << comm->rank() << " - Received Termination message." << endl;
-                comm->recv(msg.source(), msg.tag(), tasksToComputeBeforeTerminating);
+        MPI_Status status; int flag;
+        MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG, MPI_COMM_WORLD,
+                   &flag, &status);
+        if(flag) {
+            if (status.MPI_TAG == TERMINATE_WHEN_DONE_MESSAGE_TAG) {
+                cout << "#" << rank << " - Received Termination message." << endl;
+                MPI_Recv(&tasksToComputeBeforeTerminating, 1, MPI_INT, status.MPI_SOURCE,
+                status.MPI_TAG, MPI_COMM_WORLD, &status);
                 terminate = true;
             }
-
-            else if (msg.tag() == TASKDATA_VECTOR_MESSAGE_TAG)
-            {
-                if (!receiving) {
-
-                    const size_t maxTasks = 1024;
-                    std::vector<TaskData *> *tasks = new std::vector<TaskData *>(maxTasks, NULL);
-
-                    cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop(). - Creating Data irecv request."
-                         << endl;
-                    commRecvRequests.push_back(comm->irecv(msg.source(), TASKDATA_VECTOR_MESSAGE_TAG, *tasks));
-                    commRecvBuffers.push_back(tasks);
-                    //cout << "#" << comm->rank() << " - MPINodeManager::ManagerLoop(). - Created Data irecv request." << endl;
-
-                    mpi::test_all(commRecvRequests.begin(), commRecvRequests.end());
-                    //cout << "#" << comm->rank() << " - Testing all isend." << endl;
-                    receiving = true;
-                }
-
-            }
-
         }
 
         if (terminate == true && receivedTasks >= tasksToComputeBeforeTerminating && commRecvRequests.size() == 0)
@@ -194,10 +189,12 @@ void MPINodeManager::ManagerLoop() {
 
             if (sentResults == receivedTasks && commSendRequests.size() == 0)
             {
-                cout << "#" << comm->rank() << " - MPINodeManager sending Termination message." << endl;
-                comm->send(MASTER_RANK, NODE_TERMINATED_MESSAGE_TAG);
+                cout << "#" << rank << " - MPINodeManager sending Termination message." << endl;
+                MPI_Status status;
+                MPI_Send(&tasksToComputeBeforeTerminating, 1, MPI_INT,
+                MASTER_RANK, NODE_TERMINATED_MESSAGE_TAG, MPI_COMM_WORLD);
                 quit = true;
-                cout << "#" << comm->rank() << " - Quitting." << endl;
+                cout << "#" << rank << " - Quitting." << endl;
                 break;
             }
         }

@@ -11,7 +11,7 @@
 #include "TWMC/TWMCSystemData.hpp"
 #include "TWMC/TWMCTaskData.hpp"
 
-#include "ThreadedManager/ThreadedTaskProcessor.hpp"
+#include "Base/ThreadedTaskProcessor/ThreadedTaskProcessor.hpp"
 #include "Base/ResultsSaver.hpp"
 #include "Base/NoisyMatrix.hpp"
 #include "Base/Utils/StringFormatter.hpp"
@@ -21,7 +21,7 @@
 
 
 #ifdef MPI_SUPPORT
-#include "Base/MPIManager/MPIProcessor.hpp"
+#include "Base/MPITaskProcessor/MPIProcessor.hpp"
 #endif
 
 
@@ -65,24 +65,6 @@ TWMCManager::~TWMCManager() {
 #endif
 
 void TWMCManager::Setup() {
-    /*
-#ifdef MPI_SUPPORT
-    std::ofstream ofs("filename");
-    {
-        boost::archive::text_oarchive oa(ofs);
-        oa << _sysData;
-    }
-
-    delete _sysData;
-    {
-        std::ifstream ifs("filename");
-        boost::archive::text_iarchive ia(ifs);
-        ia >> _sysData;
-    }
-//#include "TWMCResults.hpp"
-//    rs = new TWMCResults(1,1,1,1);
-
-#endif*/
 
     seedGenerator = mt19937(settings->GlobalSeed());
 
@@ -92,7 +74,7 @@ void TWMCManager::Setup() {
 
 #ifdef MPI_SUPPORT
     MPIProcessor* mpiManager = new MPIProcessor(solverName, 3, 3);
-    mpiManager->ProvideMPICommunicator(comm);
+    mpiManager->ProvideMPICommunicator(nullptr);
     _processor = mpiManager;
 #else
     _processor = new ThreadedTaskProcessor(solverName,
@@ -161,8 +143,9 @@ void TWMCManager::ManagerLoop() {
 
             std::string tmp = std::string(lastMsgLength, '\b');
             lastMsgLength = msgString.length() -1;
-            msgString = tmp + msgString;
+            //msgString = tmp + msgString;
             cout << msgString;
+            cout << endl;
             fflush(stdout);
 
             lastPrintTime = now;

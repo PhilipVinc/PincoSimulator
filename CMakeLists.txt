@@ -27,7 +27,7 @@ endif()
 
 # Directory with all compilation modules
 set(CMAKE_MODULE_PATH  ${CMAKE_SOURCE_DIR}/cmake-modules)
-set (BOOST_PACKAGES program_options system filesystem)
+set(BOOST_PACKAGES program_options system filesystem)
 
 # GPU SUPPORT
 if (COMPILE_GPU)
@@ -78,9 +78,12 @@ if (COMPILE_MPI)
 
     # Append Linker flags (I could also set flags per-target...
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${mpi_linker_flags}")
+    #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lompitrace")
+    #message("MPIC++ Linker flags: ${CMAKE_EXE_LINKER_FLAGS}")
+
     #set_target_properties(sim PROPERTIES LINK_FLAGS "${mpi_linker_flags}")
 
-    list(APPEND BOOST_PACKAGES serialization mpi )
+    list(APPEND BOOST_PACKAGES serialization )
     message("${BOOST_PACKAGES}")
 
 endif (COMPILE_MPI)
@@ -107,7 +110,6 @@ endif()
 
 message(found ${Boost_INCLUDE_DIR})
 message(found ${Boost_LIBRARIES})
-
 
 find_package(FFTW REQUIRED)
 include_directories(${FFTW_INCLUDE_DIR})
@@ -140,17 +142,17 @@ set(SOURCE_FILES
         src/Base/TaskData.cpp src/Base/TaskData.hpp
         src/Base/TaskResults.cpp src/Base/TaskResults.hpp
         src/Libraries/concurrentqueue.h
-        src/ThreadedManager/WorkerThread.cpp src/ThreadedManager/WorkerThread.hpp
+        src/Base/ThreadedTaskProcessor/WorkerThread.cpp src/Base/ThreadedTaskProcessor/WorkerThread.hpp
         src/TWMC/TWMCResults.cpp src/TWMC/TWMCResults.hpp
         src/TWMC/TWMCTypes.h
         src/main.cpp src/Libraries/FilesystemLibrary.h
         src/Libraries/TStaticFactory.h
         src/Base/Utils/StringFormatter.hpp
-        src/ThreadedManager/WorkerThread.cpp src/ThreadedManager/WorkerThread.hpp
+        src/Base/ThreadedTaskProcessor/WorkerThread.cpp src/Base/ThreadedTaskProcessor/WorkerThread.hpp
         src/Base/Solver.cpp src/Base/Solver.hpp
         src/Base/TaskProcessor.cpp src/Base/TaskProcessor.hpp
         src/Base/Interfaces/ITaskConsumer.hpp src/Base/Interfaces/ITaskConsumer.cpp
-        src/ThreadedManager/ThreadedTaskProcessor.cpp src/ThreadedManager/ThreadedTaskProcessor.hpp
+        src/Base/ThreadedTaskProcessor/ThreadedTaskProcessor.cpp src/Base/ThreadedTaskProcessor/ThreadedTaskProcessor.hpp
         src/Base/Interfaces/IResultConsumer.cpp src/Base/Interfaces/IResultConsumer.hpp
         src/Base/ResultsSaver.cpp src/Base/ResultsSaver.hpp
         src/TWMC/Solvers/TWMCBaseSolver.cpp src/TWMC/Solvers/TWMCBaseSolver.hpp
@@ -166,9 +168,11 @@ set(GPU_SOURCE_FILES
         src/TWMC/Solvers/TWMCBaseGPU.cpp src/TWMC/Solvers/TWMCBaseGPU.hpp)
 
 set(MPI_SOURCE_FILES
-        src/Base/MPIManager/MPINodeManager.cpp src/Base/MPIManager/MPINodeManager.hpp
-        src/Base/MPIManager/MPIProcessor.cpp src/Base/MPIManager/MPIProcessor.hpp
-        src/Libraries/eigen_boost_serialization.hpp src/Base/MPIManager/BoostSerializationArchiveFormats.hpp)
+        src/Base/MPITaskProcessor/MPINodeManager.cpp src/Base/MPITaskProcessor/MPINodeManager.hpp
+        src/Base/MPITaskProcessor/MPIProcessor.cpp src/Base/MPITaskProcessor/MPIProcessor.hpp
+        src/Libraries/eigen_boost_serialization.hpp src/Base/MPITaskProcessor/BoostSerializationArchiveFormats.hpp
+        src/TWMC/TWMCSerializators.hpp src/TWMC/TWMCSerializators.cpp src/Base/MPITaskProcessor/MPIPincoTags.hpp
+        )
 
 
 if (COMPILE_GPU)
@@ -181,7 +185,7 @@ endif(COMPILE_GPU)
 if (COMPILE_MPI)
     # Append MPI Source FIles
     message("Adding MPI Files")
-    set(SOURCE_FILES ${SOURCE_FILES} ${MPI_SOURCE_FILES} src/TWMC/TWMCSerializators.hpp src/TWMC/TWMCSerializators.cpp src/Base/MPIManager/MPIPincoTags.hpp)
+    set(SOURCE_FILES ${SOURCE_FILES} ${MPI_SOURCE_FILES})
 endif(COMPILE_MPI)
 
 add_executable(sim ${SOURCE_FILES})

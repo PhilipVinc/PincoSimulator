@@ -16,7 +16,7 @@ Manager::Manager(const Settings* _settings)
 }
 
 #ifdef MPI_SUPPORT
-void Manager::SetMPICommunicator(mpi::communicator* _comm)
+void Manager::SetMPICommunicator(MPI_Comm* _comm)
 {
     comm = _comm;
 }

@@ -9,6 +9,7 @@
 
 // serialization archive used
 #include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 
 #include <algorithm>
 #include <fstream>
@@ -16,7 +17,6 @@
 #include <numeric>
 
 
-namespace mpi = boost::mpi;
 using namespace std;
 
 
@@ -34,24 +34,28 @@ MPIProcessor::~MPIProcessor()
     cout << "Destroyed MPIProcessor" << endl;
 }
 
-void MPIProcessor::ProvideMPICommunicator(mpi::communicator* _comm)
+void MPIProcessor::ProvideMPICommunicator(MPI_Comm* _comm)
 {
     comm = _comm;
-    cout << "Receiving the MPICommunicator #" << comm << endl;
-    cout << "I've got rank:" << comm->rank() << endl;
-    for (int i=1; i < comm->size(); i++)
+    cout << "I've got rank: Master" <<endl;
+
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+    for (int i=1; i < world_size; i++)
     {
-        cout << "#" << comm->rank() << " - send to " << i << " the solvername." << endl;
+        cout << "Master - send to " << i << " the solvername." << endl;
         // tag 1 is the solvername.
-        comm->send(i, SOLVER_STRING_MESSAGE_TAG, _solverName);
-        cout << "#" << comm->rank() << " - send to " << i << " has finished." << endl;
+        MPI_Send(_solverName.c_str(), _solverName.length(), MPI_CHAR,
+        i, SOLVER_STRING_MESSAGE_TAG, MPI_COMM_WORLD);
+        cout << "Master - send to " << i << " has finished." << endl;
 
         nodeRank.push_back(i);
         activeNodes.push_back(nodeRank.size()-1);
         tasksSentToNode.push_back(0);
         resultsReceivedFromNode.push_back(0);
         recvListeningToNode.push_back(false);
-        commRecvRequests.push_back(nullptr); // Fill with null requests
+        commRecvRequests.emplace_back(); // Fill with null requests
         commRecvBuffers.push_back(nullptr); // Fill with null requests
         commRecvBuffersSize.push_back(0); // Fill with null requests
     }
@@ -80,15 +84,28 @@ void MPIProcessor::Update()
         for (size_t n = 0; n < dequeuedTasks; n += nTasksPerNode) {
             size_t nn = min(nTasksPerNode, dequeuedTasks - n);
             auto data = std::vector<TaskData *>(tasks.begin() + n, tasks.begin() + n + nn);
-            commSendBuffers.push_back(data);
+
+            std::ostringstream *stringBuffer = new std::ostringstream();
+            {
+                boost::archive::binary_oarchive oa(*stringBuffer);
+                oa << data;
+            }
+            for (auto el :data)
+            {
+                delete el;
+            }
+            commSendBuffers.push_back(stringBuffer);
+            commSendRequests.emplace_back();
 
             int nodeId = activeNodes[nodes];
 
             cout << "Master: Sending " << nn << " tasks to #" << nodeRank[nodeId] << endl;
-            commSendRequests.push_back(comm->isend(nodeRank[nodeId], TASKDATA_VECTOR_MESSAGE_TAG, data));
+            MPI_Isend(stringBuffer->str().c_str(), stringBuffer->str().size(),
+                      MPI_BYTE, nodeRank[nodeId], TASKDATA_VECTOR_MESSAGE_TAG,
+                      MPI_COMM_WORLD, &commSendRequests.back());
             cout << "Master - Created isend to #" << nodeRank[nodeId] << endl;
 
-            tasksSentToNode[nodes] += nn;
+            tasksSentToNode[nodeRank[nodeId]] += nn;
             nodes++;
             nodes = nodes % activeNodes.size();
 
@@ -96,7 +113,14 @@ void MPIProcessor::Update()
         // Done creating the send requests. Now test them
         cout << "Master - Testing all isend" << endl;
 
-        mpi::test_all(commSendRequests.begin(), commSendRequests.end());
+        if (statuses.size() < commSendRequests.size()) {
+            while (statuses.size() < commSendRequests.size()) {
+                statuses.emplace_back();
+            }
+        }
+
+        int flag;
+        MPI_Testall(commSendRequests.size(), &commSendRequests[0], &flag, &statuses[0]);
     }
 
     // 2 - Try to receive everything
@@ -107,19 +131,18 @@ void MPIProcessor::Update()
         if (recvListeningToNode[n] != true) {
             MPI_Status status;
             int flag;
-            MPI_Iprobe(nodeRank[n], TASKRESULTS_VECTOR_MESSAGE_TAG, *comm, &flag, &status);
+            MPI_Iprobe(nodeRank[n], TASKRESULTS_VECTOR_MESSAGE_TAG, MPI_COMM_WORLD, &flag, &status);
             if (flag) {
                 cout << "Master: got message from #" << nodeRank[n] << ". Posting receive" << endl;
                 int msgSize;
                 MPI_Get_count(&status, MPI_BYTE, &msgSize);
                 char *data = new char[msgSize];
 
-                MPI_Request *iReq = new MPI_Request;
-                commRecvRequests[n] = iReq;
                 commRecvBuffers[n] = data;
                 commRecvBuffersSize[n] = msgSize;
 
-                MPI_Irecv(data, msgSize, MPI_BYTE, nodeRank[n], TASKRESULTS_VECTOR_MESSAGE_TAG, *comm, iReq);
+                MPI_Irecv(data, msgSize, MPI_BYTE, nodeRank[n],
+                          TASKRESULTS_VECTOR_MESSAGE_TAG, MPI_COMM_WORLD, &commRecvRequests[n]);
                 recvListeningToNode[n] = true;
             }
         }
@@ -129,11 +152,33 @@ void MPIProcessor::Update()
         //cout << "Master - Checking for Sent stuff." << endl;
         for (int i = 0; i < commSendRequests.size(); i++) {
             //cout << "Master - Checking for req " << i << endl;
-            auto res = commSendRequests[i].test();
-            if (res) {
+            MPI_Status status; int done;
+            MPI_Test(&commSendRequests[i], &done, &status);
+            if (done)
+            {
                 //cout << "Master - has sent." << endl;
-                commSendRequests.erase(commSendRequests.begin() + i);
-                commSendBuffers.erase(commSendBuffers.begin() + i);
+                delete commSendBuffers[i];
+                commSendBuffers.erase(commSendBuffers.begin()+i);
+                commSendRequests.erase(commSendRequests.begin()+i);
+                i--;
+            }
+
+        }
+    }
+
+    // Test miscellaneous requests
+    if (miscSendReqs.size() != 0) {
+        //cout << "Master - Checking for Sent stuff." << endl;
+        for (int i = 0; i < miscSendReqs.size(); i++) {
+            //cout << "Master - Checking for req " << i << endl;
+            MPI_Status status; int done;
+            MPI_Test(&miscSendReqs[i], &done, &status);
+            if (done)
+            {
+                //cout << "Master - has sent." << endl;
+                delete[] miscSendBuffers[i];
+                miscSendBuffers.erase(miscSendBuffers.begin()+i);
+                miscSendReqs.erase(miscSendReqs.begin()+i);
                 i--;
             }
         }
@@ -147,7 +192,7 @@ void MPIProcessor::Update()
         if (recvListeningToNode[n] == true)
         {
             int flag; MPI_Status status;
-            MPI_Test(commRecvRequests[n], &flag, &status);
+            MPI_Test(&commRecvRequests[n], &flag, &status);
             if (flag)
             {
                 std::istringstream iss(string(commRecvBuffers[n] , commRecvBuffersSize[n]));
@@ -167,15 +212,15 @@ void MPIProcessor::Update()
     }
 
     // 5 - Receive Miscellaneuous Messages
-    while ( auto message = comm->iprobe(MPI_ANY_SOURCE, NODE_TERMINATED_MESSAGE_TAG) )
+    MPI_Status status; int flag;
+    MPI_Iprobe(MPI_ANY_SOURCE,NODE_TERMINATED_MESSAGE_TAG, MPI_COMM_WORLD,
+               &flag, &status);
+    if (flag)
     {
-        auto msg = *message;
-        // Check the tag
-        if (msg.tag() == NODE_TERMINATED_MESSAGE_TAG)
-        {
-            comm->recv(msg.source(), msg.tag());
-            NodeTerminated(msg.source());
-        }
+        int nn;
+        MPI_Recv(&nn, 1, MPI_INT, status.MPI_SOURCE, NODE_TERMINATED_MESSAGE_TAG,
+        MPI_COMM_WORLD, &status);
+        NodeTerminated(status.MPI_SOURCE);
     }
 
     if (producersHaveBeenTerminated && !waitingNodesToTerminate && dequeuedTasks == 0 )//accumulate(tasksSentToNode.begin(), tasksSentToNode.end(),0)  )
@@ -199,7 +244,15 @@ void MPIProcessor::SendTerminationMessage()
     {
         int i = activeNodes[in];
         cout << "Master: - Sent termination message to #" << nodeRank[i] << " with nTasks = "<< tasksSentToNode[i] <<endl;
-        miscSendReqs.push_back(comm->isend(nodeRank[i], TERMINATE_WHEN_DONE_MESSAGE_TAG, tasksSentToNode[i]));
+
+        int *buf = new int;
+        buf[0] = tasksSentToNode[i];
+
+        miscSendBuffers.push_back(buf);
+        miscSendReqs.emplace_back();
+
+        MPI_Isend(buf, 1, MPI_INT, nodeRank[i], TERMINATE_WHEN_DONE_MESSAGE_TAG, MPI_COMM_WORLD,
+                  &miscSendReqs.back());
     }
     waitingNodesToTerminate = true;
 }

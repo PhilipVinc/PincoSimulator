@@ -7,11 +7,8 @@
 
 
 #ifdef MPI_SUPPORT
-#include <boost/mpi.hpp>
-#include <boost/mpi/environment.hpp>
-#include <boost/mpi/communicator.hpp>
-#include "Base/MPIManager/MPINodeManager.hpp"
-namespace mpi = boost::mpi;
+#include <mpi.h>
+#include "Base/MPITaskProcessor/MPINodeManager.hpp"
 #endif
 
 using namespace std;
@@ -19,11 +16,14 @@ using namespace std;
 int main(int argc, char * argv[])
 {
 #ifdef MPI_SUPPORT
-    mpi::environment env(boost::mpi::threading::level::funneled);
-    mpi::communicator world;
+    int threadLevel;
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &threadLevel);
 
-    std::cout << "I am process " << world.rank() << " of " << world.size()
-              << " with comm #"<< &world << "."<< std::endl;
+    int rank; MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int world_size; MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+
+    std::cout << "I am process " << rank << " of " << world_size << std::endl;
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
 
@@ -31,22 +31,19 @@ int main(int argc, char * argv[])
 
     fflush(stdout);
 
-    if (world.rank() == 0)
+    if (rank == 0)
     {
-        cout << "Max Tag number is: "<< env.max_tag() << endl;
-        cout << "Reserved tag id is #" << env.collectives_tag() << endl;
-        cout << "Thread support level is: "<< env.thread_level() << endl;
-#endif
-        int i = 0;
-        // while (0 == i)
-        //     sleep(5);
+        sleep(2);
 
+        //cout << "Max Tag number is: "<< env.max_tag() << endl;
+        //cout << "Reserved tag id is #" << env.collectives_tag() << endl;
+        cout << "Thread support level is: "<< threadLevel << endl;
+#endif
         Settings *settings = new Settings(argc, argv);
 
         Manager *manager = ManagerFactory::makeRawNewInstance(settings->get<string>("Manager"), settings);
 #ifdef MPI_SUPPORT
-        cout << "here is " << &world << endl;
-        manager->SetMPICommunicator(&world);
+        manager->SetMPICommunicator(nullptr);
 #endif
         manager->Setup();
         if (!(manager == nullptr)) {
@@ -60,11 +57,13 @@ int main(int argc, char * argv[])
     } else {
         int i = 0;
        // while (0 == i)
-             sleep(1);
+             sleep(2);
+        cout << rank << " - Creating NodeManager" << endl;
 
-        MPINodeManager* node = new MPINodeManager(&world);
+        MPINodeManager* node = new MPINodeManager(nullptr);
         node->ManagerLoop();
     }
+    MPI_Finalize();
 #endif
     return 0;
 }

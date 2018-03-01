@@ -8,13 +8,9 @@
 #include "../Interfaces/IResultConsumer.hpp"
 #include "../TaskProcessor.hpp"
 
-#include <boost/mpi/environment.hpp>
-#include <boost/mpi/communicator.hpp>
+#include <mpi.h>
 
 #include <queue>
-
-
-namespace mpi = boost::mpi;
 
 
 class MPIProcessor : public TaskProcessor
@@ -23,7 +19,7 @@ public:
     MPIProcessor(std::string solverName, int nodes, int processesPerNode);
     ~MPIProcessor();
 
-    void ProvideMPICommunicator(boost::mpi::communicator* comm);
+    void ProvideMPICommunicator(MPI_Comm* comm);
 
     virtual void Update() final;
     virtual void Setup() final;
@@ -42,7 +38,7 @@ protected:
     int nNodes;
     int nProcessesPerNode;
 
-    mpi::communicator* comm;
+    MPI_Comm* comm;
 
     // Nodes and their performance
     std::vector<int> activeNodes;
@@ -51,16 +47,20 @@ protected:
     std::vector<size_t> resultsReceivedFromNode;
 
     // MPI Send TaskData elements
-    std::vector<mpi::request> commSendRequests;
-    std::vector<std::vector<TaskData*>> commSendBuffers;
+    std::vector<MPI_Request> commSendRequests;
+    std::vector<std::ostringstream*> commSendBuffers;
 
     //MPI Receuve Buffers and flags
     std::vector<bool> recvListeningToNode;
     std::vector<char*> commRecvBuffers;
     std::vector<size_t> commRecvBuffersSize;
-    std::vector<MPI_Request*> commRecvRequests;
+    std::vector<MPI_Request> commRecvRequests;
 
-    std::vector<mpi::request> miscSendReqs;
+    // Buffer
+    std::vector<MPI_Status> statuses;
+
+    std::vector<MPI_Request> miscSendReqs;
+    std::vector<void*> miscSendBuffers;
 
     bool producersHaveBeenTerminated = false;
     bool waitingNodesToTerminate = false;

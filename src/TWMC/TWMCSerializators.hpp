@@ -8,14 +8,11 @@
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <boost/mpi/packed_iarchive.hpp>
-#include <boost/mpi/packed_oarchive.hpp>
+//#include <boost/mpi/packed_iarchive.hpp>
+//#include <boost/mpi/packed_oarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 
-// I have to include them because they include the mpi archive
-#include <boost/mpi/environment.hpp>
-#include <boost/mpi/communicator.hpp>
 
 #include "TWMCResults.hpp"
 #include "TWMCSystemData.hpp"
