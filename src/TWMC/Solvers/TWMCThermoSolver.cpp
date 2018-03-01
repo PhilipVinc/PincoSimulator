@@ -94,12 +94,12 @@ void TWMCThermoSolver::Setup() {
     fft_norm_factor = data->nxy;
 }
 
-std::vector<TaskResults*> TWMCThermoSolver::Compute(const std::vector<TaskData *> tasks)
+std::vector<TaskResults*> TWMCThermoSolver::Compute(const std::vector<std::unique_ptr<TaskData>>& tasks)
 {
     std::vector<TaskResults*> allResults;
     for (size_t i =0; i < tasks.size(); i++ )
     {
-        TWMCTaskData* task = static_cast<TWMCTaskData*>(tasks[i]);
+        TWMCTaskData* task = static_cast<TWMCTaskData*>(tasks[i].get());
 
         // Check if the system is always the same
         if (task->systemData != lastSharedSystemData)

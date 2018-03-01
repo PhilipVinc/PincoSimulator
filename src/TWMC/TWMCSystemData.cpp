@@ -42,10 +42,10 @@ TWMCSystemData::TWMCSystemData(const Settings* settings)
 		dimension = Dimension::D2;
 	}
 
-	U = settings->GetMatrix("U", nx, ny, cellSz);
-	F = settings->GetMatrix("F",  nx, ny, cellSz);
-    omega = settings->GetMatrix("omega",  nx, ny, cellSz);
-    E = settings->GetMatrix("E",  nx, ny, cellSz);
+	U = std::unique_ptr<NoisyMatrix>(settings->GetMatrix("U", nx, ny, cellSz));
+	F = std::unique_ptr<NoisyMatrix>(settings->GetMatrix("F",  nx, ny, cellSz));
+    omega = std::unique_ptr<NoisyMatrix>(settings->GetMatrix("omega",  nx, ny, cellSz));
+    E = std::unique_ptr<NoisyMatrix>(settings->GetMatrix("E",  nx, ny, cellSz));
 	//gamma = settings->GetMatrix("gamma",  nx, ny);
 
 	// Read the Uniform Values
@@ -107,10 +107,7 @@ TWMCSystemData::TWMCSystemData()
 
 TWMCSystemData::~TWMCSystemData()
 {
-    delete U;
-    delete F;
-    delete omega;
-    delete E;
+
 }
 
 vector<float_p> TWMCSystemData::GetStoredTimes() const
@@ -150,4 +147,24 @@ vector<vector<float_p>> TWMCSystemData::GetStoredVariableEvolution(const NoisyMa
         t+=dt; i_step ++;
     }
     return result;
+}
+
+vector<vector<float_p>> TWMCSystemData::GetStoredVariableEvolution(std::unique_ptr<NoisyMatrix> const& mat) const
+{
+	vector<vector<float_p>> result(n_frames, vector<float_p>(nx*ny));
+
+	float_p t = t_start; size_t i_step = 0; size_t i_frame = 0;
+	while(t<=t_end) {
+		if ((i_step % frame_steps == 0) && i_frame < n_frames) {
+			MatrixCXd m = mat->GetAtTime(t);
+			complex_p *data = m.data();
+			for (int kk = 0; kk != nx * ny; kk++) {
+				result[i_frame][kk] = data[kk].real();
+			}
+			i_frame++;
+		}
+		t += dt;
+		i_step++;
+	}
+return result;
 }

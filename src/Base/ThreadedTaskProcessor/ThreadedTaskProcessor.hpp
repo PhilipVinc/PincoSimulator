@@ -30,7 +30,7 @@ public:
 
 	// -------- Called From Workers ---------- //
 	// Take a task from dispatchedTasks to execute it (called by a worker)
-	std::vector<TaskData*> GetDispatchedTasks(size_t th_id, size_t maxTasks =1);
+	std::vector<std::unique_ptr<TaskData>> GetDispatchedTasks(size_t th_id, size_t maxTasks =1);
 	void GiveCompletedResults(size_t th_id, std::vector<TaskResults*> res);
 	void GiveCompletedResults(size_t th_id, TaskResults* res);
 	// -------------------------------------- //

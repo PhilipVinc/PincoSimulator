@@ -22,6 +22,11 @@ WorkerThread::WorkerThread(size_t id, ThreadedTaskProcessor* manager, Solver* so
 
 	computing = false;
 	terminate = false;
+
+	/*while(_currentTasks.size() < _solver->nTasksToRequest) {
+		_currentTasks.emplace_back(std::unique_ptr<TaskData>(nullptr));
+	}*/
+
 }
 
 WorkerThread::~WorkerThread()
@@ -29,17 +34,17 @@ WorkerThread::~WorkerThread()
     delete _solver;
 	if (_data != nullptr)
 		delete _data;
-	std::for_each(_currentTasks.begin(),
+	/*std::for_each(_currentTasks.begin(),
 	              _currentTasks.end(),
-	              std::default_delete<TaskData>());
+	              std::default_delete<TaskData>());*/
 }
 
 void WorkerThread::WorkerLoop()
 {
     while (!terminate)
     {
-        _currentTasks = _manager->GetDispatchedTasks(_id, _solver->nTasksToRequest);
-        if (_currentTasks.size() != 0)
+	    _currentTasks = _manager->GetDispatchedTasks(_id, _solver->nTasksToRequest);
+	    if (_currentTasks.size() != 0)
         {
             // Profiler
             if (profileEnabled)

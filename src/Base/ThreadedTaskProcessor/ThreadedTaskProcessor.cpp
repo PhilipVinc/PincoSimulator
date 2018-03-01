@@ -114,10 +114,15 @@ void ThreadedTaskProcessor::Update()
 }
 
 // Take a task from dispatchedTasks to execute it (called by a worker)
-std::vector<TaskData*> ThreadedTaskProcessor::GetDispatchedTasks(size_t th_id, size_t maxTasks)
+std::vector<std::unique_ptr<TaskData>> ThreadedTaskProcessor::GetDispatchedTasks(size_t th_id, size_t maxTasks)
 {
-	std::vector<TaskData*> tasks = std::vector<TaskData*>(maxTasks, NULL);
-	size_t dequeuedTasks = enqueuedTasks.try_dequeue_bulk( tasks.begin(), maxTasks);
+	std::vector<std::unique_ptr<TaskData>> tasks;
+	for (int i=0; i<3; i++) {
+		tasks.emplace_back(std::unique_ptr<TaskData>(nullptr));
+	}
+
+	size_t dequeuedTasks = enqueuedTasks.try_dequeue_bulk( std::make_move_iterator(tasks.begin()),
+	                                                       maxTasks);
 	tasks.resize(dequeuedTasks);
 	return tasks;
 }

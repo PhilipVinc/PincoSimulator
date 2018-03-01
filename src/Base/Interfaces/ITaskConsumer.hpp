@@ -6,21 +6,23 @@
 #define SIMULATOR_ITASKCONSUMER_HPP
 
 #include "Libraries/concurrentqueue.h"
-#include "../TaskData.hpp"
 
+#include <memory>
 #include <vector>
+class TaskData;
+
 
 class ITaskConsumer {
 public:
-	void EnqueueTasks(std::vector<TaskData*> tasks);
-	void EnqueueTasks(std::vector<TaskData *> tasks, size_t prodID);
+	void EnqueueTasks(std::vector<std::unique_ptr<TaskData>>&& tasks);
+	void EnqueueTasks(std::vector<std::unique_ptr<TaskData>>&& tasks, size_t prodID);
 
 	size_t RequestProducerID();
 
 protected:
 	// Queue of tasks that are waiting to be executed by a worker.
 	// Fed by Manager, Eaten by Workers
-	moodycamel::ConcurrentQueue<TaskData*> enqueuedTasks;
+	moodycamel::ConcurrentQueue<std::unique_ptr<TaskData>> enqueuedTasks;
 	size_t nEnqueuedTasks = 0;
 
 	// Producers registered with a token. The producer ID is the index

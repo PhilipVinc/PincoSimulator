@@ -1,8 +1,6 @@
 //
 // Created by Filippo Vicentini on 23/12/17.
 //
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 
 #include "TWMCManager.hpp"
 
@@ -16,6 +14,7 @@
 #include "Base/NoisyMatrix.hpp"
 #include "Base/Utils/StringFormatter.hpp"
 
+#include <memory>
 #include <vector>
 #include <chrono>
 
@@ -97,20 +96,22 @@ void TWMCManager::Setup() {
 
 void TWMCManager::ManagerLoop() {
     size_t nTaskToEnqueue = settings->get<size_t>("n_traj");
-	std::vector<TaskData*> tasks(nTaskToEnqueue, nullptr);
-	for (size_t i = 0; i < nTaskToEnqueue; i++)
-	{
-		auto tmp = new TWMCTaskData();
-		tmp->systemData = _sysData;
-		tmp->t_start = _sysData->t_start;
-		tmp->t_end = _sysData->t_end;
-		tmp->initialCondition = TWMCTaskData::InitialConditions ::ReadFromSettings;
-		tmp->rngSeed = seedGenerator();
-		tasks[i] = tmp;
+    {
+        std::vector<std::unique_ptr<TaskData>> tasks;
+        tasks.reserve(nTaskToEnqueue);
+        for (size_t i = 0; i < nTaskToEnqueue; i++) {
+            TWMCTaskData* tmp = new TWMCTaskData();
+            tmp->systemData = _sysData;
+            tmp->t_start = _sysData->t_start;
+            tmp->t_end = _sysData->t_end;
+            tmp->initialCondition = TWMCTaskData::InitialConditions::ReadFromSettings;
+            tmp->rngSeed = seedGenerator();
+            std::unique_ptr<TaskData> tmp2(tmp);
+            tasks.push_back(std::move(tmp2));
+        }
+        _processor->EnqueueTasks(std::move(tasks));
+        _processor->AllProducersHaveBeenTerminated();
     }
-
-
-
     // Time
     chrono::system_clock::time_point startTime = chrono::system_clock::now();
     chrono::system_clock::time_point lastPrintTime = startTime;
@@ -118,8 +119,6 @@ void TWMCManager::ManagerLoop() {
     size_t lastMsgLength = 0;
     // -----end time
 
-    _processor->EnqueueTasks(tasks);
-    _processor->AllProducersHaveBeenTerminated();
 
     while(_saver->savedItems < nTaskToEnqueue)
 	{

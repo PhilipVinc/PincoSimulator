@@ -6,15 +6,15 @@
 
 #import "../TaskData.hpp"
 
-void ITaskConsumer::EnqueueTasks(std::vector < TaskData * > tasks) {
-	enqueuedTasks.enqueue_bulk(tasks.begin(), tasks.size());
+void ITaskConsumer::EnqueueTasks(std::vector<std::unique_ptr<TaskData>>&& tasks) {
+	enqueuedTasks.enqueue_bulk(std::make_move_iterator(tasks.begin()),
+	                           tasks.size());
 	nEnqueuedTasks += tasks.size();
 }
 
-void ITaskConsumer::EnqueueTasks(std::vector<TaskData *> tasks,
-                                       size_t prodID){
+void ITaskConsumer::EnqueueTasks(std::vector<std::unique_ptr<TaskData>>&& tasks, size_t prodID) {
 	enqueuedTasks.enqueue_bulk(requestedTokens[prodID],
-	                           tasks.begin(),
+	                           std::make_move_iterator(tasks.begin()),
 	                           tasks.size());
 	nEnqueuedTasks += tasks.size();
 }

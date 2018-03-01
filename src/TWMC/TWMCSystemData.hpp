@@ -8,6 +8,7 @@
 #include "Base/TaskData.hpp"
 #include "TWMCTypes.h"
 
+#include <memory>
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -33,7 +34,8 @@ public:
     ~TWMCSystemData();
 
     vector<float_p> GetStoredTimes() const;
-    vector<vector<float_p>> GetStoredVariableEvolution(const NoisyMatrix* mat) const;
+	vector<vector<float_p>> GetStoredVariableEvolution(const NoisyMatrix* mat) const;
+	vector<vector<float_p>> GetStoredVariableEvolution(std::unique_ptr<NoisyMatrix> const& mat) const;
 
     std::string latticeName;
     size_t nx;
@@ -41,10 +43,10 @@ public:
     size_t nxy;
     size_t cellSz;
 
-    NoisyMatrix *U;
-	NoisyMatrix *F;
-	NoisyMatrix *omega;
-    NoisyMatrix *E;
+    std::unique_ptr<NoisyMatrix> U;
+	std::unique_ptr<NoisyMatrix> F;
+	std::unique_ptr<NoisyMatrix> omega;
+	std::unique_ptr<NoisyMatrix> E;
 	MatrixCXd J;
 	MatrixCXd gamma;
 
