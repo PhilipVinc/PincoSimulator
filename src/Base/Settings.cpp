@@ -9,8 +9,8 @@
 #include "Settings.hpp"
 
 #include "CustomTypes.h"
-#include "FsUtils.hpp"
-#include "FilesystemLibrary.h"
+#include "Utils/FsUtils.hpp"
+#include "Libraries/FilesystemLibrary.h"
 #include "NoisyMatrix.hpp"
 
 #pragma clang diagnostic push
@@ -34,6 +34,7 @@ using namespace std;
 
 Settings::Settings(int argc, char* argv[])
 {
+    cout << "--- Reading Settings..." << endl;
     po::options_description desc("Allowed options");
        desc.add_options()
         ("help", "Print help messages")
@@ -158,7 +159,8 @@ Settings::Settings(int argc, char* argv[])
             string val = parameters_override[i+1];
             tree->put(key, val);
         }
-        
+
+        cout << "--- Printing .ini file content:" << endl;
         for (pt::ptree::value_type &keyval : tree->get_child("") )
         {
             std::string name = keyval.first;
@@ -256,9 +258,21 @@ template<>  size_t Settings::get<size_t>(string path) const
     return result;
 }
 
+template<>  size_t Settings::get<size_t>(string path, size_t defVal ) const
+{
+    size_t result = tree->get<size_t>(path, defVal);
+    return result;
+}
+
 template<>  int Settings::get<int>(string path) const
 {
     int result = tree->get<int>(path, 0);
+    return result;
+}
+
+template<>  int Settings::get<int>(string path, int defVal) const
+{
+    int result = tree->get<int>(path, defVal);
     return result;
 }
 
@@ -323,10 +337,10 @@ unsigned int Settings::GlobalSeed() const
 vector<float_p> ReadCharFile(const string &path);
 map<float_p,vector<float_p>> ReadTemporalCharFile(const string &path);
 
-NoisyMatrix* Settings::GetMatrix(string path, size_t nx, size_t ny) const
+NoisyMatrix* Settings::GetMatrix(string path, size_t nx, size_t ny, size_t cellSz) const
 {
     NoisyMatrix* result;
-    result = new NoisyMatrix(nx, ny);
+    result = new NoisyMatrix(nx, ny, cellSz);
 
 	filesystem::path root = GetRootFolder();
     string matPath = tree->get<string>(path, "xxx");

@@ -9,6 +9,7 @@
 #ifndef ChunkFileSet_hpp
 #define ChunkFileSet_hpp
 
+#include <memory>
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -27,13 +28,14 @@ public:
 	~ChunkFileSet();
     
     FILE* GetFile(size_t datasetId);
-    size_t WriteToChunk(TaskResults* results);
+    size_t WriteToChunk(std::unique_ptr<TaskResults> const& results);
     void FlushData();
     bool IsChunkBig();
     
-    size_t GetId();
+    size_t GetId() {return id;};
 protected:
     size_t WriteToChunk(size_t datasetId, const void * ptr, size_t dataSize);
+    TaskResults* ReadEntry(size_t entryChunkId, bool lastItems = false);
 	void Initialise();
 
 private:
@@ -49,6 +51,7 @@ private:
     size_t N;
     
     size_t* buffer;
+	size_t bufferByteSize;
     size_t id;
     size_t nTrajWritten = 0;
 	bool initialised = false;

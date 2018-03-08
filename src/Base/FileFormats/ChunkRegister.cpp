@@ -8,8 +8,8 @@
 
 #include "ChunkRegister.hpp"
 
-#include "TaskResults.hpp"
-#include "FilesystemLibrary.h"
+#include "Base/TaskResults.hpp"
+#include "Libraries/FilesystemLibrary.h"
 
 #include <algorithm>
 #include <iostream>
@@ -22,7 +22,7 @@ const unsigned char fileVersion = 1;
 
 ChunkRegister::ChunkRegister(std::string _path)
 {
-    cout << "Creating ChunkRegister" << endl;
+    cout << "Instantiating ChunkRegister Class" << endl;
     registerFilePath = _path;
 
     if (OpenRegisterFile()) {
@@ -82,6 +82,7 @@ bool ChunkRegister::ReadRegisterEntries()
 
 bool ChunkRegister::CreateNewRegisterFile()
 {
+    cout << "Creating new register file at path: " << registerFilePath << endl;
     registerFile = fopen(registerFilePath.c_str(), "wb");
     newRun = true;
     registerInitialized = false;
@@ -94,6 +95,7 @@ bool ChunkRegister::OpenRegisterFile()
     if (!filesystem::exists(registerFilePath))
         return false;
 
+    cout << "Loading Register file: " << registerFilePath << endl;
     registerFile = fopen(registerFilePath.c_str(), "rb+");
     size_t version = CheckRegisterVersion();
 
@@ -102,6 +104,9 @@ bool ChunkRegister::OpenRegisterFile()
         fclose(registerFile);
         return false;
     }
+
+    ReadRegisterHeader();
+
 
     return true;
 }
@@ -134,7 +139,7 @@ size_t ChunkRegister::CheckRegisterVersion()
     return fileVersion;
 }
 
-void ChunkRegister::InitializeRegisterHeader(TaskResults* results)
+void ChunkRegister::InitializeRegisterHeader(std::unique_ptr<TaskResults> const& results)
 {
     // -- Initialize the file
     // 1) write the magic 8 bytes
@@ -275,17 +280,17 @@ bool ChunkRegister::ReadRegisterHeader()
 	}
 }
 
-void ChunkRegister::GoToTrajectoryDataBegin()
+inline void ChunkRegister::GoToTrajectoryDataBegin()
 {
     fseek(registerFile, trajDataBegin, SEEK_SET);
 }
 
-void ChunkRegister::GoToCurrentWritePosition()
+inline void ChunkRegister::GoToCurrentWritePosition()
 {
     fseek(registerFile, storedEntries*sizeOfTrajEntry + trajDataBegin, SEEK_SET);
 }
 
-void ChunkRegister::RegisterStoredData(TaskResults* results,
+void ChunkRegister::RegisterStoredData(std::unique_ptr<TaskResults> const& results,
                                        size_t chunkId,
                                        size_t chunkOffset,
                                        Settings::SaveSettings saveType)
@@ -320,7 +325,7 @@ void ChunkRegister::RegisterStoredData(TaskResults* results,
 }
 
 
-size_t ChunkRegister::GetNumberOfSavedTasks()
+inline size_t ChunkRegister::GetNumberOfSavedTasks()
 {
     return storedEntries;
 }
@@ -358,7 +363,7 @@ std::vector<size_t> ChunkRegister::GetSavedTasksIds()
 	return ids;
 }
 
-ChunkRegister::RegisterEntry* ChunkRegister::GetEntryByPosition(size_t index)
+inline ChunkRegister::RegisterEntry* ChunkRegister::GetEntryByPosition(size_t index)
 {
 	return entries[index];
 }

@@ -35,9 +35,11 @@ protected:
     ChunkFileSet* GetWritableChunk();
 private:
 
-	virtual void StoreDataSimple(TaskResults* results);
-	virtual void StoreDataComplex(TaskResults* results);
+	virtual void StoreDataSimple(std::unique_ptr<TaskResults> const& results);
+	virtual void StoreDataComplex(std::unique_ptr<TaskResults> const& results);
 	virtual void LoadListOfStoredDataEvents();
+
+	void Initialise(std::unique_ptr<TaskResults> const& task);
 
 	size_t NewChunkId();
 	void CreateNewChunk();
@@ -51,6 +53,8 @@ private:
     
     ChunkRegister* cRegister;
     ChunkFileSet* cachedWriteChunk;
+
+	bool initialised = false;
 };
 
 #endif /* PincoFormatDataStore_hpp */

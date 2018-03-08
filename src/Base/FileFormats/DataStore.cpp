@@ -10,10 +10,10 @@
 
 #include "ChunkRegister.hpp"
 #include "ChunkFileSet.hpp"
-#include "FilesystemLibrary.h"
-#include "FsUtils.hpp"
-#include "Settings.hpp"
-#include "TaskResults.hpp"
+#include "Libraries/FilesystemLibrary.h"
+#include "../Utils/FsUtils.hpp"
+#include "../Settings.hpp"
+#include "../TaskResults.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -35,7 +35,7 @@ DataStore::DataStore(const Settings* settings, string folderName)
 }
 
 
-bool DataStore::SaveTaskResults(TaskResults* task)
+bool DataStore::SaveTaskResults(std::unique_ptr<TaskResults> const& task)
 {
     StoreDataSimple(task);
     return true;
@@ -60,9 +60,8 @@ void DataStore::SaveFile(string fileName, vector<float_p> data)
     //FILE* f = fopen(pp.string().c_str(), "w+");
     ofstream f;
     f.open(pp.string(), ofstream::out);
-    for(int i =0; i< data.size(); i++)
-    {
-        f << data[i] << endl;
+    for (float_p i : data) {
+        f << i << endl;
     }
     f.close();
     //fwrite(data, sizeof(data), length, f);

@@ -46,12 +46,24 @@ MatrixCXd InitMatrix(size_t nx,size_t ny ,complex_p value)
     return vec;
 }
 
+MatrixCXd InitMatrix(size_t nx,size_t ny , size_t cellSz,complex_p value)
+{
+    size_t nxy = nx*ny*cellSz;
+    MatrixCXd vec = MatrixCXd(nx,ny*cellSz);
+    for (size_t i=0; i < nxy; i++)
+    {
+        vec(i) = value;
+    }
+    return vec;
+}
+
+
 MatrixCXd InitMatrix(size_t nx,size_t ny ,std::vector<float_p>& values)
 {
     size_t nxy = nx*ny;
     size_t valSize = values.size();
     MatrixCXd mat = MatrixCXd(nx,ny);
-    
+
     // then it is real
     if (valSize==nxy)
     {

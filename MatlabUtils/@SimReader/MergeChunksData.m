@@ -7,13 +7,31 @@ function output = MergeChunksData( obj )
     % Special case when we only have 1 chunk.
     if nChunks == 1
         obj.data = obj.chunkData{1};
-        obj.chunkData = 0;
-        output = 'fast';
+        obj.chunkData{1} = [];
+        output = 'Fast';
         return
     end
     
-    chunkLenghts = zeros(1, nChunks);
+    % Check Empty Chunks
+    nEmptyChunks = 0;
     for i=1:nChunks
+        if isempty(obj.chunkData{i})
+            nEmptyChunks = nEmptyChunks+1;
+        end
+    end
+
+    if nChunks-nEmptyChunks == 1
+        obj.data = obj.chunkData{1};
+        obj.chunkData{1} = [];
+        output = 'Fast Single';
+        return
+    end
+    
+    chunkLenghts = zeros(1, nChunks); 
+    for i=1:nChunks
+        if isempty(obj.chunkData{i})
+            continue;
+        end
         chuSiz = size(obj.chunkData{i}{1});
         chunkLenghts(i) = chuSiz(end);
     end
@@ -34,6 +52,9 @@ function output = MergeChunksData( obj )
         
         k_t=1;
         for j = 1:nChunks
+            if isempty(obj.chunkData{j})
+                continue;
+            end
             obj.data{i}(:,:,k_t:(k_t+chunkLenghts(j)-1)) = obj.chunkData{j}{i};
             k_t = k_t + chunkLenghts(j);
             

@@ -97,6 +97,10 @@ classdef BaseSimRunner < handle
             obj.simName = [name, '_', datestr(now, 'yy-mm-dd_HH-MM-SS')];
             obj.hasName = true;
         end
+        
+        function SetProgram(obj, newProgram)
+            obj.programName = newProgram;
+        end
     end
 end
 

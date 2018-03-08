@@ -9,16 +9,24 @@
 #ifndef Settings_hpp
 #define Settings_hpp
 
-#include <boost/property_tree/ptree_fwd.hpp>
-
+#include <functional>
 #include <string>
 #include <vector>
 #include <stdio.h>
 
 class NoisyMatrix;
+namespace boost // Forward declaration of ptree
+{
+    namespace property_tree
+    {
+        template < class Key, class Data, class KeyCompare >
+        class basic_ptree;
 
+        typedef basic_ptree< std::string, std::string, std::less<std::string> > ptree;
+    }
+}
 
-namespace pt = boost::property_tree;
+//namespace pt = boost::property_tree;
 
 
 /*! 
@@ -36,7 +44,7 @@ public:
     template<class T> T get(std::string value) const;
     template<class T> T get(std::string value, const T defaultValue) const;
     //NoisyMatrix* GetMatrix(string value, vector<size_t> dims) const;
-    NoisyMatrix* GetMatrix(std::string value, size_t nx, size_t ny) const;
+    NoisyMatrix* GetMatrix(std::string value, size_t nx, size_t ny, size_t cellSz = 1) const;
     unsigned int GlobalSeed() const;
     std::string GetOutputFolder() const;
     std::string GetRootFolder() const;
@@ -52,8 +60,8 @@ public:
     Status status = Status::invalid;
     SaveSettings saveStatus = SaveSettings::saveIdFiles;
 
-protected:    
-    pt::ptree* tree;
+protected:
+    boost::property_tree::ptree* tree;
     std::string basePath;
 
     std::string inputPathStr;

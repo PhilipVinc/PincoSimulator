@@ -9,7 +9,7 @@
 #ifndef TWMCTypes_h
 #define TWMCTypes_h
 
-#include "CustomTypes.h"
+#include "Base/CustomTypes.h"
 
 #include <fftw3.h>
 

@@ -8,8 +8,8 @@
 
 #include "ChunkFileSet.hpp"
 
-#include "FilesystemLibrary.h"
-#include "TaskResults.hpp"
+#include "Libraries/FilesystemLibrary.h"
+#include "../TaskResults.hpp"
 
 #include <iostream>
 
@@ -18,11 +18,12 @@ using namespace std;
 
 ChunkFileSet::ChunkFileSet(std::string _basePath,
                            size_t nDatasets,
-                           size_t chunkId)
+                           size_t chunkId) :
+basePath(_basePath), N(nDatasets), id(chunkId)
 {
-	basePath=_basePath;
-    N = nDatasets;
-    id = chunkId;
+    if (nDatasets==0)
+        cout << "ERROR: Initialised ChunkFileSet with 0 datasets!" << endl;
+
     Initialise();
 }
 
@@ -65,7 +66,7 @@ void ChunkFileSet::Initialise()
         // if the file exists alredy
         if (filesystem::exists(fileNames[i]))
         {
-            cout << "Opening File " << fileNames[i] << endl;
+            cout << "Opening File: " << fileNames[i] << endl;
             files.push_back(fopen(fileNames[i].c_str(), "a+"));
 	        fseek(files[i], 0, SEEK_END);
 	        fileSizes.push_back(ftell(files[i]));
@@ -81,7 +82,8 @@ void ChunkFileSet::Initialise()
 	// Filename of the chunk register
     registerFileName = basePath + "index_" + to_string(id) + ".bin";
     registerTrajSize = sizeof(size_t)*(1+2*N);
-    buffer = new size_t[(1+2*N)];
+    bufferByteSize = (1+2*N);
+    buffer = new size_t[bufferByteSize];
 
     if (filesystem::exists(registerFileName))
     {
@@ -96,13 +98,13 @@ void ChunkFileSet::Initialise()
 }
 
 
-FILE* ChunkFileSet::GetFile(size_t datasetId)
+inline FILE* ChunkFileSet::GetFile(size_t datasetId)
 {
     return files[datasetId];
 }
 
 // To delete
-size_t ChunkFileSet::WriteToChunk(TaskResults* results)
+size_t ChunkFileSet::WriteToChunk(std::unique_ptr<TaskResults> const& results)
 {
     buffer[0] = results->GetId();
     for (size_t i = 0; i!=N; i++)
@@ -142,7 +144,43 @@ bool ChunkFileSet::IsChunkBig()
     return (fileSizes[0] > minChunkSize);
 }
 
-size_t ChunkFileSet::GetId()
+/*
+TaskResults* ChunkFileSet::ReadEntry(size_t entryChunkId, bool lastItems)
 {
-    return id;
-}
+    fseek(registerFile, entryChunkId*bufferByteSize, SEEK_SET);
+
+    if (fread(buffer, 1, bufferByteSize, registerFile) == bufferByteSize)
+    {
+        TaskResults* result = new TaskResults(N);
+        result->SetId(buffer[0]);
+
+        for (size_t i = 0; i != N; i++) {
+            size_t nEntries = buffer[1 + i*2];
+            size_t dataStartOffset = buffer[2 + i*2];
+
+            // Go to the beginning of the data
+            fseek(files[i], dataStartOffset , SEEK_SET);
+
+            // Read how big the data is
+            size_t dataSize = 0;
+            fread(&dataSize, 1, sizeof(size_t), files[i]);
+
+            // If we only want lastItem of each dataset, modify accordingly
+            if (lastItems && (nEntries != 1))
+            {
+                size_t elSize = dataSize / nEntries;
+                fseek(files[i], elSize*(nEntries -1), SEEK_CUR);
+                dataSize = elSize;
+            }
+
+            // Read the data
+            char *dataset = new char[dataSize];
+            fread(dataset, 1, dataSize, files[i]);
+            result->AddResult(to_string(i), dataset, dataSize, dataSize / nEntries, 0, {nEntries});
+        }
+        return result;
+    } else {
+        // Read operation went badly
+        return nullptr;
+    }
+}*/

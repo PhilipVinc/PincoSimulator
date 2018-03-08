@@ -10,7 +10,7 @@
 
 #include "ChunkFileSet.hpp"
 #include "ChunkRegister.hpp"
-#include "TaskResults.hpp"
+#include "../TaskResults.hpp"
 
 #include <algorithm>
 
@@ -68,16 +68,24 @@ ChunkFileSet* PincoFormatDataStore::GetWritableChunk()
     return cachedWriteChunk;
 }
 
-void PincoFormatDataStore::StoreDataSimple(TaskResults *results)
+
+void PincoFormatDataStore::Initialise(std::unique_ptr<TaskResults> const& results) {
+	datasetN = results->NumberOfDataSets();
+	initialised = true;
+}
+
+void PincoFormatDataStore::StoreDataSimple(std::unique_ptr<TaskResults> const& results)
 {
+	if (!initialised) { Initialise(results);};
     ChunkFileSet * cnk = GetWritableChunk();
     size_t offset = cnk->WriteToChunk(results);
     cRegister->RegisterStoredData(results, cnk->GetId(), offset, Settings::SaveSettings::saveIdFiles);
 }
 
-void PincoFormatDataStore::StoreDataComplex(TaskResults *results)
+void PincoFormatDataStore::StoreDataComplex(std::unique_ptr<TaskResults> const& results)
 {
-    ChunkFileSet * cnk = GetWritableChunk();
+	if (!initialised) { Initialise(results);};
+	ChunkFileSet * cnk = GetWritableChunk();
     size_t offset = cnk->WriteToChunk(results);
     cRegister->RegisterStoredData(results, cnk->GetId(), offset, Settings::SaveSettings::appendIdFiles);
 }

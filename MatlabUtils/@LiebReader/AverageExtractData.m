@@ -14,13 +14,23 @@ function res = AverageExtractData( obj, data, params )
     %%%-----------------------------------------------------------------%%%
     %%%                           Fix Params                            %%%
     %%%-----------------------------------------------------------------%%%
-
-    params.F_A = obj.ConvertInterleavedToComplex(params.F_A, length(params.F_A) >= 2*nxy);
-    params.F_B = obj.ConvertInterleavedToComplex(params.F_B, length(params.F_B) >= 2*nxy);
-    params.F_C = obj.ConvertInterleavedToComplex(params.F_C, length(params.F_C) >= 2*nxy);
+    
+    if isfield(params, 'F')
+    
+        params.F = obj.ConvertInterleavedToComplex(params.F, length(params.F) >= 2*3*nxy);
+        
+        params.F_A = params.F(1:3:end);
+        params.F_B = params.F(2:3:end);
+        params.F_C = params.F(3:3:end);
+    else
+        params.F_A = obj.ConvertInterleavedToComplex(params.F_A, length(params.F_A) >= 2*nxy);
+        params.F_B = obj.ConvertInterleavedToComplex(params.F_B, length(params.F_B) >= 2*nxy);
+        params.F_C = obj.ConvertInterleavedToComplex(params.F_C, length(params.F_C) >= 2*nxy);
+    end
     
     params.F_tot=sum(abs(params.F_A))+sum(abs(params.F_B))+sum(abs(params.F_C));
     params.I_tot=sum(abs(params.F_A).^2)+sum(abs(params.F_B).^2)+sum(abs(params.F_C).^2);
+
     
     %%%-----------------------------------------------------------------%%%
     %%%                         Hardcoded Stuff                         %%%
@@ -87,7 +97,7 @@ function res = AverageExtractData( obj, data, params )
     nk0_t=(mean(abs(beta_k0).^2/(nxy)-0.5, 3))./(n_a_t*nxy);
     nk0_tErr = linspace(0,0,length(nk0_t)); %TODO
     
-    % Correlation function if it is 2D
+    % Population of bands and of k modes
     if (params.nx ~= 1 && params.ny ~= 1)
         fprintf('Computing for 2D: ');
         fprintf('ERROROROROR!!!! ');
@@ -111,7 +121,10 @@ function res = AverageExtractData( obj, data, params )
         cutted_frames_k = length(params.t);
         
         nat_cut = n_a_t(t_cut_k:end);
-        
+
+        kx = (0:(nx-1))*pi/nx;
+        ky = (0:(ny-1))*pi/ny;
+
        	% Compute populations of nk neq 0
         fprintf('nk..');
         a_k=fft(data{trajId}(1:3:end,t_cut_k:end,:))*1/sqrt(nx);
@@ -256,6 +269,9 @@ function res = AverageExtractData( obj, data, params )
     res.ave.g1ij_t = g1ij_t;
     res.ave.corr1ij_t = corr1ij_t;
     res.ave.g2ij_t = g2ij_t;
+
+    res.params.kx = kx;
+    res.params.ky = ky;
     
     
     %%%-----------------------------------------------------------------%%%

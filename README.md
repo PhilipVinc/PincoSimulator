@@ -3,13 +3,24 @@
 Prerequisites:
 
     - FFTW3 (on mac: brew install fftw )
-    - Boost > 1.6.3
+    - Boost >= 1.6.3 (program_options, system, filesystem)
     - C++14 compiler 
+
+Optionals:
+
+    - GPU Kernels Support (-DCOMPILE_GPU=ON)
+        - OpenCL (>1.0)
+        - VexCL
+
+    - MPI Dispatch Support (-DCOMPILE_MPI_SUPPORT=ON)
+        - Boost Serialization >= 1.6.3
+        - MPI
+
 
 To compile the code:
     
     cd projDir
-    cmake -DCMAKE_BUILD_TYPE=Release .
+    cmake -DCMAKE_BUILD_TYPE=Release -DCOMPILE_GPU=OFF .
     make sim
 
 To run:

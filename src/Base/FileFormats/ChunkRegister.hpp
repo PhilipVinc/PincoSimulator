@@ -9,7 +9,7 @@
 #ifndef ChunkRegister_hpp
 #define ChunkRegister_hpp
 
-#include "Settings.hpp"
+#include "../Settings.hpp"
 
 #include <set>
 #include <stdio.h>
@@ -40,7 +40,7 @@ public:
     ~ChunkRegister();
     
     
-    void RegisterStoredData(TaskResults* results,
+    void RegisterStoredData(std::unique_ptr<TaskResults> const& results,
                             size_t chunkId,
                             size_t chunkOffset,
                             Settings::SaveSettings saveType =
@@ -74,7 +74,7 @@ private:
                                    size_t chunk_offset,
                                    size_t frame0, size_t frameEnd);
     
-    void InitializeRegisterHeader(TaskResults* results);
+    void InitializeRegisterHeader(std::unique_ptr<TaskResults> const& results);
     
     
     // Properties

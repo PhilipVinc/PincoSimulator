@@ -9,9 +9,10 @@
 #ifndef DataStore_hpp
 #define DataStore_hpp
 
-#include "CustomTypes.h"
-#include "Settings.hpp"
+#include "../CustomTypes.h"
+#include "../Settings.hpp"
 
+#include <memory>
 #include <string>
 #include <vector>
 #include <stdio.h>
@@ -25,8 +26,8 @@ class DataStore
 public:
     DataStore(const Settings* settings, std::string folderName);
     virtual ~ DataStore() {};
-    bool SaveTaskResults(TaskResults* task);
-    bool AppendTaskResults(TaskResults* task);
+    bool SaveTaskResults(std::unique_ptr<TaskResults> const& task);
+    bool AppendTaskResults(std::unique_ptr<TaskResults> const& task);
 //    TaskResults* LoadTaskResults(size_t id,
 //                                         TaskResults * res = nullptr);
 //    TaskResults* LoadTaskResultsLastNFrames(size_t id,
@@ -47,7 +48,7 @@ protected:
     bool isReadable = false;
     bool isWritable = false;
     
-    virtual void StoreDataSimple(TaskResults* results) = 0;
+    virtual void StoreDataSimple(std::unique_ptr<TaskResults> const& results) = 0;
     virtual void LoadListOfStoredDataEvents() = 0;
 
     Settings::SaveSettings saveStatus;
