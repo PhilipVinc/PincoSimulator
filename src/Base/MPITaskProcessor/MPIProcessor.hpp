@@ -40,6 +40,10 @@ protected:
 
     MPI_Comm* comm;
 
+    // Dequeue buffer
+    size_t maxTasks;
+    std::vector<std::unique_ptr<TaskData>> tasks;
+
     // Nodes and their performance
     std::vector<int> activeNodes;
     std::vector<int> nodeRank;

@@ -8,6 +8,7 @@
 
 #include "../FileFormats/DataStore.hpp"
 #include "../ThreadedTaskProcessor/ThreadedTaskProcessor.hpp"
+#include "../TaskResults.hpp"
 
 #include <sstream>
 #include <fstream>
@@ -21,7 +22,6 @@ using namespace std;
 
 MPINodeManager::MPINodeManager(MPI_Comm* _comm)  {
     comm = _comm;
-    tmpTasksToSend = std::vector<TaskResults*>(1024,NULL);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     cout << "#"<<rank<<" - MPINodeManager Created." << comm << endl;
@@ -44,6 +44,9 @@ MPINodeManager::MPINodeManager(MPI_Comm* _comm)  {
     _processor->SetConsumer(this);
     _processor->Setup();
     cout << "#"<<rank<<" - Done" <<endl;
+    while(tmpTasksToSend.size() < IDEALSIZE) {
+        tmpTasksToSend.emplace_back(nullptr);
+    }
 }
 
 
@@ -89,16 +92,19 @@ void MPINodeManager::ManagerLoop() {
             if (flag) {
                 std::istringstream iss(string(commRecvBuffers[i], commRecvBuffersSize[i]));
                 boost::archive::binary_iarchive ia(iss);
+                {
 
                 //cout << "Master: start decoding" << endl;
                 std::vector<TaskData*> _tasks(maxTasks,NULL); //must be deallocated
                 ia >> _tasks;
+                    //cout << "Master: start decoding" << endl;
+                    std::vector<std::unique_ptr<TaskData>> _tasks; //must be deallocated
+                    receivedTasks += _tasks.size();
+                    this->_processor->EnqueueTasks(std::move(_tasks));
 
-                receivedTasks += _tasks.size();
                 cout << "#"<<rank<< " - Received " << commRecvBuffersSize[i] << " bytes ("
                      << _tasks.size() << ") of taskData from Master." << endl;
-                this->_processor->EnqueueTasks(_tasks);
-
+                }
                 delete[] commRecvBuffers[i];
                 commRecvBuffers.erase(commRecvBuffers.begin()+i);
                 commRecvRequests.erase(commRecvRequests.begin()+i);
@@ -108,7 +114,6 @@ void MPINodeManager::ManagerLoop() {
 
         // 3 - Dequeue Results that were provided by the Solvers and send them
         size_t dequeuedResults = 0;
-        size_t IDEALSIZE = 102;
         if (commSendRequests.size() == 0)
              dequeuedResults = enqueuedTasks.try_dequeue_bulk( tmpTasksToSend.begin() + tasksInBuffer,
                                                                IDEALSIZE - tasksInBuffer);
@@ -121,8 +126,8 @@ void MPINodeManager::ManagerLoop() {
             {
                 cout << "#" << rank << " - MPINodeManager::ManagerLoop(). - sending " << tasksInBuffer << " results." << endl;
 
-                std::vector<TaskResults*> *data = new std::vector<TaskResults*>(tmpTasksToSend.begin(),
-                                                                                tmpTasksToSend.begin()+tasksInBuffer);
+                std::vector<std::unique_ptr<TaskResults>> data(std::make_move_iterator(tmpTasksToSend.begin()),
+                                                               std::make_move_iterator(tmpTasksToSend.begin()+tasksInBuffer));
                 sentResults += tasksInBuffer;
 
                 // Encode the data in a buffer and free the memory
@@ -134,20 +139,18 @@ void MPINodeManager::ManagerLoop() {
                 }
                 for (int j=0; j< data->size(); j++)
                 {
-                    delete (*data)[j];
                 }
-                delete data;
 
                 auto t2 = MPI_Wtime();
                 //std::cout << "The number of Mbytes taken for an archive of "<< tasksInBuffer<<" elements is " << oss->str().size()/1024/1024 <<
                 //" or "<< oss->str().size() << " bytes  - encoded in " << t2-t1 << " s." << endl;
                 tasksInBuffer = 0;
 
-                commSendBuffers.push_back(oss);
-                commSendRequests.emplace_back();
+                commSendBuffers.push_back(str_buf);
+                MPI_Request req; commSendRequests.push_back(req);
 
 
-                MPI_Isend(oss->str().c_str(), oss->str().size(),
+                MPI_Isend(str_buf->c_str(), str_buf->size(),
                           MPI_BYTE, MASTER_RANK, TASKRESULTS_VECTOR_MESSAGE_TAG,
                           MPI_COMM_WORLD, &commSendRequests.back());
             }

@@ -6,6 +6,7 @@
 
 #include "MPIPincoTags.hpp"
 #include "TWMC/TWMCResults.hpp"
+#include "../TaskResults.hpp"
 
 // serialization archive used
 #include <boost/archive/binary_iarchive.hpp>
@@ -60,6 +61,12 @@ void MPIProcessor::ProvideMPICommunicator(MPI_Comm* _comm)
         commRecvBuffersSize.push_back(0); // Fill with null requests
     }
     nNodes = nodeRank.size();
+
+    maxTasks = 1024*activeNodes.size(); //if (maxTasks==0) { maxTasks = 1024;} nNodes++;
+    for (int i=0; i<maxTasks; i++) {
+        tasks.emplace_back(std::unique_ptr<TaskData>(nullptr));
+    }
+
 }
 
 void MPIProcessor::Setup()
@@ -71,10 +78,8 @@ void MPIProcessor::Update()
 {
     //cout << "Main MPI PROCESSOR::Update()" << endl;
     // 1 - Send the tasks to all the processors
-    const size_t maxTasks = 1024*activeNodes.size();
-    std::vector<TaskData*> tasks = std::vector<TaskData*>(maxTasks, NULL);
     //TODO : add consumer token
-    size_t dequeuedTasks = enqueuedTasks.try_dequeue_bulk(tasks.begin(), maxTasks);
+    size_t dequeuedTasks = enqueuedTasks.try_dequeue_bulk(std::make_move_iterator(tasks.begin()), maxTasks);
     if (dequeuedTasks!=0) {
         cout << "Got " << dequeuedTasks << " tasks to dispatch." << endl;
         tasks.resize(dequeuedTasks);
@@ -83,7 +88,8 @@ void MPIProcessor::Update()
         size_t nTasksPerNode = ceil(dequeuedTasks/nNodes);
         for (size_t n = 0; n < dequeuedTasks; n += nTasksPerNode) {
             size_t nn = min(nTasksPerNode, dequeuedTasks - n);
-            auto data = std::vector<TaskData *>(tasks.begin() + n, tasks.begin() + n + nn);
+            auto data = std::vector<std::unique_ptr<TaskData>>(std::make_move_iterator(tasks.begin() + n),
+                                                               std::make_move_iterator(tasks.begin() + n + nn));
 
             std::ostringstream *stringBuffer = new std::ostringstream();
             {
@@ -166,24 +172,6 @@ void MPIProcessor::Update()
         }
     }
 
-    // Test miscellaneous requests
-    if (miscSendReqs.size() != 0) {
-        //cout << "Master - Checking for Sent stuff." << endl;
-        for (int i = 0; i < miscSendReqs.size(); i++) {
-            //cout << "Master - Checking for req " << i << endl;
-            MPI_Status status; int done;
-            MPI_Test(&miscSendReqs[i], &done, &status);
-            if (done)
-            {
-                //cout << "Master - has sent." << endl;
-                delete[] miscSendBuffers[i];
-                miscSendBuffers.erase(miscSendBuffers.begin()+i);
-                miscSendReqs.erase(miscSendReqs.begin()+i);
-                i--;
-            }
-        }
-    }
-
     // 4 - Check for received stuff (all nodes. also inactive)
     for (size_t n=0; n < nodeRank.size(); n++)
     {
@@ -199,17 +187,36 @@ void MPIProcessor::Update()
                 boost::archive::binary_iarchive ia(iss);
 
                 //cout << "Master: start decoding" << endl;
-                std::vector<TaskResults*> *taskss = new std::vector<TaskResults*>(maxTasks, NULL); //must be deallocated
                 ia >> taskss;
-                resultsReceivedFromNode[n] += taskss->size();
-                cout << "Master: Received "<<commRecvBuffersSize[n]<<" bytes ("<<taskss->size()<<") of results from #" << nodeRank[n] << "." << endl;
-                this->_consumer->EnqueueTasks(*taskss);
+                std::vector<std::unique_ptr<TaskResults>> taskss; //must be deallocated
+                resultsReceivedFromNode[n] += taskss.size();
+                cout << "Master: Received "<<commRecvBuffersSize[n]<<" bytes ("<<taskss.size()<<") of results from #" << nodeRank[n] << "." << endl;
+                this->_consumer->EnqueueTasks(std::move(taskss));
 
                 delete[] commRecvBuffers[n];
                 recvListeningToNode[n] = false;
             }
         }
     }
+
+    // Test miscellaneous requests
+    if (miscSendReqs.size() != 0) {
+        //cout << "Master - Checking for Sent stuff." << endl;
+        for (int i = 0; i < miscSendReqs.size(); i++) {
+            //cout << "Master - Checking for req " << i << endl;
+            MPI_Status status; int done;
+            MPI_Test(&miscSendReqs[i], &done, &status);
+            if (done)
+            {
+                //cout << "Master - has sent." << endl;
+                delete[] miscSendBuffers[i]; //TODO use malloc/free
+                miscSendBuffers.erase(miscSendBuffers.begin()+i);
+                miscSendReqs.erase(miscSendReqs.begin()+i);
+                i--;
+            }
+        }
+    }
+
 
     // 5 - Receive Miscellaneuous Messages
     MPI_Status status; int flag;

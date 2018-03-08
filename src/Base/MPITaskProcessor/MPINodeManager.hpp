@@ -39,7 +39,9 @@ private:
     size_t sentResults = 0;
     size_t tasksToComputeBeforeTerminating;
 
-    std::vector<TaskResults*> tmpTasksToSend;
+    std::vector<std::unique_ptr<TaskResults>> tmpTasksToSend;
+    size_t IDEALSIZE = 102;
+
     size_t tasksInBuffer = 0;
     size_t totalDequeued = 0;
 
