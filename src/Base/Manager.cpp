@@ -7,7 +7,6 @@
 //
 
 #include "Manager.hpp"
-
 #include "Settings.hpp"
 
 Manager::Manager(const Settings* _settings)

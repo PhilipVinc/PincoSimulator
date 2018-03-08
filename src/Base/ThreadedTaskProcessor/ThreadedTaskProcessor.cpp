@@ -117,7 +117,7 @@ void ThreadedTaskProcessor::Update()
 std::vector<std::unique_ptr<TaskData>> ThreadedTaskProcessor::GetDispatchedTasks(size_t th_id, size_t maxTasks)
 {
 	std::vector<std::unique_ptr<TaskData>> tasks;
-	for (int i=0; i<3; i++) {
+	for (int i=0; i<maxTasks; i++) {
 		tasks.emplace_back(std::unique_ptr<TaskData>(nullptr));
 	}
 

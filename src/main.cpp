@@ -6,6 +6,7 @@
 #include <iostream>
 #include <csignal>
 
+#include <unistd.h>
 
 #ifdef MPI_SUPPORT
 #include <mpi.h>
