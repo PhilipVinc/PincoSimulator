@@ -12,6 +12,7 @@
 
 #include "Base/ThreadedTaskProcessor/ThreadedTaskProcessor.hpp"
 #include "Base/ResultsSaver.hpp"
+#include "Base/TaskResults.hpp"
 #include "Base/NoisyMatrix.hpp"
 #include "Base/Utils/StringFormatter.hpp"
 
@@ -27,7 +28,8 @@
 
 TWMCManager::TWMCManager(const Settings *settings) : Manager(settings) {
     // Choose the solver
-    _sysData = new TWMCSystemData(settings);
+    _sysData = std::make_shared<TWMCSystemData>(settings);
+
     // TODO: Retrocompatibility fix
     // If we are running old simulations, then PBC is sottointesa.
     if (settings->get<string>("Manager") == "TWMCThread")

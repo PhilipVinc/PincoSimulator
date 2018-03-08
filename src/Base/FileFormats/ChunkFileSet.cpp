@@ -144,6 +144,7 @@ bool ChunkFileSet::IsChunkBig()
     return (fileSizes[0] > minChunkSize);
 }
 
+/*
 TaskResults* ChunkFileSet::ReadEntry(size_t entryChunkId, bool lastItems)
 {
     fseek(registerFile, entryChunkId*bufferByteSize, SEEK_SET);
@@ -182,4 +183,4 @@ TaskResults* ChunkFileSet::ReadEntry(size_t entryChunkId, bool lastItems)
         // Read operation went badly
         return nullptr;
     }
-}
+}*/

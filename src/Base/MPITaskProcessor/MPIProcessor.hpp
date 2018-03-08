@@ -52,7 +52,7 @@ protected:
 
     // MPI Send TaskData elements
     std::vector<MPI_Request> commSendRequests;
-    std::vector<std::ostringstream*> commSendBuffers;
+    std::vector<std::string*> commSendBuffers;
 
     //MPI Receuve Buffers and flags
     std::vector<bool> recvListeningToNode;

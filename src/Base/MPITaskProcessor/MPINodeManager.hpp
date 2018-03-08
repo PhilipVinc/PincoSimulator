@@ -54,7 +54,7 @@ private:
     std::vector<char*> commRecvBuffers;
     std::vector<int> commRecvBuffersSize;
 
-    std::vector<std::ostringstream*> commSendBuffers;
+    std::vector<std::string*> commSendBuffers;
     std::vector<MPI_Request> commSendRequests;
 
     std::vector<TaskData*> recvBuffer;

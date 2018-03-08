@@ -14,8 +14,8 @@
 #include <vector>
 
 #ifdef MPI_SUPPORT
-#include <boost/serialization/vector.hpp>
-#include "../Libraries/eigen_boost_serialization.hpp"
+#include <cereal/types/vector.hpp>
+#include "../Libraries/eigen_cereal_serialization.hpp"
 #endif
 
 
@@ -74,7 +74,40 @@ public:
 	};
 	Dimension dimension;
 
-
+#ifdef MPI_SUPPORT
+    template<class Archive>
+	void serialize(Archive & ar)
+	{
+		ar(latticeName);
+		ar(nx);
+		ar(ny);
+		ar(nxy);
+		ar(cellSz);
+		ar(F);
+		ar(U);
+		ar(omega);
+		ar(E);
+		ar(J);
+		ar(gamma);
+		ar(beta_init);
+		ar(J_val);
+		ar(detuning);
+		ar(J_AB_val);
+		ar(J_BC_val);
+		ar(gamma_val);
+		ar(beta_init_val);
+		ar(beta_init_sigma_val);
+		ar(t_start);
+		ar(t_end);
+		ar(dt);
+		ar(dt_obs);
+		ar(n_dt);
+		ar(n_frames);
+		ar(frame_steps);
+		ar(PBC);
+		ar(dimension);
+	}
+#endif
 };
 
 #endif //SIMULATOR_TWMCSHAREDSYSTEMDATA_HPP

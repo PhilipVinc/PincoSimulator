@@ -12,7 +12,7 @@
 using namespace std;
 
 
-TaskResults::TaskResults(const size_t _nOfDatasets) : datasets(0),
+TaskResults::TaskResults(const size_t _nOfDatasets) : //datasets(0),
                                                            datasetByteSizes(0),
                                                            datasetElementSize(0),
                                                            datasetFormat(0),
@@ -22,7 +22,7 @@ TaskResults::TaskResults(const size_t _nOfDatasets) : datasets(0),
     numberOfDatasets = 0;
 }
 
-
+/*
 void TaskResults::AddResult(const std::string name, void* memAddr, size_t byteSize, size_t elSize,
                             size_t format, const std::vector<size_t> dimensions)
 {
@@ -35,6 +35,27 @@ void TaskResults::AddResult(const std::string name, void* memAddr, size_t byteSi
 	numberOfDatasets++;
 	namesOfDatasets.push_back(name);
 	datasets.push_back(memAddr);
+	datasetByteSizes.push_back(byteSize);
+	datasetElementSize.push_back(elSize);
+	datasetFormat.push_back(format);
+
+	dimensionsOfDatasets.push_back(dimensions);
+	for (size_t i = 0; i!= dimensions; ++i)
+	{
+		dimensionalityData.push_back(dimData[i]);
+	}
+}*/
+
+void TaskResults::AddResult(size_t byteSize, size_t elSize,
+                            size_t format, const std::vector<size_t> dimensions)
+{
+	AddResult(byteSize, elSize, format, dimensions.size(), dimensions.data());
+}
+
+void TaskResults::AddResult(size_t byteSize, size_t elSize,
+                            size_t format, size_t dimensions, const size_t* dimData)
+{
+	numberOfDatasets++;
 	datasetByteSizes.push_back(byteSize);
 	datasetElementSize.push_back(elSize);
 	datasetFormat.push_back(format);
@@ -67,25 +88,27 @@ size_t TaskResults::DataSetSize(size_t id) const {
 	return datasetByteSizes[id];
 }
 
-void* TaskResults::GetDataSet(size_t id) {
-    return datasets[id];
-}
+/*const void* TaskResults::GetDataSet(size_t id) {
+	return this->GetDatasetPointer(id);
+    //return datasets[id];
+}*/
 
 size_t TaskResults::NumberOfDataSets()const {
     return numberOfDatasets;
 }
 
-const string TaskResults::NameOfDataset(const size_t datasetId)const {
+/*const string TaskResults::NameOfDataset(const size_t datasetId)const {
     return namesOfDatasets[datasetId];
-}
+}*/
 
 unsigned char TaskResults::DataSetDataType(size_t id) const {
 	return datasetFormat[id];
 }
 
+/*
 const vector<string>& TaskResults::NamesOfDatasets()const {
     return namesOfDatasets;
-}
+}*/
 
 size_t TaskResults::DataSetDimension(size_t id)const {
     return dimensionsOfDatasets[id];
@@ -115,5 +138,5 @@ void TaskResults::DeSerializeExtraData(void* data, unsigned int length) {
 // ------------------ //
 // Boost::Serialization
 #ifdef MPI_SUPPORT
-BOOST_CLASS_EXPORT_IMPLEMENT(TaskResults)
+//CEREAL_REGISTER_TYPE_WITH_NAME(TaskResults, "TaskResults")
 #endif

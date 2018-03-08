@@ -116,8 +116,8 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
         TWMCTaskData *task = static_cast<TWMCTaskData *>(tasks[i].get());
 
         // Check if the system is always the same
-        if (task->systemData != lastSharedSystemData) {
-            lastSharedSystemData = task->systemData;
+        if (task->systemData.get() != lastSharedSystemData) {
+            lastSharedSystemData = task->systemData.get();
             Setup();
         }
 
@@ -143,13 +143,13 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
             U = data->U->Generate(gen);
 
             // And now store this matrix in the results
-            std::vector<complex_p> resData = *(res->complexMatrices[noiseN]); noiseN++;
             complex_p* matData = U.data();
 
             for (unsigned j= 0; j < data->nxy; j++)
             {
-                resData[j] = matData[j];
+                res->complexMatrices[noiseN][j] = matData[j];
             }
+            noiseN++;
         }
         if (data->E->GetNoiseType() != NoisyMatrix::NoiseType::None)
         {
@@ -157,13 +157,13 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
             E = data->omega->Generate(gen);
 
             // And now store this matrix in the results
-            std::vector<complex_p> resData = *(res->complexMatrices[noiseN]); noiseN++;
             complex_p* matData = E.data();
 
             for (unsigned j= 0; j < data->nxy; j++)
             {
-                resData[j] = matData[j];
+                res->complexMatrices[noiseN][j] = matData[j];
             }
+            noiseN++;
         }
         if (data->F->GetNoiseType() != NoisyMatrix::NoiseType::None)
         {
@@ -171,13 +171,13 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
             F = data->F->Generate(gen);
 
             // And now store this matrix in the results
-            std::vector<complex_p> resData = *(res->complexMatrices[noiseN]); noiseN++;
             complex_p* matData = F.data();
 
             for (unsigned j= 0; j < data->nxy; j++)
             {
-                resData[j] = matData[j];
+                res->complexMatrices[noiseN][j] = matData[j];
             }
+            noiseN++;
         }
         if (updateMats)
         {
@@ -216,6 +216,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
 
         auto dt4 = sqrt(data->gamma_val * data->dt / 4.0);
         auto dt = data->dt;
+        complex_p* res_betat = res->GetComplexDataset(variables::traj);
 
         while (t <= data->t_end) {
             // Compute the a_t, that is used for the kai in the heun scheme
@@ -231,7 +232,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
                 size_t size = res->nx * res->ny * 3;
                 complex_p *data = beta_t.data();
 
-                memcpy(&res->beta_t[i_frame*size], data, sizeof(complex_p)*size);
+                memcpy(&res_betat[i_frame*size], data, sizeof(complex_p)*size);
                 /*
                 for (unsigned j = 0; j < size; j++) {
                     res->beta_t[i_frame * size + j] = data[j];

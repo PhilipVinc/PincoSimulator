@@ -7,6 +7,7 @@
 
 #include "Base/Manager.hpp"
 
+#include <memory>
 #include <random>
 #include <string>
 
@@ -32,8 +33,7 @@ private:
 	ResultsSaver* _saver;
 	TaskProcessor* _processor;
 
-	TWMCResults* rs;
-    TWMCSystemData* _sysData;
+    std::shared_ptr<TWMCSystemData> _sysData;
     std::string solverName;
 
     std::mt19937 seedGenerator;

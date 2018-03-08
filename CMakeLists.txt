@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 project(Simulator)
 
-set(COMPILE_MPI ON)
+#set(COMPILE_MPI ON)
 
 option(COMPILE_GPU "Build with GPU Support for the Solvers" OFF)
 option(COMPILE_MPI "Build with MPI Support for the Manager" OFF)
@@ -66,6 +66,10 @@ if (COMPILE_MPI)
     message("Enabling MPI Support")
     add_definitions(-DMPI_SUPPORT)
 
+    # New interface
+    # add_library(cereal INTERFACE)
+    find_package(cereal REQUIRED)
+
     # Find the mpi implementation linker flags and libraries (this is not the best way
     # because I should be changing the compiler...
     execute_process(COMMAND mpic++ --showme:compile OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE mpi_compile_flags)
@@ -83,9 +87,6 @@ if (COMPILE_MPI)
 
     #set_target_properties(sim PROPERTIES LINK_FLAGS "${mpi_linker_flags}")
 
-    list(APPEND BOOST_PACKAGES serialization )
-    message("${BOOST_PACKAGES}")
-
 endif (COMPILE_MPI)
 
 # Find package boost, if present
@@ -100,7 +101,7 @@ if(APPLE)
 else()
     find_package(Boost 1.65 COMPONENTS "${BOOST_PACKAGES}" )
     if (NOT Boost_FOUND)
-        message(Searching again for Boost without filesystem support)
+        message("Searching again for Boost without filesystem support")
         SET(BOOST_ROOT ~/opt/local/)
         SET(BOOST_ROOT ~/opt/local/)
         list(REMOVE_ITEM BOOST_PACKAGES filesystem) # remove filesystem
@@ -108,14 +109,14 @@ else()
     endif (NOT Boost_FOUND)
 endif()
 
-message(found ${Boost_INCLUDE_DIR})
-message(found ${Boost_LIBRARIES})
+message("found Boost_INCLUDE_DIR=${Boost_INCLUDE_DIR}")
+message("found Boost_LIBRARIES=${Boost_LIBRARIES}")
 
 find_package(FFTW REQUIRED)
 include_directories(${FFTW_INCLUDE_DIR})
 
-message(found ${FFTW_INCLUDE_DIR})
-message(found ${FFTW_LIBRARIES})
+message("found FFTW_INCLUDE_DIR=${FFTW_INCLUDE_DIR}")
+message("found FFTW_LIBRARIES=${FFTW_LIBRARIES}")
 
 
 
@@ -170,9 +171,9 @@ set(GPU_SOURCE_FILES
 set(MPI_SOURCE_FILES
         src/Base/MPITaskProcessor/MPINodeManager.cpp src/Base/MPITaskProcessor/MPINodeManager.hpp
         src/Base/MPITaskProcessor/MPIProcessor.cpp src/Base/MPITaskProcessor/MPIProcessor.hpp
-        src/Libraries/eigen_boost_serialization.hpp src/Base/MPITaskProcessor/BoostSerializationArchiveFormats.hpp
+        src/Libraries/eigen_boost_serialization.hpp src/Base/MPITaskProcessor/SerializationArchiveFormats.hpp
         src/TWMC/TWMCSerializators.hpp src/TWMC/TWMCSerializators.cpp src/Base/MPITaskProcessor/MPIPincoTags.hpp
-        )
+        src/Libraries/eigen_cereal_serialization.hpp)
 
 
 if (COMPILE_GPU)
@@ -191,8 +192,14 @@ endif(COMPILE_MPI)
 add_executable(sim ${SOURCE_FILES})
 
 # Includes
-include_directories(/usr/local/include)
+# include_directories(/usr/local/include)
 include_directories(/usr/local/include/eigen3/)
+
+if (LINUX)
+    if (COMPILE_MPI)
+        include_directories(/home/vicentinif/opt/local/include/)
+    endif()
+endif()
 
 
 # Linker

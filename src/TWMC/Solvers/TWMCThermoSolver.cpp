@@ -99,12 +99,13 @@ std::vector<std::unique_ptr<TaskResults>> TWMCThermoSolver::Compute(const std::v
     std::vector<std::unique_ptr<TaskResults>> allResults;
     for (size_t i =0; i < tasks.size(); i++ )
     {
+        // TODO Fix this cast
         TWMCTaskData* task = static_cast<TWMCTaskData*>(tasks[i].get());
 
         // Check if the system is always the same
-        if (task->systemData != lastSharedSystemData)
+        if (task->systemData.get() != lastSharedSystemData)
         {
-            lastSharedSystemData = task->systemData;
+            lastSharedSystemData = task->systemData.get();
             Setup();
         }
 
@@ -128,13 +129,13 @@ std::vector<std::unique_ptr<TaskResults>> TWMCThermoSolver::Compute(const std::v
             U = data->U->Generate(gen);
 
             // And now store this matrix in the results
-            std::vector<complex_p> resData = *(res->complexMatrices[noiseN]); noiseN++;
             complex_p* matData = U.data();
 
             for (unsigned j= 0; j < data->nxy; j++)
             {
-                resData[j] = matData[j];
+                res->complexMatrices[noiseN][j] = matData[j];
             }
+            noiseN++;
         }
         if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None)
         {
@@ -142,13 +143,12 @@ std::vector<std::unique_ptr<TaskResults>> TWMCThermoSolver::Compute(const std::v
             omega = data->omega->Generate(gen);
 
             // And now store this matrix in the results
-            std::vector<complex_p> resData = *(res->complexMatrices[noiseN]); noiseN++;
             complex_p* matData = omega.data();
 
-            for (unsigned j= 0; j < data->nxy; j++)
-            {
-                resData[j] = matData[j];
+            for (unsigned j= 0; j < data->nxy; j++) {
+                res->complexMatrices[noiseN][j] = matData[j];
             }
+            noiseN++;
         }
         if (data->F->GetNoiseType() != NoisyMatrix::NoiseType::None)
         {
@@ -156,13 +156,13 @@ std::vector<std::unique_ptr<TaskResults>> TWMCThermoSolver::Compute(const std::v
             F = data->F->Generate(gen);
 
             // And now store this matrix in the results
-            std::vector<complex_p> resData = *(res->complexMatrices[noiseN]); noiseN++;
             complex_p* matData = F.data();
 
             for (unsigned j= 0; j < data->nxy; j++)
             {
-                resData[j] = matData[j];
+                res->complexMatrices[noiseN][j] = matData[j];
             }
+            noiseN++;
         }
         if (updateMats)
         {
@@ -218,6 +218,9 @@ std::vector<std::unique_ptr<TaskResults>> TWMCThermoSolver::Compute(const std::v
         MatrixCXd F_t;
         MatrixCXd F_told = data->F->GetAtTime(t);
         MatrixCXd F_der;
+        complex_p* res_betat = res->GetComplexDataset(variables::traj);
+        complex_p* res_workt = res->GetComplexDataset(variables::work);
+        complex_p* res_areat = res->GetComplexDataset(variables::area);
 
         while (t<=t_end)
         {
@@ -279,15 +282,15 @@ std::vector<std::unique_ptr<TaskResults>> TWMCThermoSolver::Compute(const std::v
             {
                 size_t size = res->nx*res->ny;
                 complex_p* data = beta_t.data();
-                memcpy(&res->beta_t[i_frame*size], data, sizeof(complex_p)*size);
+                memcpy(&res_betat[i_frame*size], data, sizeof(complex_p)*size);
 
                 complex_p* dataWork = deltaW.data();
                 complex_p* dataArea = deltaA.data();
                 for (unsigned j= 0; j < size; j++)
                 {
                     //res->beta_t[i_frame*size + j] = dataBeta[j];
-                    res->work_t[i_frame*size + j] = real(dataWork[j]);
-                    res->area_t[i_frame*size + j] = real(dataArea[j]);
+                    res_workt[i_frame*size + j] = real(dataWork[j]);
+                    res_areat[i_frame*size + j] = real(dataArea[j]);
                 }
                 deltaW = MatrixCXd::Zero(nx,ny);
                 deltaA = MatrixCXd::Zero(nx,ny);

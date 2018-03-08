@@ -13,8 +13,11 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
+
+#include "Base/MPITaskProcessor/SerializationArchiveFormats.hpp"
+
+#include <cereal/types/memory.hpp>
+#include <cereal/types/vector.hpp>
 
 
 using namespace std;
@@ -91,14 +94,13 @@ void MPINodeManager::ManagerLoop() {
             MPI_Test(&commRecvRequests[i], &flag, &status);
             if (flag) {
                 std::istringstream iss(string(commRecvBuffers[i], commRecvBuffersSize[i]));
-                boost::archive::binary_iarchive ia(iss);
                 {
+                    //cout << iss.str() << endl;
+                    transmissionInputArchive ia(iss);
 
-                //cout << "Master: start decoding" << endl;
-                std::vector<TaskData*> _tasks(maxTasks,NULL); //must be deallocated
-                ia >> _tasks;
                     //cout << "Master: start decoding" << endl;
                     std::vector<std::unique_ptr<TaskData>> _tasks; //must be deallocated
+                    ia(_tasks);
                     receivedTasks += _tasks.size();
                     this->_processor->EnqueueTasks(std::move(_tasks));
 
@@ -124,7 +126,7 @@ void MPINodeManager::ManagerLoop() {
 
             if ( tasksInBuffer == IDEALSIZE || tasksInBuffer >= receivedTasks - sentResults )
             {
-                cout << "#" << rank << " - MPINodeManager::ManagerLoop(). - sending " << tasksInBuffer << " results." << endl;
+                cout << "#" << rank << " - MPINodeManager::ManagerLoop(). - sending " << tasksInBuffer << " results";
 
                 std::vector<std::unique_ptr<TaskResults>> data(std::make_move_iterator(tmpTasksToSend.begin()),
                                                                std::make_move_iterator(tmpTasksToSend.begin()+tasksInBuffer));
@@ -132,19 +134,21 @@ void MPINodeManager::ManagerLoop() {
 
                 // Encode the data in a buffer and free the memory
                 auto t1 = MPI_Wtime();
-                std::ostringstream *oss = new std::ostringstream();
+                std::ostringstream oss;
+                std::string * str_buf = new std::string();
                 {
-                    boost::archive::binary_oarchive oa(*oss);
-                    oa << data;
+                    transmissionOutputArchive oa(oss);
+                    oa(data);
                 }
-                for (int j=0; j< data->size(); j++)
-                {
-                }
+                *str_buf = oss.str();
+
 
                 auto t2 = MPI_Wtime();
                 //std::cout << "The number of Mbytes taken for an archive of "<< tasksInBuffer<<" elements is " << oss->str().size()/1024/1024 <<
                 //" or "<< oss->str().size() << " bytes  - encoded in " << t2-t1 << " s." << endl;
                 tasksInBuffer = 0;
+
+                cout << "( " << str_buf->size()/(1024*1024)<< " Mb)" << endl;
 
                 commSendBuffers.push_back(str_buf);
                 MPI_Request req; commSendRequests.push_back(req);
@@ -165,7 +169,7 @@ void MPINodeManager::ManagerLoop() {
             MPI_Test(&commSendRequests[i], &done, &status);
             if (done)
             {
-                //cout << "#" << rank << " - MPINodeManager::ManagerLoop() - Has sent #" << i << endl;
+                cout << "#" << rank << " - MPINodeManager::ManagerLoop() - Has sent #" << i << endl;
                 delete commSendBuffers[i];
                 commSendBuffers.erase(commSendBuffers.begin()+i);
                 commSendRequests.erase(commSendRequests.begin()+i);

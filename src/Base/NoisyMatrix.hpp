@@ -17,9 +17,13 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <iostream>
 
 #ifdef MPI_SUPPORT
-#include "../Libraries/eigen_boost_serialization.hpp"
+#include "Base/MPITaskProcessor/SerializationArchiveFormats.hpp"
+
+#include <cereal/access.hpp>
+#include "../Libraries/eigen_cereal_serialization.hpp"
 #endif
 
 class NoisyMatrix
@@ -80,54 +84,85 @@ private:
     std::poisson_distribution<> poisson;
 
 #ifdef MPI_SUPPORT
-    friend class boost::serialization::access;
-	template<class Archive> void serialize(Archive & ar, const unsigned int version)
+public:
+    friend class cereal::access;
+	template<class Archive> void save(Archive & ar) const
 	{
-		ar & times;
-		ar & dVals;
-		ar & matRTimes;
-		ar & matCTimes;
-		ar & values;
-		ar & baseMat;
-		ar & noiseType;
-		ar & nx;
-		ar & ny;
-		ar & setup;
-		ar & noise;
-		ar & timeDep;
-		ar & noiseVars;
+		ar(nx);
+		ar(ny);
+
+		ar(times);
+		ar(dVals);
+		ar(matRTimes);
+		ar(matCTimes);
+		ar(values);
+		ar(baseMat);
+		ar(noiseType);
+		ar(setup);
+		ar(noise);
+		ar(timeDep);
+		ar(noiseVars);
 	}
+
+	template<class Archive> void load(Archive & ar)
+	{
+		std::cout << "Loaded data for NoisyMatrix" << std::endl;
+		//ar(nx);
+		//ar(ny);
+
+		ar(times);
+		ar(dVals);
+		ar(matRTimes);
+		ar(matCTimes);
+		ar(values);
+		ar(baseMat);
+		ar(noiseType);
+		ar(setup);
+		ar(noise);
+		ar(timeDep);
+		ar(noiseVars);
+	}
+
+	//TODO Obscene workaround
+	template<class Archive>
+	NoisyMatrix(size_t _nx, size_t _ny, Archive & ar) : normal(0.0, 1.0), uniform(0.0, 1.0), poisson(1.0)
+	{
+		nx = _nx;
+		ny = _ny;
+		//std::cout << "Loaded wierdly data for NoisyMatrix" << std::endl;
+//		ar(nx);
+//		ar(ny);
+
+		ar(times);
+		ar(dVals);
+		ar(matRTimes);
+		ar(matCTimes);
+		ar(values);
+		ar(baseMat);
+		ar(noiseType);
+		ar(setup);
+		ar(noise);
+		ar(timeDep);
+		ar(noiseVars);
+	}
+
+
+	template <class Archive>
+	static void load_and_construct(Archive &ar, cereal::construct<NoisyMatrix> &construct) {
+		size_t nx;	ar(nx);
+		size_t ny;  ar(ny);
+		construct(nx, ny, ar);
+	}
+
 #endif
 
 };
 
 #ifdef MPI_SUPPORT
-
-// Support for serializing NoisyMatrix, as it has no default constructor
-namespace boost {
-	namespace serialization {
-		template<class Archive>
-		inline void save_construct_data(
-				Archive & ar, const NoisyMatrix * t, const unsigned int file_version
-		){
-			// save data required to construct instance
-			auto dims = t->GetDimensions();
-			ar & std::get<0>(dims);
-			ar & std::get<1>(dims);
-		}
-
-		template<class Archive>
-		inline void load_construct_data(
-				Archive & ar, NoisyMatrix * t, const unsigned int file_version
-		){
-			// retrieve data from archive required to construct new instance
-			size_t nx;	ar & nx;
-			size_t ny;  ar & ny;
-
-			// invoke inplace constructor to initialize instance of my_class
-			::new(t)NoisyMatrix(nx, ny);
-		}
-	}} // namespace ...
+namespace cereal {
+	template <class Archive>
+	struct specialize<Archive, NoisyMatrix, cereal::specialization::member_load_save> {};
+}
 #endif
 
 

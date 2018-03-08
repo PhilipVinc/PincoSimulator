@@ -1,6 +1,7 @@
 
 #include "Base/Settings.hpp"
 #include "Base/Manager.hpp"
+#include "Base/TaskResults.hpp" // For very weird bug
 
 #include <iostream>
 #include <csignal>

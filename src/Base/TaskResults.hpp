@@ -17,12 +17,13 @@
 #include <vector>
 #include <cstdio>
 
-#ifdef MPI_SUPPORT
-#include "../Libraries/eigen_boost_serialization.hpp"
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/export.hpp>
 
+#ifdef MPI_SUPPORT
+#include "Base/MPITaskProcessor/SerializationArchiveFormats.hpp"
+#include "../Libraries/eigen_cereal_serialization.hpp"
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/access.hpp>
 #endif
 
 
@@ -35,19 +36,25 @@ public:
     void SetId(size_t);
 
     size_t NumberOfDataSets() const;
-    const std::vector<std::string>& NamesOfDatasets() const;
-    const std::string NameOfDataset(size_t datasetId) const;
+    virtual const std::vector<std::string> NamesOfDatasets() const = 0;
+    virtual const std::string NameOfDataset(size_t datasetId) const = 0 ;
     size_t DataSetSize(size_t id) const;
     size_t ElementsInDataSet(size_t id) const;
     size_t DataSetDimension(size_t id)const;
     unsigned char DataSetDataType(size_t id) const;
     const std::vector<size_t>& DataSetsDimensionData() const;
-    void* GetDataSet(size_t id);
-
+    virtual const void* GetDataSet(size_t id) const = 0;
+/*
     void AddResult(std::string name, void* memAddr, size_t byteSize, size_t elSize,
                    size_t format, size_t dimensions, const size_t* dimData);
 
     void AddResult(std::string name, void* memAddr, size_t byteSize, size_t elSize,
+                   size_t format, std::vector<size_t> dimensions);
+*/
+    void AddResult(size_t byteSize, size_t elSize,
+                   size_t format, size_t dimensions, const size_t* dimData);
+
+    void AddResult(size_t byteSize, size_t elSize,
                    size_t format, std::vector<size_t> dimensions);
 
     // Serialization and deserialization
@@ -55,19 +62,19 @@ public:
     const virtual void* SerializeExtraData()const;
     virtual void DeSerializeExtraData(void* data, unsigned int length);
 
+    //const virtual void* GetDatasetPointer(size_t) = 0;
+
     // Properties
     float computation_speed = 0;
 
 
 protected:
     size_t numberOfDatasets = 0;
-    std::vector<std::string> namesOfDatasets;
     size_t id = 0;
 
 private:
 
     // Datasets, and related informations.
-    std::vector<void*> datasets; /*WARNING: Should not be serialized*/
     std::vector<size_t> datasetByteSizes;
     std::vector<size_t> datasetElementSize;
     std::vector<size_t> datasetFormat;
@@ -77,55 +84,38 @@ private:
     std::vector<size_t> dimensionalityData;
 
 #ifdef MPI_SUPPORT
-    friend class boost::serialization::access;
-    template<class Archive> void save(Archive & ar, const unsigned int version)
+public:
+    template<class Archive> void save(Archive & ar) const
     {
-        ar & computation_speed;
-        ar & numberOfDatasets;
-        ar & namesOfDatasets;
-        ar & id;
-        ar & datasetByteSizes;
-        ar & datasetElementSize;
-        ar & datasetFormat;
-        ar & dimensionsOfDatasets;
-        ar & dimensionalityData;
-        ar & datasets;
+        ar(computation_speed);
+        ar(numberOfDatasets);
+        ar(id);
+        ar(datasetByteSizes);
+        ar(datasetElementSize);
+        ar(datasetFormat);
+        ar(dimensionsOfDatasets);
+        ar(dimensionalityData);
     }
 
-    template<class Archive> void load(Archive & ar, const unsigned int version)
+    template<class Archive> void load(Archive & ar)
     {
-        ar & computation_speed;
-        ar & numberOfDatasets;
-        ar & namesOfDatasets;
-        ar & id;
-        ar & datasetByteSizes;
-        ar & datasetElementSize;
-        ar & datasetFormat;
-        ar & dimensionsOfDatasets;
-        ar & dimensionalityData;
-        ar & datasets;
+        ar(computation_speed);
+        ar(numberOfDatasets);
+        ar(id);
+        ar(datasetByteSizes);
+        ar(datasetElementSize);
+        ar(datasetFormat);
+        ar(dimensionsOfDatasets);
+        ar(dimensionalityData);
     }
-
-    template<class Archive>
-    void serializeLocalData(Archive & ar, const unsigned int version)
-    {
-        ar & computation_speed;
-        ar & numberOfDatasets;
-        ar & namesOfDatasets;
-        ar & id;
-        ar & datasetByteSizes;
-        ar & datasetElementSize;
-        ar & datasetFormat;
-        ar & dimensionsOfDatasets;
-        ar & dimensionalityData;
-        ar & datasets;
-    }
-
 #endif
 };
 
 #ifdef MPI_SUPPORT
-BOOST_CLASS_EXPORT_KEY2(TaskResults, "TaskResults")
+namespace cereal {
+    template <class Archive>
+    struct specialize<Archive, TaskResults, cereal::specialization::member_load_save> {};
+} // namespace ...
 #endif
 
 typedef Base::TFactory<std::string, TaskResults, const size_t, const std::string*> ResultsFactory;

@@ -8,14 +8,16 @@
 #include "TWMC/TWMCResults.hpp"
 #include "../TaskResults.hpp"
 
-// serialization archive used
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <numeric>
+
+// serialization archive used
+#include "Base/MPITaskProcessor/SerializationArchiveFormats.hpp"
+#include <cereal/types/memory.hpp>
+#include <cereal/types/vector.hpp>
+
 
 
 using namespace std;
@@ -91,22 +93,21 @@ void MPIProcessor::Update()
             auto data = std::vector<std::unique_ptr<TaskData>>(std::make_move_iterator(tasks.begin() + n),
                                                                std::make_move_iterator(tasks.begin() + n + nn));
 
-            std::ostringstream *stringBuffer = new std::ostringstream();
+            std::ostringstream oss;
+            std::string *str_buf = new std::string();
             {
-                boost::archive::binary_oarchive oa(*stringBuffer);
-                oa << data;
+                transmissionOutputArchive oa(oss);
+                oa(data);
             }
-            for (auto el :data)
-            {
-                delete el;
-            }
-            commSendBuffers.push_back(stringBuffer);
+            *str_buf = oss.str();
+
+            commSendBuffers.push_back(str_buf);
             commSendRequests.emplace_back();
 
             int nodeId = activeNodes[nodes];
 
             cout << "Master: Sending " << nn << " tasks to #" << nodeRank[nodeId] << endl;
-            MPI_Isend(stringBuffer->str().c_str(), stringBuffer->str().size(),
+            MPI_Isend(str_buf->c_str(), str_buf->size(),
                       MPI_BYTE, nodeRank[nodeId], TASKDATA_VECTOR_MESSAGE_TAG,
                       MPI_COMM_WORLD, &commSendRequests.back());
             cout << "Master - Created isend to #" << nodeRank[nodeId] << endl;
@@ -139,9 +140,12 @@ void MPIProcessor::Update()
             int flag;
             MPI_Iprobe(nodeRank[n], TASKRESULTS_VECTOR_MESSAGE_TAG, MPI_COMM_WORLD, &flag, &status);
             if (flag) {
-                cout << "Master: got message from #" << nodeRank[n] << ". Posting receive" << endl;
+                cout << "Master: got message from #" << nodeRank[n] << ". Posting receive";
                 int msgSize;
                 MPI_Get_count(&status, MPI_BYTE, &msgSize);
+
+                cout << " (" << msgSize/(1024*1024)<< " MB)" << endl;
+
                 char *data = new char[msgSize];
 
                 commRecvBuffers[n] = data;
@@ -184,11 +188,11 @@ void MPIProcessor::Update()
             if (flag)
             {
                 std::istringstream iss(string(commRecvBuffers[n] , commRecvBuffersSize[n]));
-                boost::archive::binary_iarchive ia(iss);
+                transmissionInputArchive ia(iss);
 
                 //cout << "Master: start decoding" << endl;
-                ia >> taskss;
-                std::vector<std::unique_ptr<TaskResults>> taskss; //must be deallocated
+                std::vector<std::unique_ptr<TaskResults>> taskss;
+                ia(taskss);
                 resultsReceivedFromNode[n] += taskss.size();
                 cout << "Master: Received "<<commRecvBuffersSize[n]<<" bytes ("<<taskss.size()<<") of results from #" << nodeRank[n] << "." << endl;
                 this->_consumer->EnqueueTasks(std::move(taskss));
