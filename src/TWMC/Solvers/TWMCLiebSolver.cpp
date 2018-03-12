@@ -136,48 +136,29 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
 
         // Generate noisy Matrices
         bool updateMats = false;
-        size_t noiseN = 0;
         if (data->U->GetNoiseType() != NoisyMatrix::NoiseType::None)
         {
             updateMats=true;
             U = data->U->Generate(gen);
-
-            // And now store this matrix in the results
-            complex_p* matData = U.data();
-
-            for (unsigned j= 0; j < data->nxy; j++)
-            {
-                res->complexMatrices[noiseN][j] = matData[j];
-            }
-            noiseN++;
+            res->AddComplexMatrixDataset(variables::U_Noise,
+                                         std::vector<complex_p>(U.data(), U.data() + U.size()),
+                                         1, {nx, ny, 3});
         }
-        if (data->E->GetNoiseType() != NoisyMatrix::NoiseType::None)
+        if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None)
         {
             updateMats=true;
             E = data->omega->Generate(gen);
-
-            // And now store this matrix in the results
-            complex_p* matData = E.data();
-
-            for (unsigned j= 0; j < data->nxy; j++)
-            {
-                res->complexMatrices[noiseN][j] = matData[j];
-            }
-            noiseN++;
+            res->AddComplexMatrixDataset(variables::Delta_Noise,
+                                         std::vector<complex_p>(E.data(), E.data() + E.size()),
+                                         1, {nx, ny, 3});
         }
         if (data->F->GetNoiseType() != NoisyMatrix::NoiseType::None)
         {
             updateMats=true;
             F = data->F->Generate(gen);
-
-            // And now store this matrix in the results
-            complex_p* matData = F.data();
-
-            for (unsigned j= 0; j < data->nxy; j++)
-            {
-                res->complexMatrices[noiseN][j] = matData[j];
-            }
-            noiseN++;
+            res->AddComplexMatrixDataset(variables::F_Noise,
+                                         std::vector<complex_p>(F.data(), F.data() + F.size()),
+                                         1, {nx, ny, 3});
         }
         if (updateMats)
         {
@@ -216,7 +197,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
 
         auto dt4 = sqrt(data->gamma_val * data->dt / 4.0);
         auto dt = data->dt;
-        complex_p* res_betat = res->GetComplexDataset(variables::traj);
+        std::vector<complex_p> res_betat(nx*ny*cellSz*data->n_frames);
 
         while (t <= data->t_end) {
             // Compute the a_t, that is used for the kai in the heun scheme
@@ -233,15 +214,12 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
                 complex_p *data = beta_t.data();
 
                 memcpy(&res_betat[i_frame*size], data, sizeof(complex_p)*size);
-                /*
-                for (unsigned j = 0; j < size; j++) {
-                    res->beta_t[i_frame * size + j] = data[j];
-                }*/
                 i_frame = i_frame + 1;
             }
             t += data->dt;
             i_step++;
         }
+        res->AddComplexMatrixDataset(variables::traj, res_betat, data->n_frames, {nx,ny});
         allResults.push_back(std::unique_ptr<TaskResults>(res));
     }
     return allResults;

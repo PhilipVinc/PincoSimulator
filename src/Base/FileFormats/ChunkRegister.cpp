@@ -256,6 +256,7 @@ bool ChunkRegister::ReadRegisterHeader()
 			}
 			ik += dimBuffer[ik] + 1;
 		}
+        delete[] dimBuffer;
 
 		// Read type of variables
 		int* varTypes = new int[nOfVariables];
@@ -263,7 +264,7 @@ bool ChunkRegister::ReadRegisterHeader()
 			varTypes[i] = fgetc(registerFile);
 			cout << "var[" << i << "] has typeId = " << varTypes[i] << endl;
 		}
-
+        delete[] varTypes;
 		// Read additionalDataSize and location trackers
 		fread(&trajAdditionalDataSize, 1, sizeof(trajAdditionalDataSize), registerFile);
 		fread(&trajDataBegin, 1, sizeof(trajDataBegin), registerFile);
@@ -300,13 +301,17 @@ void ChunkRegister::RegisterStoredData(std::unique_ptr<TaskResults> const& resul
     if (!registerInitialized) {
 	    InitializeRegisterHeader(results);
     }
-    
+
+    // Populate the 4+extra fields we store in the data
     trajBuffer[0] = results->GetId();
     trajBuffer[1] = chunkId;
     trajBuffer[2] = chunkOffset;
     trajBuffer[3] = 0;
     memcpy(&trajBuffer[4], results->SerializeExtraData(), results->SerializingExtraDataOffset());
-    
+
+    // write the data to the register file
+    fwrite(trajBuffer, 1, sizeOfTrajEntry, registerFile);
+
     // If this is an append, then we will have to correct the old data with a 
     // pointer to actual data
     if (saveType == Settings::SaveSettings::appendIdFiles)
@@ -318,8 +323,7 @@ void ChunkRegister::RegisterStoredData(std::unique_ptr<TaskResults> const& resul
 	    fwrite(&continuationOffset, sizeof(size_t), 1, registerFile);
 	    fseek(registerFile, continuationOffset, SEEK_SET);
     }
-    ftell(registerFile);
-    fwrite(trajBuffer, 1, sizeOfTrajEntry, registerFile);
+    //ftell(registerFile);
     fflush(registerFile);
     storedEntries++;
 }
@@ -330,12 +334,12 @@ inline size_t ChunkRegister::GetNumberOfSavedTasks()
     return storedEntries;
 }
 
-
+/*
 void AddContinuationToRegister(size_t traj_id, size_t chunk_id,
                                size_t frame0, size_t frameEnd)
 {
     
-}
+}*/
 
 std::set<size_t> ChunkRegister::GetUsedChunkIds()
 {

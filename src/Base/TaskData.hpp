@@ -12,7 +12,7 @@
 #include <stdio.h>
 
 #ifdef MPI_SUPPORT
-#include "Base/MPITaskProcessor/SerializationArchiveFormats.hpp"
+#include "Base/Serialization/SerializationArchiveFormats.hpp"
 #include <cereal/types/polymorphic.hpp>
 #include <cereal/access.hpp>
 #endif

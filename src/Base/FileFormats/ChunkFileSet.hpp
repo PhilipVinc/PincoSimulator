@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <tuple>
 
 class TaskResults;
 
@@ -35,7 +36,9 @@ public:
     size_t GetId() {return id;};
 protected:
     size_t WriteToChunk(size_t datasetId, const void * ptr, size_t dataSize);
+	void ReadChunkRegister();
     TaskResults* ReadEntry(size_t entryChunkId, bool lastItems = false);
+	std::tuple<void*, size_t> LoadChunkDataset(size_t datasetId, size_t );
 	void Initialise();
 
 private:
@@ -55,6 +58,9 @@ private:
     size_t id;
     size_t nTrajWritten = 0;
 	bool initialised = false;
+
+	// Loaded data
+	std::vector<size_t> registerData;
 };
 
 #endif /* ChunkFileSet_hpp */

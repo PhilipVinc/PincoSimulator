@@ -5,7 +5,6 @@
 
 #include <iostream>
 #include <csignal>
-
 #include <unistd.h>
 
 #ifdef MPI_SUPPORT
@@ -35,7 +34,7 @@ int main(int argc, char * argv[])
 
     if (rank == 0)
     {
-        sleep(2);
+        sleep(3);
 
         //cout << "Max Tag number is: "<< env.max_tag() << endl;
         //cout << "Reserved tag id is #" << env.collectives_tag() << endl;
@@ -59,7 +58,7 @@ int main(int argc, char * argv[])
     } else {
         int i = 0;
        // while (0 == i)
-             sleep(2);
+             sleep(3);
         cout << rank << " - Creating NodeManager" << endl;
 
         MPINodeManager* node = new MPINodeManager(nullptr);

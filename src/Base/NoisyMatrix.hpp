@@ -20,7 +20,7 @@
 #include <iostream>
 
 #ifdef MPI_SUPPORT
-#include "Base/MPITaskProcessor/SerializationArchiveFormats.hpp"
+#include "Base/Serialization/SerializationArchiveFormats.hpp"
 
 #include <cereal/access.hpp>
 #include "../Libraries/eigen_cereal_serialization.hpp"
@@ -129,9 +129,6 @@ public:
 	{
 		nx = _nx;
 		ny = _ny;
-		//std::cout << "Loaded wierdly data for NoisyMatrix" << std::endl;
-//		ar(nx);
-//		ar(ny);
 
 		ar(times);
 		ar(dVals);

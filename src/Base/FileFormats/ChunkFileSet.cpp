@@ -85,12 +85,9 @@ void ChunkFileSet::Initialise()
     bufferByteSize = (1+2*N);
     buffer = new size_t[bufferByteSize];
 
-    if (filesystem::exists(registerFileName))
-    {
+    if (filesystem::exists(registerFileName)) {
         registerFile = fopen(registerFileName.c_str(), "a+");
-    }
-    else
-    {
+    } else {
         registerFile = fopen(registerFileName.c_str(), "w+");
     }
 
@@ -107,8 +104,7 @@ inline FILE* ChunkFileSet::GetFile(size_t datasetId)
 size_t ChunkFileSet::WriteToChunk(std::unique_ptr<TaskResults> const& results)
 {
     buffer[0] = results->GetId();
-    for (size_t i = 0; i!=N; i++)
-    {
+    for (size_t i = 0; i!=N; i++) {
         buffer[1 +i*2] = results->ElementsInDataSet(i);
         buffer[2 + i*2] = WriteToChunk(i, results->GetDataSet(i),
                                        results->DataSetSize(i));
@@ -136,7 +132,10 @@ size_t ChunkFileSet::WriteToChunk(size_t datasetId, const void * ptr, size_t dat
 
 void ChunkFileSet::FlushData()
 {
-    
+    for (auto file : files) {
+        fflush(file);
+    }
+    fflush(registerFile);
 }
 
 bool ChunkFileSet::IsChunkBig()
@@ -144,6 +143,16 @@ bool ChunkFileSet::IsChunkBig()
     return (fileSizes[0] > minChunkSize);
 }
 
+/*void ChunkFileSet::ReadChunkRegister(size_t entryChunkId)
+{
+    fseek(registerFile, entryChunkId*bufferByteSize, SEEK_SET);
+
+    if (fread(buffer, 1, bufferByteSize, registerFile) == bufferByteSize)
+    {
+
+    }
+
+}*/
 /*
 TaskResults* ChunkFileSet::ReadEntry(size_t entryChunkId, bool lastItems)
 {

@@ -11,6 +11,7 @@
 #include "Base/NoisyMatrix.hpp"
 
 #include <mutex>
+#include <array>
 
 TWMCBaseSolver::TWMCBaseSolver() {
 	nTasksToRequest = 1;
@@ -119,56 +120,30 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(const std::vec
 		const TWMCSystemData* data = lastSharedSystemData;
 
 		// Generate noisy Matrices
-		bool updateMats = false; size_t noiseN = 0;
+		bool updateMats = false;
 		if (data->U->GetNoiseType() != NoisyMatrix::NoiseType::None)
 		{
 			updateMats=true;
 			U = data->U->Generate(gen);
-
-			// And now store this matrix in the results
-			// std::vector<complex_p> resData = *(res->complexMatrices[noiseN]);
-			complex_p* matData = U.data();
-            auto cMat = res->GetComplexDataset(variables::U_Noise);
-
-			for (unsigned j= 0; j < data->nxy; j++)
-			{
-                cMat[j] = matData[j];
-			}
-            noiseN++;
+			res->AddComplexMatrixDataset(variables::U_Noise,
+			                             std::vector<complex_p>(U.data(), U.data() + U.size()),
+			                             1, {nx,ny});
         }
 		if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None)
 		{
 			updateMats=true;
 			omega = data->omega->Generate(gen);
-
-			// And now store this matrix in the results
-			//std::vector<complex_p> resData = *(res->complexMatrices[noiseN]);
-            // noiseN++;
-			complex_p* matData = omega.data();
-            auto cMat = res->GetComplexDataset(variables::Delta_Noise);
-
-			for (unsigned j= 0; j < data->nxy; j++)
-			{
-                cMat[j] = matData[j];
-			}
-            noiseN++;
+			res->AddComplexMatrixDataset(variables::Delta_Noise,
+			                             std::vector<complex_p>(omega.data(), omega.data() + omega.size()),
+			                             1, {nx,ny});
         }
 		if (data->F->GetNoiseType() != NoisyMatrix::NoiseType::None)
 		{
 			updateMats=true;
 			F = data->F->Generate(gen);
-
-			// And now store this matrix in the results
-			//std::vector<complex_p> resData = *(res->complexMatrices[noiseN]);
-            noiseN++;
-			complex_p* matData = F.data();
-            auto cMat = res->GetComplexDataset(variables::F_Noise);
-
-			for (unsigned j= 0; j < data->nxy; j++)
-			{
-                cMat[j] = matData[j];
-			}
-            noiseN++;
+			res->AddComplexMatrixDataset(variables::F_Noise,
+			                             std::vector<complex_p>(F.data(), F.data() + F.size()),
+			                             1, {nx,ny});
         }
 		if (updateMats)
 		{
@@ -215,7 +190,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(const std::vec
 
 		TWMC_FFTW_plans& _plan = *plan;
 
-        complex_p* res_betat = res->GetComplexDataset(variables::traj);
+        std::vector<complex_p> res_betat(nx*ny*data->n_frames);
 
 		while (t<=t_end)
 		{
@@ -249,6 +224,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(const std::vec
 			t += data->dt;
 			i_step++;
 		}
+        res->AddComplexMatrixDataset(variables::traj, res_betat, data->n_frames, {nx,ny});
 		allResults.push_back(std::unique_ptr<TaskResults>(res));
 	}
 	return allResults;

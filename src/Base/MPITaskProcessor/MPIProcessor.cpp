@@ -14,7 +14,7 @@
 #include <numeric>
 
 // serialization archive used
-#include "Base/MPITaskProcessor/SerializationArchiveFormats.hpp"
+#include "Base/Serialization/SerializationArchiveFormats.hpp"
 #include <cereal/types/memory.hpp>
 #include <cereal/types/vector.hpp>
 
@@ -59,8 +59,7 @@ void MPIProcessor::ProvideMPICommunicator(MPI_Comm* _comm)
         resultsReceivedFromNode.push_back(0);
         recvListeningToNode.push_back(false);
         commRecvRequests.emplace_back(); // Fill with null requests
-        commRecvBuffers.push_back(nullptr); // Fill with null requests
-        commRecvBuffersSize.push_back(0); // Fill with null requests
+        commRecvBuffers.emplace_back(); // Fill with null requests
     }
     nNodes = nodeRank.size();
 
@@ -78,7 +77,6 @@ void MPIProcessor::Setup()
 
 void MPIProcessor::Update()
 {
-    //cout << "Main MPI PROCESSOR::Update()" << endl;
     // 1 - Send the tasks to all the processors
     //TODO : add consumer token
     size_t dequeuedTasks = enqueuedTasks.try_dequeue_bulk(std::make_move_iterator(tasks.begin()), maxTasks);
@@ -94,20 +92,17 @@ void MPIProcessor::Update()
                                                                std::make_move_iterator(tasks.begin() + n + nn));
 
             std::ostringstream oss;
-            std::string *str_buf = new std::string();
             {
                 transmissionOutputArchive oa(oss);
                 oa(data);
             }
-            *str_buf = oss.str();
-
-            commSendBuffers.push_back(str_buf);
+            commSendBuffers.push_back(oss.str());
             commSendRequests.emplace_back();
 
             int nodeId = activeNodes[nodes];
 
             cout << "Master: Sending " << nn << " tasks to #" << nodeRank[nodeId] << endl;
-            MPI_Isend(str_buf->c_str(), str_buf->size(),
+            MPI_Isend(commSendBuffers.back().c_str(), commSendBuffers.back().size(),
                       MPI_BYTE, nodeRank[nodeId], TASKDATA_VECTOR_MESSAGE_TAG,
                       MPI_COMM_WORLD, &commSendRequests.back());
             cout << "Master - Created isend to #" << nodeRank[nodeId] << endl;
@@ -136,22 +131,18 @@ void MPIProcessor::Update()
         int n = activeNodes[in];
 
         if (recvListeningToNode[n] != true) {
-            MPI_Status status;
-            int flag;
-            MPI_Iprobe(nodeRank[n], TASKRESULTS_VECTOR_MESSAGE_TAG, MPI_COMM_WORLD, &flag, &status);
-            if (flag) {
+            MPI_Status status; int gotMessage;
+            MPI_Iprobe(nodeRank[n], TASKRESULTS_VECTOR_MESSAGE_TAG, MPI_COMM_WORLD, &gotMessage, &status);
+            if (gotMessage) {
                 cout << "Master: got message from #" << nodeRank[n] << ". Posting receive";
                 int msgSize;
                 MPI_Get_count(&status, MPI_BYTE, &msgSize);
 
                 cout << " (" << msgSize/(1024*1024)<< " MB)" << endl;
 
-                char *data = new char[msgSize];
+                commRecvBuffers[n].resize(msgSize);
 
-                commRecvBuffers[n] = data;
-                commRecvBuffersSize[n] = msgSize;
-
-                MPI_Irecv(data, msgSize, MPI_BYTE, nodeRank[n],
+                MPI_Irecv(&commRecvBuffers[n][0], commRecvBuffers[n].size(), MPI_BYTE, nodeRank[n],
                           TASKRESULTS_VECTOR_MESSAGE_TAG, MPI_COMM_WORLD, &commRecvRequests[n]);
                 recvListeningToNode[n] = true;
             }
@@ -167,12 +158,10 @@ void MPIProcessor::Update()
             if (done)
             {
                 //cout << "Master - has sent." << endl;
-                delete commSendBuffers[i];
                 commSendBuffers.erase(commSendBuffers.begin()+i);
                 commSendRequests.erase(commSendRequests.begin()+i);
                 i--;
             }
-
         }
     }
 
@@ -187,17 +176,16 @@ void MPIProcessor::Update()
             MPI_Test(&commRecvRequests[n], &flag, &status);
             if (flag)
             {
-                std::istringstream iss(string(commRecvBuffers[n] , commRecvBuffersSize[n]));
+                std::istringstream iss(std::move(commRecvBuffers[n]));
                 transmissionInputArchive ia(iss);
 
                 //cout << "Master: start decoding" << endl;
                 std::vector<std::unique_ptr<TaskResults>> taskss;
                 ia(taskss);
                 resultsReceivedFromNode[n] += taskss.size();
-                cout << "Master: Received "<<commRecvBuffersSize[n]<<" bytes ("<<taskss.size()<<") of results from #" << nodeRank[n] << "." << endl;
+                cout << "Master: Received "<<commRecvBuffers[n].size()<<" bytes ("<<taskss.size()<<") of results from #" << nodeRank[n] << "." << endl;
                 this->_consumer->EnqueueTasks(std::move(taskss));
 
-                delete[] commRecvBuffers[n];
                 recvListeningToNode[n] = false;
             }
         }

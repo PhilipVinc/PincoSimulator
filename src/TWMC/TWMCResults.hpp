@@ -20,7 +20,7 @@
 class TWMCTaskData;
 
 #ifdef MPI_SUPPORT
-#include "Base/MPITaskProcessor/SerializationArchiveFormats.hpp"
+#include "Base/Serialization/SerializationArchiveFormats.hpp"
 
 #include "Libraries/eigen_cereal_serialization.hpp"
 #include <cereal/types/complex.hpp>
@@ -63,13 +63,16 @@ public:
     std::vector<variables> datasetList;
 
     std::array<double, 2> extraDataMemory;
-    //void AddRealMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames,  size_t cellSz);
-    //void AddComplexMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames,
-    //                             size_t cellSz);
 
     void AddRealMatrixDataset(variables var, size_t nx, size_t ny, size_t frames,  size_t cellSz);
     void AddComplexMatrixDataset(variables var, size_t nx, size_t ny, size_t frames,
                                  size_t cellSz);
+
+    void AddComplexMatrixDataset(variables var, std::vector<complex_p> data,
+                                 size_t frames, const std::vector<size_t> dimensions);
+    void AddRealMatrixDataset(variables var, std::vector<float_p> data,
+                                 size_t frames, const std::vector<size_t> dimensions);
+
 
     virtual const void* GetDataSet(size_t id) const;
     virtual const std::vector<std::string> NamesOfDatasets() const;
@@ -87,26 +90,7 @@ public:
 
 #ifdef MPI_SUPPORT
     template<class Archive>
-    void save(Archive  & ar) const
-    {
-        ar(cereal::virtual_base_class<TaskResults>(this));
-
-        ar(nx);
-        ar(ny);
-        ar(frames);
-        ar(cellSz);
-        ar(frames);
-        ar(extraDataMemory);
-
-        ar(complexMatrices);
-        ar(realMatrices);
-        ar(datasetIndex);
-        ar(datasetList);
-    };
-
-
-    template<class Archive>
-    void load(Archive  & ar)
+    void serialize(Archive & ar)
     {
         ar(cereal::virtual_base_class<TaskResults>(this));
 
@@ -158,22 +142,7 @@ namespace cereal {
     };*/
 
     template <class Archive>
-    struct specialize<Archive, TWMCResults, cereal::specialization::member_load_save> {};
-
-    /*
-    template <class Archive> inline
-    std::string save( Archive  & ar, variables const & t )
-    {
-        ar(static_cast<int>(t));
-    }
-
-    template <class Archive> inline
-    void load( Archive  & ar, variables & t )
-    {
-        int tmp;
-        ar(tmp);
-        t=static_cast<variables>(tmp);
-    }*/
+    struct specialize<Archive, TWMCResults, cereal::specialization::member_serialize> {};
 
 } // namespace ...
 

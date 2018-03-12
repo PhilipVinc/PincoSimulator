@@ -19,7 +19,7 @@
 
 
 #ifdef MPI_SUPPORT
-#include "Base/MPITaskProcessor/SerializationArchiveFormats.hpp"
+#include "Base/Serialization/SerializationArchiveFormats.hpp"
 #include "../Libraries/eigen_cereal_serialization.hpp"
 #include <cereal/types/polymorphic.hpp>
 #include <cereal/types/vector.hpp>

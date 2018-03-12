@@ -161,7 +161,7 @@ set(SOURCE_FILES
         src/TWMC/TWMCSystemData.cpp src/TWMC/TWMCSystemData.hpp
         src/TWMC/TWMCManager.cpp src/TWMC/TWMCManager.hpp
         src/TWMC/Solvers/TWMCThermoSolver.cpp src/TWMC/Solvers/TWMCThermoSolver.hpp
-        src/TWMC/Solvers/TWMCLiebSolver.cpp src/TWMC/Solvers/TWMCLiebSolver.hpp )
+        src/TWMC/Solvers/TWMCLiebSolver.cpp src/TWMC/Solvers/TWMCLiebSolver.hpp src/Libraries/PreAllocator.hpp)
 
 set(GPU_SOURCE_FILES
         src/Base/SolverGPU.cpp src/Base/SolverGPU.hpp
@@ -171,9 +171,9 @@ set(GPU_SOURCE_FILES
 set(MPI_SOURCE_FILES
         src/Base/MPITaskProcessor/MPINodeManager.cpp src/Base/MPITaskProcessor/MPINodeManager.hpp
         src/Base/MPITaskProcessor/MPIProcessor.cpp src/Base/MPITaskProcessor/MPIProcessor.hpp
-        src/Libraries/eigen_boost_serialization.hpp src/Base/MPITaskProcessor/SerializationArchiveFormats.hpp
+        src/Libraries/eigen_boost_serialization.hpp src/Base/Serialization/SerializationArchiveFormats.hpp
         src/TWMC/TWMCSerializators.hpp src/TWMC/TWMCSerializators.cpp src/Base/MPITaskProcessor/MPIPincoTags.hpp
-        src/Libraries/eigen_cereal_serialization.hpp)
+        src/Libraries/eigen_cereal_serialization.hpp src/Base/Serialization/BaseSerializators.cpp)
 
 
 if (COMPILE_GPU)

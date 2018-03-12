@@ -20,17 +20,6 @@ TWMCResults::TWMCResults(const TWMCTaskData* _taskData) :
 	extraDataMemory[0] = taskData->t_start;
 	extraDataMemory[1] = taskData->t_end;
 
-	// Determine the additional noisy matrices to be saved
-	if (taskData->U->HasNoise()) {
-		AddComplexMatrixDataset(variables::U_Noise, taskData->nx, taskData->ny, 1, cellSz);
-	}
-	if (taskData->omega->HasNoise()) {
-		AddComplexMatrixDataset(variables::Delta_Noise, taskData->nx, taskData->ny, 1, cellSz);
-	}
-	if (taskData->F->HasNoise()) {
-		AddComplexMatrixDataset(variables::F_Noise, taskData->nx, taskData->ny, 1, cellSz);
-	}
-
 	// It's a thermal simulation.
 	if (taskData->F->HasTimeDependence()) {
 		AddRealMatrixDataset(variables::work, taskData->nx, taskData->ny, taskData->n_frames, cellSz);
@@ -46,8 +35,6 @@ TWMCResults::TWMCResults()
 TWMCResults::TWMCResults(size_t _nx, size_t _ny, size_t _frames, size_t _cellSz = 1)
 		: nx(_nx), ny(_ny), nxy(nx * ny), frames(_frames), cellSz(_cellSz)
 {
-    nxy = ny*nx;
-	AddComplexMatrixDataset(variables::traj, nx, ny, frames, cellSz);
 }
 
 TWMCResults::~TWMCResults()
@@ -57,18 +44,46 @@ TWMCResults::~TWMCResults()
 
 
 // Adding datasets
-void TWMCResults::AddComplexMatrixDataset(variables var, size_t nx, size_t ny, size_t frames,
-                                          size_t cellSz)
+void TWMCResults::AddComplexMatrixDataset(variables var, std::vector<complex_p> data,
+                                          size_t frames, const std::vector<size_t> dimensions)
 {
     // create the array holding the quantity;
-    complexMatrices.emplace_back(nx*ny*cellSz*frames);
+    complexMatrices.push_back(data);
 
     // Add it to the underlying storage.
     datasetList.push_back(var);
     datasetIndex.insert(std::pair<variables,std::tuple<varType, int>>(var, std::make_tuple(varType::Complex,
-                                             complexMatrices.size()-1)));
+                                                                                           complexMatrices.size()-1)));
 
-    AddResult(nx*ny*cellSz*sizeof(complex_p), frames, 22, {nx,ny, cellSz});
+    AddResult(nx*ny*cellSz*frames*sizeof(complex_p), frames, 22, dimensions);
+}
+
+void TWMCResults::AddRealMatrixDataset(variables var, std::vector<float_p> data,
+                                       size_t frames, const std::vector<size_t> dimensions)
+{
+    // create the array holding the quantity;
+    realMatrices.push_back(data);
+
+    // Add it to the underlying storage.
+    datasetList.push_back(var);
+    datasetIndex.insert(std::pair<variables,std::tuple<varType, int>>(var, std::make_tuple(varType::Real,
+                                                                                           realMatrices.size()-1)));
+
+    AddResult(nx*ny*cellSz*frames*sizeof(float_p), frames, 22, dimensions);
+}
+
+void TWMCResults::AddComplexMatrixDataset(variables var, size_t nx, size_t ny, size_t frames,
+                                          size_t cellSz)
+{
+	// create the array holding the quantity;
+	complexMatrices.emplace_back(nx*ny*cellSz*frames);
+
+	// Add it to the underlying storage.
+	datasetList.push_back(var);
+	datasetIndex.insert(std::pair<variables,std::tuple<varType, int>>(var, std::make_tuple(varType::Complex,
+	                                                                                       complexMatrices.size()-1)));
+
+	AddResult(nx*ny*cellSz*frames*sizeof(complex_p), frames, 22, {nx,ny, cellSz});
 }
 
 void TWMCResults::AddRealMatrixDataset(variables var, size_t nx, size_t ny, size_t frames,
@@ -82,7 +97,7 @@ void TWMCResults::AddRealMatrixDataset(variables var, size_t nx, size_t ny, size
 	datasetIndex.insert(std::pair<variables,std::tuple<varType, int>>(var, std::make_tuple(varType::Real,
 	                                                                                       realMatrices.size()-1)));
 
-    AddResult(nx*ny*cellSz*sizeof(float_p), frames, 22, {nx,ny, cellSz});
+    AddResult(nx*ny*cellSz*frames*sizeof(float_p), frames, 22, {nx,ny, cellSz});
 }
 
 float_p* TWMCResults::GetRealDataset(variables var) {
@@ -143,33 +158,6 @@ const std::vector<std::string> TWMCResults::NamesOfDatasets() const
 	}
 	return names;
 }
-
-
-/*
-void TWMCResults::AddComplexMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames,
-                                          size_t cellSz)
-{
-	// create the array holding the quantity;
-	//complex_p* mat = new complex_p[nx*ny*cellSz*frames];
-    //std::vector<complex_p> mat = std::vector<complex_p>(nx*ny*cellSz*frames);
-
-    complexMatrices.emplace_back(nx*ny*cellSz*frames);
-
-	// Add it to the underlying storage.
-	AddResult(name, &complexMatrices.end()[0], nx*ny*cellSz*sizeof(complex_p), frames, 22, {nx,ny, cellSz});
-}
-
-void TWMCResults::AddRealMatrixDataset(std::string name, size_t nx, size_t ny, size_t frames,
-                                       size_t cellSz)
-{
-	// create the array holding the quantity;
-    // std::vector<float_p>* mat = new std::vector<float_p>(nx*ny*cellSz*frames);
-	realMatrices.emplace_back(nx*ny*cellSz*frames);
-
-	// Add it to the underlying storage.
-	AddResult(name, &realMatrices.end()[0], nx*ny*cellSz*sizeof(float_p), frames, 11, {nx,ny, cellSz});
-}*/
-
 
 // Serialization stuff
 

@@ -51,10 +51,9 @@ private:
     std::string _solverName;
 
     std::vector<MPI_Request> commRecvRequests;
-    std::vector<char*> commRecvBuffers;
-    std::vector<int> commRecvBuffersSize;
+    std::vector<std::string> commRecvBuffers;
 
-    std::vector<std::string*> commSendBuffers;
+    std::vector<std::string> commSendBuffers;
     std::vector<MPI_Request> commSendRequests;
 
     std::vector<TaskData*> recvBuffer;

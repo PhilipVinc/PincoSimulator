@@ -7,10 +7,10 @@
 
 #ifdef MPI_SUPPORT
 #include <cereal/archives/binary.hpp>
-#include <cereal/archives/json.hpp>
-
 typedef cereal::BinaryInputArchive transmissionInputArchive;
 typedef cereal::BinaryOutputArchive transmissionOutputArchive;
+
+//#include <cereal/archives/json.hpp>
 //typedef cereal::JSONInputArchive transmissionInputArchive;
 //typedef cereal::JSONOutputArchive transmissionOutputArchive;
 #endif

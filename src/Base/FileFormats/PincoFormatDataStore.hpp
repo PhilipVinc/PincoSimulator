@@ -13,6 +13,7 @@
 
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 #include <stdio.h>
@@ -38,6 +39,13 @@ private:
 	virtual void StoreDataSimple(std::unique_ptr<TaskResults> const& results);
 	virtual void StoreDataComplex(std::unique_ptr<TaskResults> const& results);
 	virtual void LoadListOfStoredDataEvents();
+
+	//    TaskResults* LoadTaskResults(size_t id,
+//                                         TaskResults * res = nullptr);
+//    TaskResults* LoadTaskResultsLastNFrames(size_t id,
+//                                            size_t nFrames,
+//                                            TaskResults *res = nullptr);
+
 
 	void Initialise(std::unique_ptr<TaskResults> const& task);
 

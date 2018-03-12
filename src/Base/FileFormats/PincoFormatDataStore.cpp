@@ -92,7 +92,6 @@ void PincoFormatDataStore::StoreDataComplex(std::unique_ptr<TaskResults> const& 
 
 void PincoFormatDataStore::ProvideDatasetNames(vector<string> names)
 {
-//    datasetNames = names;
     datasetN = names.size();
 }
 

@@ -68,8 +68,7 @@ private:
     // Reading
     bool ReadRegisterHeader();
     bool ReadRegisterEntries();
-    //void AppendToRegister(TaskResults* results);
-    
+
     void AddContinuationToRegister(size_t traj_id, size_t chunk_id,
                                    size_t chunk_offset,
                                    size_t frame0, size_t frameEnd);
