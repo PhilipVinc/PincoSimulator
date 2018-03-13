@@ -5,8 +5,7 @@
 #include "MPIProcessor.hpp"
 
 #include "MPIPincoTags.hpp"
-#include "TWMC/TWMCResults.hpp"
-#include "../TaskResults.hpp"
+#include "Base/TaskResults.hpp"
 
 #include <algorithm>
 #include <fstream>

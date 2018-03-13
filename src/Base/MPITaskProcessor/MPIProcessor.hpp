@@ -5,8 +5,8 @@
 #ifndef SIMULATOR_MPIMANAGER_HPP
 #define SIMULATOR_MPIMANAGER_HPP
 
-#include "../Interfaces/IResultConsumer.hpp"
-#include "../TaskProcessor.hpp"
+#include "Base/Interfaces/IResultConsumer.hpp"
+#include "Base/TaskProcessor.hpp"
 
 #include <mpi.h>
 

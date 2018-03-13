@@ -164,7 +164,7 @@ set(SOURCE_FILES
         src/TWMC/Solvers/TWMCLiebSolver.cpp src/TWMC/Solvers/TWMCLiebSolver.hpp
         src/Libraries/PreAllocator.hpp
         src/Base/ResultsHelpers/HeterogeneousContainer.hpp
-        src/Base/GenericTaskResults.cpp src/Base/GenericTaskResults.hpp)
+        src/Base/TaskResultsGeneric.hpp)
 
 set(GPU_SOURCE_FILES
         src/Base/SolverGPU.cpp src/Base/SolverGPU.hpp
