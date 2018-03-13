@@ -109,7 +109,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(const std::vec
 		}
 
 		// Setup the single simulation
-		TWMCResults* res = new TWMCResults(task);
+		TWMCResults* res = new TWMCResults();
 		unsigned int seed = task->rngSeed;
 		res->SetId(seed);
 		auto initialCondition = TWMCTaskData::InitialConditions::ReadFromSettings;
@@ -125,25 +125,19 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(const std::vec
 		{
 			updateMats=true;
 			U = data->U->Generate(gen);
-			res->AddComplexMatrixDataset(variables::U_Noise,
-			                             std::vector<complex_p>(U.data(), U.data() + U.size()),
-			                             1, {nx,ny});
+			res->AddDataset<MatrixCXd>(TWMCData::U_Noise, U, 1, {nx,ny});
         }
 		if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None)
 		{
 			updateMats=true;
 			omega = data->omega->Generate(gen);
-			res->AddComplexMatrixDataset(variables::Delta_Noise,
-			                             std::vector<complex_p>(omega.data(), omega.data() + omega.size()),
-			                             1, {nx,ny});
+			res->AddDataset<MatrixCXd>(TWMCData::Delta_Noise, omega, 1, {nx,ny});
         }
 		if (data->F->GetNoiseType() != NoisyMatrix::NoiseType::None)
 		{
 			updateMats=true;
 			F = data->F->Generate(gen);
-			res->AddComplexMatrixDataset(variables::F_Noise,
-			                             std::vector<complex_p>(F.data(), F.data() + F.size()),
-			                             1, {nx,ny});
+			res->AddDataset<MatrixCXd>(TWMCData::F_Noise, F, 1, {nx,ny});
         }
 		if (updateMats)
 		{
@@ -215,7 +209,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(const std::vec
 			// Print the data
 			if((i_step % data->frame_steps ==0 ) && i_frame < data->n_frames)
 			{
-				size_t size = res->nx*res->ny;
+				size_t size = nx*ny;
 				complex_p* data = beta_t.data();
 				memcpy(&res_betat[i_frame*size], data, sizeof(complex_p)*size);
 
@@ -224,7 +218,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(const std::vec
 			t += data->dt;
 			i_step++;
 		}
-        res->AddComplexMatrixDataset(variables::traj, res_betat, data->n_frames, {nx,ny});
+		res->AddDataset<std::vector<complex_p>>(TWMCData::traj, std::move(res_betat), data->n_frames, {nx,ny});
 		allResults.push_back(std::unique_ptr<TaskResults>(res));
 	}
 	return allResults;

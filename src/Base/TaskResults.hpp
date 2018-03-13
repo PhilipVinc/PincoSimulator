@@ -35,34 +35,25 @@ public:
     size_t GetId() const;
     void SetId(size_t);
 
+    // Accessing the datasets
     size_t NumberOfDataSets() const;
-    virtual const std::vector<std::string> NamesOfDatasets() const = 0;
-    virtual const std::string NameOfDataset(size_t datasetId) const = 0 ;
-    size_t DataSetSize(size_t id) const;
     size_t ElementsInDataSet(size_t id) const;
     size_t DataSetDimension(size_t id)const;
     unsigned char DataSetDataType(size_t id) const;
     const std::vector<size_t>& DataSetsDimensionData() const;
+
+    // Pure virtual methods
+    virtual const std::vector<std::string> NamesOfDatasets() const = 0;
+    virtual const std::string NameOfDataset(size_t datasetId) const = 0 ;
+    virtual const size_t DataSetSize(size_t id) const = 0;
     virtual const void* GetDataSet(size_t id) const = 0;
-/*
-    void AddResult(std::string name, void* memAddr, size_t byteSize, size_t elSize,
-                   size_t format, size_t dimensions, const size_t* dimData);
 
-    void AddResult(std::string name, void* memAddr, size_t byteSize, size_t elSize,
-                   size_t format, std::vector<size_t> dimensions);
-*/
-    void AddResult(size_t byteSize, size_t elSize,
-                   size_t format, size_t dimensions, const size_t* dimData);
-
-    void AddResult(size_t byteSize, size_t elSize,
-                   size_t format, std::vector<size_t> dimensions);
+    void AddResult(size_t elSize, size_t format, const std::vector<size_t> dimensions);
 
     // Serialization and deserialization
     const virtual unsigned int SerializingExtraDataOffset()const;
     const virtual void* SerializeExtraData()const;
     virtual void DeSerializeExtraData(void* data, unsigned int length);
-
-    //const virtual void* GetDatasetPointer(size_t) = 0;
 
     // Properties
     float computation_speed = 0;
@@ -75,7 +66,6 @@ protected:
 private:
 
     // Datasets, and related informations.
-    std::vector<size_t> datasetByteSizes;
     std::vector<size_t> datasetElementSize;
     std::vector<size_t> datasetFormat;
 
@@ -90,7 +80,6 @@ public:
         ar(computation_speed);
         ar(numberOfDatasets);
         ar(id);
-        ar(datasetByteSizes);
         ar(datasetElementSize);
         ar(datasetFormat);
         ar(dimensionsOfDatasets);
@@ -102,7 +91,6 @@ public:
         ar(computation_speed);
         ar(numberOfDatasets);
         ar(id);
-        ar(datasetByteSizes);
         ar(datasetElementSize);
         ar(datasetFormat);
         ar(dimensionsOfDatasets);

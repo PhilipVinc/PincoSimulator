@@ -16,7 +16,6 @@ class ThreadedTaskProcessor;
 class TaskProcessor;
 class ResultsSaver;
 class TWMCSystemData;
-class TWMCResults;
 
 class TWMCManager : public Manager {
 
