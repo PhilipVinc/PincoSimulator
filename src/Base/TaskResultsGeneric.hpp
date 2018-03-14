@@ -53,6 +53,18 @@ public:
         datasetsIds.push_back(datasetsIds.size());
     }
 
+    virtual void AddDataset(std::string name, std::tuple<rawT1, rawT2> data, size_t frames, const std::vector<size_t> dimensions) {
+
+        enumType t = allVars<enumType>::varEnums.at(name);
+
+        datasets.setUnknownType(t, data, frames, dimensions);
+
+
+        AddResult(frames, allVars<enumType>::varFormats.at(t), dimensions);
+        datasetsTypes.push_back(t);
+        datasetsIds.push_back(datasetsIds.size());
+    }
+
 
     template<typename T>
     T& GetDataset(enumType name) {
@@ -68,7 +80,7 @@ public:
     }
 
     virtual const std::vector<std::string> NamesOfDatasets() const {
-        std::vector<std::string> res(numberOfDatasets);
+        std::vector<std::string> res;
         for (enumType t : datasetsTypes) {
             const std::string dd = DatasetName(t);
             res.push_back(dd);
@@ -93,7 +105,6 @@ public:
 
 
 #ifdef MPI_SUPPORT
-
     template<class Archive>
     void serialize(Archive & ar)
     {

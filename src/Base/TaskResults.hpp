@@ -48,7 +48,8 @@ public:
     virtual const size_t DataSetSize(size_t id) const = 0;
     virtual const void* GetDataSet(size_t id) const = 0;
 
-    void AddResult(size_t elSize, size_t format, const std::vector<size_t> dimensions);
+    virtual void AddDataset(std::string name, std::tuple<const void*, size_t> data,
+                    size_t frames, const std::vector<size_t> dimensions) = 0;
 
     // Serialization and deserialization
     const virtual unsigned int SerializingExtraDataOffset()const;
@@ -62,6 +63,8 @@ public:
 protected:
     size_t numberOfDatasets = 0;
     size_t id = 0;
+
+    void AddResult(size_t elSize, size_t format, const std::vector<size_t> dimensions);
 
 private:
 
@@ -106,6 +109,6 @@ namespace cereal {
 } // namespace ...
 #endif
 
-typedef Base::TFactory<std::string, TaskResults, const size_t, const std::string*> ResultsFactory;
+typedef Base::TFactory<std::string, TaskResults> ResultsFactory;
 
 #endif /* TaskResults_hpp */

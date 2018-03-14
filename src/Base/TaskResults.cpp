@@ -12,10 +12,7 @@
 using namespace std;
 
 
-TaskResults::TaskResults(const size_t _nOfDatasets) : datasetElementSize(_nOfDatasets),
-                                                           datasetFormat(_nOfDatasets),
-                                                           dimensionsOfDatasets(_nOfDatasets),
-                                                           dimensionalityData(_nOfDatasets)
+TaskResults::TaskResults(const size_t _nOfDatasets)
 {
     numberOfDatasets = 0;
 }

@@ -63,10 +63,12 @@ bool ChunkRegister::ReadRegisterEntries()
             entry->chunk_id = trajBuffer[1];
             entry->chunk_offset = trajBuffer[2];
             entry->continuation_offset = trajBuffer[3];
-            entry->additionalData = new size_t[trajAdditionalDataSize/sizeof(size_t)];
+            entry->additionalData = new char[trajAdditionalDataSize];
             memcpy(entry->additionalData, &trajBuffer[4], trajAdditionalDataSize);
-	        entry->registerWritePosition = ftell(registerFile);
+	        entry->registerWritePosition = ftell(registerFile)-sizeOfTrajEntry;
 	        entries.push_back(entry);
+            trajOffsets.insert(std::pair<size_t, size_t>(trajBuffer[0], entries.size()-1));
+            trajIds.insert(trajBuffer[0]);
             storedEntries++;
         }
 	    registerDataRead = true;
@@ -148,7 +150,7 @@ void ChunkRegister::InitializeRegisterHeader(std::unique_ptr<TaskResults> const&
     fwrite(&fileVersion, 1, sizeof(fileVersion), registerFile);
     
     // 3) Write the dataset names
-    auto datasetNames = results->NamesOfDatasets();
+    datasetNames = results->NamesOfDatasets();
     fputc(datasetNames.size(), registerFile);
     for (auto name : datasetNames)
     {
@@ -164,10 +166,12 @@ void ChunkRegister::InitializeRegisterHeader(std::unique_ptr<TaskResults> const&
     for (int i =0; i!=datasetNames.size(); i++)
     {
         size_t D = results->DataSetDimension(i);
+        dimensionalityData.push_back(std::vector<size_t>());
         dimBuffer[ji] = D;
         ji++;
         for (size_t j = 0; j!=D; j++)
         {
+            dimensionalityData.back().push_back(dimData[jk]);
             dimBuffer[ji] = dimData[jk];
             jk++; ji++;
         }
@@ -244,6 +248,7 @@ bool ChunkRegister::ReadRegisterHeader()
 			variableNames[i].resize(fgetc(registerFile));
 			fread(&(variableNames[i][0]), 1, variableNames[i].size(), registerFile);
 		}
+        datasetNames = variableNames;
 
 		// Read Dataset dimensions
 		size_t *dimBuffer = new size_t[5 * nOfVariables];
@@ -254,6 +259,7 @@ bool ChunkRegister::ReadRegisterHeader()
 			if (dimBuffer[ik] != 0) {
 				fread(&dimBuffer[ik + 1], 1, dimBuffer[ik] * sizeof(size_t), registerFile);
 			}
+            dimensionalityData.push_back(std::vector<size_t>(&dimBuffer[ik+1], &dimBuffer[ik+1+dimBuffer[ik]]));
 			ik += dimBuffer[ik] + 1;
 		}
         delete[] dimBuffer;
@@ -302,6 +308,14 @@ void ChunkRegister::RegisterStoredData(std::unique_ptr<TaskResults> const& resul
 	    InitializeRegisterHeader(results);
     }
 
+    if (saveType == Settings::SaveSettings::unspecified) {
+        if (trajIds.count(results->GetId()) == 0) {
+            saveType = Settings::SaveSettings::saveIdFiles;
+        } else {
+            saveType = Settings::SaveSettings::appendIdFiles;
+        }
+    }
+
     // Populate the 4+extra fields we store in the data
     trajBuffer[0] = results->GetId();
     trajBuffer[1] = chunkId;
@@ -309,37 +323,59 @@ void ChunkRegister::RegisterStoredData(std::unique_ptr<TaskResults> const& resul
     trajBuffer[3] = 0;
     memcpy(&trajBuffer[4], results->SerializeExtraData(), results->SerializingExtraDataOffset());
 
+    auto continuationOffset = ftell(registerFile);
+    fseek(registerFile, 0, SEEK_END);
     // write the data to the register file
     fwrite(trajBuffer, 1, sizeOfTrajEntry, registerFile);
 
+
     // If this is an append, then we will have to correct the old data with a 
     // pointer to actual data
-    if (saveType == Settings::SaveSettings::appendIdFiles)
-    {
+    if (saveType == Settings::SaveSettings::appendIdFiles) {
 	    auto entry = GetEntryById(results->GetId());
-	    auto continuationOffset = ftell(registerFile);
 
 	    fseek(registerFile, entry->registerWritePosition + 3*sizeof(size_t) , SEEK_SET);
-	    fwrite(&continuationOffset, sizeof(size_t), 1, registerFile);
-	    fseek(registerFile, continuationOffset, SEEK_SET);
+	    fwrite(&continuationOffset, 1, sizeof(size_t), registerFile);
+	    fseek(registerFile, 0, SEEK_END);
+
+        // Update the old entry register
+        auto prevEntries = trajOffsets.equal_range(trajBuffer[0]);
+        for (auto it = prevEntries.first; it != prevEntries.second; it++) {
+            if (entries[it->second]->continuation_offset == 0) {
+                entries[it->second]->continuation_offset = continuationOffset;
+            }
+        }
     }
-    //ftell(registerFile);
     fflush(registerFile);
+
+    // Prepare the entry to be stored here
+    {
+        RegisterEntry* entry = new RegisterEntry;
+        entry->traj_id = trajBuffer[0];
+        entry->chunk_id = trajBuffer[1];
+        entry->chunk_offset = trajBuffer[2];
+        entry->continuation_offset = trajBuffer[3];
+        entry->additionalData = new char[trajAdditionalDataSize];
+        memcpy(entry->additionalData, &trajBuffer[4], trajAdditionalDataSize);
+        entry->registerWritePosition = continuationOffset;
+        entries.push_back(entry);
+        trajOffsets.insert(std::pair<size_t, size_t>(trajBuffer[0], entries.size()));
+        trajIds.insert(trajBuffer[0]);
+    }
+
+    //ftell(registerFile);
     storedEntries++;
 }
-
 
 inline size_t ChunkRegister::GetNumberOfSavedTasks()
 {
     return storedEntries;
 }
 
-/*
-void AddContinuationToRegister(size_t traj_id, size_t chunk_id,
-                               size_t frame0, size_t frameEnd)
+inline size_t ChunkRegister::GetNumberOfSavedTrajectories()
 {
-    
-}*/
+    return trajIds.size();
+}
 
 std::set<size_t> ChunkRegister::GetUsedChunkIds()
 {
@@ -353,18 +389,11 @@ std::set<size_t> ChunkRegister::GetUsedChunkIds()
     return chunkIds;
 }
 
-std::vector<size_t> ChunkRegister::GetSavedTasksIds()
-{
+const std::set<size_t>& ChunkRegister::GetSavedTasksIds() {
 	if(!registerDataRead)
 		ReadRegisterEntries();
 
-	std::vector<size_t> ids = vector<size_t>(storedEntries);
-	for (size_t i=0; i != storedEntries; i++)
-	{
-		ids[i] = entries[i]->traj_id;
-	}
-
-	return ids;
+	return trajIds;
 }
 
 inline ChunkRegister::RegisterEntry* ChunkRegister::GetEntryByPosition(size_t index)
@@ -374,9 +403,17 @@ inline ChunkRegister::RegisterEntry* ChunkRegister::GetEntryByPosition(size_t in
 
 ChunkRegister::RegisterEntry* ChunkRegister::GetEntryById(size_t id)
 {
-	auto check = [id](const RegisterEntry* entry) {
+	/*auto check = [id](const RegisterEntry* entry) {
 		return entry->traj_id == id;
 	};
 	std::vector<RegisterEntry*>::iterator regEntry = std::find_if(std::begin(entries), std::end(entries), check);
-	return *regEntry;
+	return *regEntry;*/
+    auto prevEntries = trajOffsets.equal_range(id);
+    size_t maxIndex = 0;
+    for (auto it = prevEntries.first; it != prevEntries.second; it++) {
+        if ( it->second > maxIndex ) {
+            maxIndex = it->second;
+        }
+    }
+    return GetEntryByPosition(maxIndex);
 }

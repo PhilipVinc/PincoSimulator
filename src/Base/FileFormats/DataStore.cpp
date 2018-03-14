@@ -37,9 +37,14 @@ DataStore::DataStore(const Settings* settings, string folderName)
 
 bool DataStore::SaveTaskResults(std::unique_ptr<TaskResults> const& task)
 {
-    StoreDataSimple(task);
+    StoreData(task);
     return true;
 }
+
+std::unique_ptr<TaskResults> DataStore::LoadEndFrame(size_t id) {
+    return LoadLastResultFrame(id);
+}
+
 
 void DataStore::CreateFolder(string folder)
 {

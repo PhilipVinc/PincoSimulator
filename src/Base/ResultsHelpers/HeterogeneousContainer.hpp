@@ -28,6 +28,8 @@ struct allVars
 {
     static std::map<T, std::type_index> varTypes;
     static std::map<T, const std::string> varNames;
+    static std::map<std::string, T> varEnums;
+    static std::map<T, const size_t> varFormats;
 };
 
 template <typename C>
@@ -44,6 +46,8 @@ struct variable
     {
         allVars<T>::varTypes.insert(std::pair<T,std::type_index>(val, typeid(C)));
         allVars<T>::varNames.insert(std::pair<T,std::string>(val, name));
+        allVars<T>::varFormats.insert(std::pair<T,size_t>(val, saveFormat<C>::format));
+        allVars<T>::varEnums.insert(std::pair<std::string, T>(name, val));
     };
 };
 
@@ -65,6 +69,10 @@ typedef std::tuple<rawT1, rawT2> rawTuple;
 
 template <class C>
 rawTuple getData(const C& data);
+
+
+template <class C>
+C setData(rawTuple data, size_t frames, const std::vector<size_t>& dimensions);
 
 
 template <typename enumVar, typename... Types>
@@ -131,6 +139,19 @@ public:
     {
         std::map<enumVar,T>& vec = MatchingField<0, T, vtype, VectorOfType<0, T>::value>::get(vectors);
         vec[varName] = el;
+    }
+
+    // Used to add a type of unknown type
+    template <typename T>
+    void setIfRightType(enumVar varName, rawTuple data, size_t frames, const std::vector<size_t>& dimensions) {
+        if (allVars<enumVar>::varTypes.at(varName) == typeid(T)) {
+            std::map<enumVar, T> &theMap = MatchingField<0, T, vtype, VectorOfType<0, T>::value>::get(vectors);
+            theMap[varName] = setData<T>(data, frames, dimensions);
+        }
+    }
+
+    void setUnknownType(enumVar varName, rawTuple data, size_t frames, const std::vector<size_t>& dimensions) {
+        int trash[] = {(setIfRightType<Types>(varName,data, frames, dimensions),0)...};
     }
 
     template <typename T>

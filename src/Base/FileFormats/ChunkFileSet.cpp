@@ -9,7 +9,7 @@
 #include "ChunkFileSet.hpp"
 
 #include "Libraries/FilesystemLibrary.h"
-#include "../TaskResults.hpp"
+#include "Base/TaskResults.hpp"
 
 #include <iostream>
 
@@ -42,6 +42,8 @@ ChunkFileSet::~ChunkFileSet()
         }
         deleteRegister = false;
     }
+
+    delete[] buffer;
     
     // Delete the register only if all files were deleted
     fclose(registerFile);
@@ -67,14 +69,14 @@ void ChunkFileSet::Initialise()
         if (filesystem::exists(fileNames[i]))
         {
             cout << "Opening File: " << fileNames[i] << endl;
-            files.push_back(fopen(fileNames[i].c_str(), "a+"));
+            files.push_back(fopen(fileNames[i].c_str(), "ab+"));
 	        fseek(files[i], 0, SEEK_END);
 	        fileSizes.push_back(ftell(files[i]));
 	        fseek(files[i], 0, SEEK_SET);
         }
         else // If it does not, let's create it
         {
-            files.push_back(fopen(fileNames[i].c_str(), "w+"));
+            files.push_back(fopen(fileNames[i].c_str(), "wb+"));
             fileSizes.push_back(0);
         }
     }
@@ -86,9 +88,9 @@ void ChunkFileSet::Initialise()
     buffer = new size_t[bufferByteSize];
 
     if (filesystem::exists(registerFileName)) {
-        registerFile = fopen(registerFileName.c_str(), "a+");
+        registerFile = fopen(registerFileName.c_str(), "ab+");
     } else {
-        registerFile = fopen(registerFileName.c_str(), "w+");
+        registerFile = fopen(registerFileName.c_str(), "wb+");
     }
 
     initialised = true;
@@ -127,7 +129,7 @@ size_t ChunkFileSet::WriteToChunk(size_t datasetId, const void * ptr, size_t dat
     fileOffsets[datasetId] = start;
     fileSizes[datasetId] += (end - start + 1);
     
-    return start;
+    return start; // return the offset of where this is
 }
 
 void ChunkFileSet::FlushData()
@@ -152,16 +154,18 @@ bool ChunkFileSet::IsChunkBig()
 
     }
 
-}*/
-/*
-TaskResults* ChunkFileSet::ReadEntry(size_t entryChunkId, bool lastItems)
+}
+*/
+//std::unique_ptr<TaskResults> ChunkFileSet::ReadEntry(size_t entryChunkId, bool lastItems)
+std::vector<std::tuple<void*, size_t, size_t>> ChunkFileSet::ReadEntry(size_t registerIndex, bool lastItems)
 {
-    fseek(registerFile, entryChunkId*bufferByteSize, SEEK_SET);
+    fseek(registerFile, registerIndex*registerTrajSize, SEEK_SET);
 
-    if (fread(buffer, 1, bufferByteSize, registerFile) == bufferByteSize)
-    {
-        TaskResults* result = new TaskResults(N);
-        result->SetId(buffer[0]);
+    std::vector<std::tuple<void*, size_t, size_t>> result;
+
+    if (fread(buffer, 1, registerTrajSize, registerFile) == registerTrajSize) {
+        //std::unique_ptr<TaskResults> result = ResultsFactory::makeUniqueNewInstance("TWMC"); //TODO
+        //result->SetId(buffer[0]);
 
         for (size_t i = 0; i != N; i++) {
             size_t nEntries = buffer[1 + i*2];
@@ -180,16 +184,22 @@ TaskResults* ChunkFileSet::ReadEntry(size_t entryChunkId, bool lastItems)
                 size_t elSize = dataSize / nEntries;
                 fseek(files[i], elSize*(nEntries -1), SEEK_CUR);
                 dataSize = elSize;
+                nEntries = 1;
             }
 
             // Read the data
             char *dataset = new char[dataSize];
             fread(dataset, 1, dataSize, files[i]);
-            result->AddResult(to_string(i), dataset, dataSize, dataSize / nEntries, 0, {nEntries});
+
+            result.emplace_back(std::move(static_cast<void*>(dataset)), std::move(dataSize), std::move(nEntries));
+
+            /*result->AddDataset(std::string("ciao"),
+                               std::make_tuple<const void*, size_t>(dataset, std::move(nEntries)),
+                               nEntries, {1}); //TODO*/
         }
         return result;
     } else {
-        // Read operation went badly
-        return nullptr;
+        // Read operation went badly nullptr
+        return result;
     }
-}*/
+}

@@ -34,11 +34,13 @@ public:
     bool IsChunkBig();
     
     size_t GetId() {return id;};
+	std::vector<std::tuple<void*, size_t, size_t>> ReadEntry(size_t entryChunkId, bool lastItems = false);
+
 protected:
     size_t WriteToChunk(size_t datasetId, const void * ptr, size_t dataSize);
 	void ReadChunkRegister();
-    TaskResults* ReadEntry(size_t entryChunkId, bool lastItems = false);
-	std::tuple<void*, size_t> LoadChunkDataset(size_t datasetId, size_t );
+	//std::unique_ptr<TaskResults> ReadEntry(size_t entryChunkId, bool lastItems = false);
+	//std::tuple<void*, size_t> LoadChunkDataset(size_t datasetId, size_t );
 	void Initialise();
 
 private:

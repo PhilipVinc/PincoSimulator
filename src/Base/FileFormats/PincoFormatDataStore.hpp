@@ -30,22 +30,19 @@ public:
     ~PincoFormatDataStore();
     
     virtual void ProvideDatasetNames(std::vector<std::string> names);
+	virtual const std::set<size_t>& UsedIds();
 
 protected:
     
     ChunkFileSet* GetWritableChunk();
+
+	virtual std::unique_ptr<TaskResults> LoadLastResultFrame(size_t id);
 private:
 
+	virtual void StoreData(std::unique_ptr<TaskResults> const& results);
 	virtual void StoreDataSimple(std::unique_ptr<TaskResults> const& results);
-	virtual void StoreDataComplex(std::unique_ptr<TaskResults> const& results);
+	//virtual void StoreDataComplex(std::unique_ptr<TaskResults> const& results);
 	virtual void LoadListOfStoredDataEvents();
-
-	//    TaskResults* LoadTaskResults(size_t id,
-//                                         TaskResults * res = nullptr);
-//    TaskResults* LoadTaskResultsLastNFrames(size_t id,
-//                                            size_t nFrames,
-//                                            TaskResults *res = nullptr);
-
 
 	void Initialise(std::unique_ptr<TaskResults> const& task);
 

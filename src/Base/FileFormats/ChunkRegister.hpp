@@ -12,6 +12,7 @@
 #include "../Settings.hpp"
 
 #include <set>
+#include <unordered_map>
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -29,7 +30,7 @@ public:
         size_t chunk_id;
         size_t chunk_offset;
         size_t continuation_offset;
-        size_t* additionalData;
+        char* additionalData;
 
         size_t registerWritePosition;
     };
@@ -44,16 +45,20 @@ public:
                             size_t chunkId,
                             size_t chunkOffset,
                             Settings::SaveSettings saveType =
-                                        Settings::SaveSettings::saveIdFiles);
+                                        Settings::SaveSettings::unspecified);
     
 
     size_t GetNumberOfChunks();
     std::set<size_t> GetUsedChunkIds();
     size_t GetNumberOfSavedTasks();
+    size_t GetNumberOfSavedTrajectories();
 
-	std::vector<size_t> GetSavedTasksIds();
+	const std::set<size_t>& GetSavedTasksIds();
 	RegisterEntry* GetEntryById(size_t id);
 	RegisterEntry* GetEntryByPosition(size_t index);
+
+    std::vector<std::string> datasetNames;
+    std::vector<std::vector<size_t>> dimensionalityData;
 
 protected:
     void GoToCurrentWritePosition();
@@ -88,7 +93,9 @@ private:
     size_t* trajBuffer;
     
     std::vector<RegisterEntry*> entries;
+    std::unordered_multimap<size_t, size_t> trajOffsets;
     std::set<size_t> chunkIds;
+    std::set<size_t> trajIds;
     
     long int additionalDataBegin;
     long int additionalDataLengthOffset;
