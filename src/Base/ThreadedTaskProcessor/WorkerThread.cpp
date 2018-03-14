@@ -54,8 +54,11 @@ void WorkerThread::WorkerLoop()
                 monitoringTime = true;
             }
 
+	        size_t tmp = _currentTasks.size();
 	        computing = true;
             std::vector<unique_ptr<TaskResults>> results = _solver->Compute(_currentTasks);
+	        completedTasks += tmp;
+
             _manager->GiveResults(_id, std::move(results));
 	        computing = false;
 

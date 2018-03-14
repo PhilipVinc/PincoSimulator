@@ -125,7 +125,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
         TWMCResults *res = new TWMCResults();
         //allResults.push_back(res);
         unsigned int seed = task->rngSeed;
-        res->SetId(seed);
+        res->SetId(task->id);
         auto initialCondition = TWMCTaskData::InitialConditions::ReadFromSettings;
 
         // Setup the random number generation
@@ -214,6 +214,9 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
             i_step++;
         }
         res->AddDataset<std::vector<complex_p>>(TWMCData::traj, std::move(res_betat), data->n_frames, {nx,ny});
+        res->extraDataMemory[0] = task->t_start;
+        res->extraDataMemory[1] = task->t_end;
+
         allResults.push_back(std::unique_ptr<TaskResults>(res));
     }
     return allResults;

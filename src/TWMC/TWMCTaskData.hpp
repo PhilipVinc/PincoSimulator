@@ -24,6 +24,8 @@
 #include <cereal/cereal.hpp>
 #endif
 
+#include "TWMCResults.hpp"
+
 
 class TWMCTaskData : public TaskData
 {
@@ -31,7 +33,9 @@ public:
 
 	TWMCTaskData();
 	std::shared_ptr<TWMCSystemData> systemData;
+    std::unique_ptr<TWMCResults> prevData;
 
+    size_t id;
 	float_p t_start;
 	float_p t_end;
 
@@ -51,6 +55,8 @@ private:
     void save(Archive & ar) const
     {
         ar(cereal::virtual_base_class<TaskData>(this));
+        ar(prevData);
+        ar(id);
         ar(t_start);
         ar(t_end);
         ar(initialCondition);
@@ -62,6 +68,8 @@ private:
     void load(Archive & ar)
     {
         ar(cereal::virtual_base_class<TaskData>(this));
+        ar(prevData);
+        ar(id);
         ar(t_start);
         ar(t_end);
         ar(initialCondition);

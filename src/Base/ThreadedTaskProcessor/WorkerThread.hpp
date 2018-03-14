@@ -54,6 +54,7 @@ protected:
 	bool monitoringTime = false;
 	chrono::high_resolution_clock::time_point startTime;
 	float speed = 0;
+	size_t completedTasks = 0;
 };
 
 

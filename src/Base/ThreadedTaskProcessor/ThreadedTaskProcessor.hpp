@@ -76,7 +76,8 @@ private:
     std::vector<size_t> workerProducerID;
 	std::vector<size_t> workerCompletedTasks;
 
-    bool terminate = false;
+	bool terminate = false;
+	bool terminateWhenDone = false;
 
     void CreateWorker(Solver* solver);
 	void TerminateWorker(size_t i);

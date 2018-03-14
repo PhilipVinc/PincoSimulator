@@ -55,7 +55,7 @@ public:
     ///             firstRun - indicates that there was no data prior to this execution;
     ///             subsequentRun - indicates that we are resuming a previous run;
     enum Status { invalid, firstRun, subsequentRun, appendRun, elaborateRun};
-    enum SaveSettings {dontSave, saveSingleFile, saveIdFiles, appendIdFiles};
+    enum SaveSettings {dontSave, saveSingleFile, saveIdFiles, appendIdFiles, unspecified};
     
     Status status = Status::invalid;
     SaveSettings saveStatus = SaveSettings::saveIdFiles;

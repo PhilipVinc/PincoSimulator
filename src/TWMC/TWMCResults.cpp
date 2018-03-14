@@ -16,6 +16,18 @@ template<>
 std::map<TWMCData, std::type_index> allVars<TWMCData>::varTypes = std::map<TWMCData, std::type_index>();
 template<>
 std::map<TWMCData, const std::string> allVars<TWMCData>::varNames = std::map<TWMCData, const std::string>();
+template<>
+std::map<std::string, TWMCData> allVars<TWMCData>::varEnums = std::map<std::string, TWMCData>();
+template<>
+std::map<TWMCData, const size_t> allVars<TWMCData>::varFormats = std::map<TWMCData, const size_t>();
+
+// Then declare the serialization format of those variables
+template<>
+const size_t saveFormat<std::vector<complex_p>>::format = 22;
+template<>
+const size_t saveFormat<std::vector<float_p >>::format = 11;
+template<>
+const size_t saveFormat<MatrixCXd>::format = 22;
 
 // Then declare all possible variables
 static const variable<TWMCData, std::vector<complex_p>> vTraj(TWMCData::traj, "traj");
@@ -25,13 +37,6 @@ static const variable<TWMCData, MatrixCXd> vUNoise(TWMCData::U_Noise, "U_Realiza
 static const variable<TWMCData, MatrixCXd> vFNoise(TWMCData::F_Noise, "F_Realization");
 static const variable<TWMCData, MatrixCXd> vDNoise(TWMCData::Delta_Noise, "Omega_Realization");
 
-// Then declare the serialization format of those variables
-template<>
-const size_t saveFormat<std::vector<complex_p>>::format = 22;
-template<>
-const size_t saveFormat<std::vector<float_p >>::format = 11;
-template<>
-const size_t saveFormat<MatrixCXd>::format = 22;
 
 
 // Serialization stuff
@@ -51,7 +56,7 @@ const void* TWMCResults::SerializeExtraData()const
 template<>
 void TWMCResults::DeSerializeExtraData(void* data, unsigned int length)
 {
-    // TODO must write
+    memcpy(extraDataMemory, data, 2*sizeof(double));
     return;
 }
 

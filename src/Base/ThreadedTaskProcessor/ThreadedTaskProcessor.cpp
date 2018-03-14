@@ -111,6 +111,10 @@ void ThreadedTaskProcessor::Update()
 		cout << "Deactivating thread #" << th_id << endl;
 		JoinThread(th_id);
 	}
+
+	if (terminateWhenDone && (nCompletedTasks > nEnqueuedTasks-nThreads)) {
+		TerminateAllWorkersWhenDone();
+	}
 }
 
 // Take a task from dispatchedTasks to execute it (called by a worker)
@@ -143,7 +147,7 @@ void ThreadedTaskProcessor::Terminate() {
 }
 
 void ThreadedTaskProcessor::TerminateWhenDone() {
-	TerminateAllWorkersWhenDone();
+	terminateWhenDone = true;
 }
 
 void ThreadedTaskProcessor::ReportAverageSpeed(float speed) {
@@ -215,14 +219,14 @@ void ThreadedTaskProcessor::JoinThread(size_t th_id)
 }
 
 size_t ThreadedTaskProcessor::NumberOfCompletedTasks() {
-	auto total = std::accumulate(workerCompletedTasks.begin(), workerCompletedTasks.end(),0);
-	return total;
+	nCompletedTasks = std::accumulate(workerCompletedTasks.begin(), workerCompletedTasks.end(),0);
+	return nCompletedTasks;
 }
 
 float ThreadedTaskProcessor::Progress() {
     float total = std::accumulate(workerCompletedTasks.begin(), workerCompletedTasks.end(),0);
-    for (auto wt : workers) {
-        total += wt->GetSimulationProgress();
+    for (auto id : activeThreads) {
+        total += workers[id]->GetSimulationProgress();
     }
     return total;
 }

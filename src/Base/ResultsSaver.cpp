@@ -39,8 +39,7 @@ void ResultsSaver::Update() {
 	}
 
 	if (dequeuedTasks == 0 && terminate == true) {
-		std::cout << "Deleting ResultSaver. " << std::endl;
-		delete this;
+		//std::cout << "Deleting ResultSaver. " << std::endl;
 	}
 }
 

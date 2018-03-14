@@ -113,7 +113,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCThermoSolver::Compute(const std::v
         TWMCResults* res = new TWMCResults();
         //allResults.push_back(res);
         unsigned int seed = task->rngSeed;
-        res->SetId(seed);
+        res->SetId(task->id);
         auto initialCondition = TWMCTaskData::InitialConditions::ReadFromSettings;
 
         std::mt19937 gen(seed);
@@ -281,6 +281,9 @@ std::vector<std::unique_ptr<TaskResults>> TWMCThermoSolver::Compute(const std::v
         res->AddDataset<std::vector<complex_p>>(TWMCData::traj, res_betat, data->n_frames, {nx,ny});
         res->AddDataset<std::vector<float_p>>(TWMCData::work, res_workt, data->n_frames, {nx,ny});
         res->AddDataset<std::vector<float_p>>(TWMCData::area, res_areat, data->n_frames, {nx,ny});
+        res->extraDataMemory[0] = task->t_start;
+        res->extraDataMemory[1] = task->t_end;
+
         allResults.push_back(std::unique_ptr<TaskResults>(res));
     }
     return allResults;

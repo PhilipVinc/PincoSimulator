@@ -41,6 +41,36 @@ inline rawTuple getData<MatrixCXd>(const MatrixCXd& data) {
     return std::make_tuple<rawT1, rawT2>(data.data(), data.size()*sizeof(complex_p));
 };
 
+// Deserialization methods
+template <>
+inline std::vector<complex_p> setData<std::vector<complex_p>>(rawTuple data, size_t frames, const std::vector<size_t>& dimensions) {
+    size_t length = std::get<size_t>(data)/sizeof(complex_p);
+    const complex_p * c_data = static_cast<const complex_p*>(std::get<const void*>(data));
+
+    std::vector<complex_p> res(c_data, c_data+length);
+    return res;
+}
+
+template <>
+inline std::vector<float_p> setData<std::vector<float_p>>(rawTuple data, size_t frames, const std::vector<size_t>& dimensions) {
+    size_t length = std::get<size_t>(data)/sizeof(float_p);
+    const float_p * c_data = static_cast<const float_p*>(std::get<const void*>(data));
+
+    std::vector<float_p> res(c_data, c_data+length);
+    return res;
+}
+
+template <>
+inline MatrixCXd setData<MatrixCXd>(rawTuple data, size_t frames, const std::vector<size_t>& dimensions) {
+    size_t length = std::get<size_t>(data)/sizeof(complex_p);
+    const complex_p * c_data = static_cast<const complex_p*>(std::get<const void*>(data));
+
+
+    MatrixCXd res = Eigen::Map<const MatrixCXd>(c_data, dimensions[0], dimensions[1]);
+    return res;
+}
+
+
 
 typedef TaskResultsGeneric<TWMCData, double[2], std::vector<complex_p>, std::vector<float_p>, MatrixCXd> TWMCResults;
 
@@ -68,5 +98,6 @@ namespace dummy2 {
 // force linking with util.cc
 static int bogus_variable = dummy2::bogus2::bogus_method();
 
+static ResultsFactory::Registrator<TWMCResults> TWMCRes= ResultsFactory::Registrator<TWMCResults>("TWMC");
 
 #endif /* TWMCResults_hpp */

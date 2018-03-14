@@ -4,6 +4,7 @@
 #include "Base/TaskResults.hpp" // For very weird bug
 
 #include <iostream>
+#include <memory>
 #include <csignal>
 #include <unistd.h>
 
@@ -42,7 +43,7 @@ int main(int argc, char * argv[])
 #endif
         Settings *settings = new Settings(argc, argv);
 
-        Manager *manager = ManagerFactory::makeRawNewInstance(settings->get<string>("Manager"), settings);
+        std::unique_ptr<Manager> manager = ManagerFactory::makeUniqueNewInstance(settings->get<string>("Manager"), settings);
 #ifdef MPI_SUPPORT
         manager->SetMPICommunicator(nullptr);
 #endif
@@ -53,7 +54,6 @@ int main(int argc, char * argv[])
             cout << "Invalid Manager. Exiting..." << endl;
         }
 
-        delete manager;
 #ifdef MPI_SUPPORT
     } else {
         int i = 0;
@@ -61,7 +61,7 @@ int main(int argc, char * argv[])
              sleep(3);
         cout << rank << " - Creating NodeManager" << endl;
 
-        MPINodeManager* node = new MPINodeManager(nullptr);
+        std::unique_ptr<MPINodeManager> node = std::make_unique<MPINodeManager>(nullptr);
         node->ManagerLoop();
     }
     MPI_Finalize();
