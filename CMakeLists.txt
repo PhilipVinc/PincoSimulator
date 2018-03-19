@@ -7,7 +7,7 @@ option(COMPILE_GPU "Build with GPU Support for the Solvers" OFF)
 option(COMPILE_MPI "Build with MPI Support for the Manager" OFF)
 
 
-#set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS -g)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native")
@@ -108,9 +108,11 @@ else()
         find_package(Boost 1.65 COMPONENTS "${BOOST_PACKAGES}" REQUIRED )
     endif (NOT Boost_FOUND)
 endif()
+include_directories(${Boost_INCLUDE_DIR})
 
 message("found Boost_INCLUDE_DIR=${Boost_INCLUDE_DIR}")
 message("found Boost_LIBRARIES=${Boost_LIBRARIES}")
+
 
 find_package(FFTW REQUIRED)
 include_directories(${FFTW_INCLUDE_DIR})
