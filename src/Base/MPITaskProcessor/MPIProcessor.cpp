@@ -33,6 +33,10 @@ MPIProcessor::MPIProcessor(std::string solverName, int nodes, int processesPerNo
 
 MPIProcessor::~MPIProcessor()
 {
+    SendTerminationMessage();
+    while (activeNodes.size() != 0 ) {
+        Update();
+    }
     cout << "Destroyed MPIProcessor" << endl;
 }
 
@@ -106,7 +110,7 @@ void MPIProcessor::Update()
                       MPI_COMM_WORLD, &commSendRequests.back());
             cout << "Master - Created isend to #" << nodeRank[nodeId] << endl;
 
-            tasksSentToNode[nodeRank[nodeId]] += nn;
+            tasksSentToNode[activeNodes[nodeId]] += nn;
             nodes++;
             nodes = nodes % activeNodes.size();
 

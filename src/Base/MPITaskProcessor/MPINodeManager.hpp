@@ -37,7 +37,7 @@ private:
 
     size_t receivedTasks = 0;
     size_t sentResults = 0;
-    size_t tasksToComputeBeforeTerminating;
+    int tasksToComputeBeforeTerminating;
 
     std::vector<std::unique_ptr<TaskResults>> tmpTasksToSend;
     size_t IDEALSIZE = 102;
