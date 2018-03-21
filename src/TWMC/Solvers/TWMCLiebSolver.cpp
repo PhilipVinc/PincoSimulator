@@ -140,7 +140,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
         {
             updateMats=true;
             U = data->U->Generate(gen);
-            res->AddDataset<MatrixCXd>(TWMCData::U_Noise, U, 1, {nx,ny});
+            res->AddDataset<MatrixCXd>(TWMCData::U_Noise, U, 1, {nx,ny,3});
         }
         if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None)
         {
@@ -189,11 +189,22 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
 
         // Initialize the beta value to the starting value.
 
+        bool hasTimeDep = data->F->HasTimeDependence();
+        size_t tCache;
+
         auto dt4 = sqrt(data->gamma_val * data->dt / 4.0);
         auto dt = data->dt;
         std::vector<complex_p> res_betat(nx*ny*cellSz*data->n_frames);
 
         while (t <= data->t_end) {
+
+            // Compute F
+            if (hasTimeDep) {
+                auto Fdata = data->F->GetAtTimeWithSuggestion(t, tCache);
+                tCache = get<0>(Fdata);
+                F = get<1>(Fdata);
+            }
+
             // Compute the a_t, that is used for the kai in the heun scheme
             a_t = ((real_step_linear.array() + ij * U.array() * (beta_t.array().abs2() - 1.0)) *
                    beta_t.array() - ij * (beta_t * coupling_mat).array() + ij * F.array()) * dt;
@@ -213,7 +224,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
             t += data->dt;
             i_step++;
         }
-        res->AddDataset<std::vector<complex_p>>(TWMCData::traj, std::move(res_betat), data->n_frames, {nx,ny});
+        res->AddDataset<std::vector<complex_p>>(TWMCData::traj, std::move(res_betat), data->n_frames, {nx,ny,3});
         res->extraDataMemory[0] = task->t_start;
         res->extraDataMemory[1] = task->t_end;
 

@@ -37,6 +37,7 @@ classdef (Abstract) SimReader < handle
         varTypes;
         varN;
 
+        ForceNoAnalysis = false;
         keepInMemory = false;
         forceAnalysis = false;
         trajsToKeep = 0;
@@ -61,6 +62,10 @@ classdef (Abstract) SimReader < handle
     methods(Abstract, Access = protected)
          res = AverageExtractData( obj, data, params );
     end
+
+    properties (Abstract, Access = protected)
+        VERSION;
+    end
     
     methods
         function obj = SimReader(simPath, varargin)
@@ -70,6 +75,7 @@ classdef (Abstract) SimReader < handle
             addRequired(p,'simPath', @isstr);
             addParameter(p,'SaveTrajectories', false, @islogical);
             addParameter(p,'Trajectories', 0, @isnumeric);
+            addParameter(p,'ForceNoAnalysis', 0, @islogical);
             addParameter(p,'Analyze', false, @islogical);
             parse(p, simPath, varargin{:});
             pars=p.Results;
@@ -86,6 +92,7 @@ classdef (Abstract) SimReader < handle
             
             obj.simPath = pars.simPath;
             obj.keepInMemory = pars.SaveTrajectories;
+            obj.ForceNoAnalysis = pars.ForceNoAnalysis;
             obj.trajsToKeep = pars.Trajectories;
             if (obj.keepInMemory && obj.trajsToKeep == 0)
                 obj.trajsToKeep = intmax;
@@ -162,7 +169,7 @@ classdef (Abstract) SimReader < handle
         output = ReadDatFiles( obj );
         output = AverageMergeChunks( obj );
         output = QuantitiesMergeChunks( obj );
-        
+        output = FixEditDate(obj, avePath, dataPath);
         output = EstimateAnalizedFolder(obj);
         output = ReadAnalizeStoreData( obj );
         

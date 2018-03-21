@@ -3,7 +3,7 @@ function res = AverageExtractData( obj, data, params )
 %   Detailed explanation goes here
 
     res.params = params;
-
+    res.params.VERSION = obj.VERSION;
     %%%-----------------------------------------------------------------%%%
     %%%                           Shortcuts                             %%%
     %%%-----------------------------------------------------------------%%%
@@ -17,19 +17,29 @@ function res = AverageExtractData( obj, data, params )
     
     if isfield(params, 'F')
     
-        params.F = obj.ConvertInterleavedToComplex(params.F, length(params.F) >= 2*3*nxy);
+        res.params.F = obj.ConvertInterleavedToComplex(params.F, length(params.F) >= 2*3*nxy);
         
-        params.F_A = params.F(1:3:end);
-        params.F_B = params.F(2:3:end);
-        params.F_C = params.F(3:3:end);
-    else
-        params.F_A = obj.ConvertInterleavedToComplex(params.F_A, length(params.F_A) >= 2*nxy);
-        params.F_B = obj.ConvertInterleavedToComplex(params.F_B, length(params.F_B) >= 2*nxy);
-        params.F_C = obj.ConvertInterleavedToComplex(params.F_C, length(params.F_C) >= 2*nxy);
+        res.params.F_A = params.F(1:3:end);
+        res.params.F_B = params.F(2:3:end);
+        res.params.F_C = params.F(3:3:end);
+        
+        res.params.F_tot=sum(abs(params.F_A))+sum(abs(params.F_B))+sum(abs(params.F_C));
+        res.params.I_tot=sum(abs(params.F_A).^2)+sum(abs(params.F_B).^2)+sum(abs(params.F_C).^2);
+
+    elseif (isfield(params, 'F_A')&& isfield(params, 'F_B') && isfield(params, 'F_C'))
+        res.params.F_A = obj.ConvertInterleavedToComplex(params.F_A, length(params.F_A) >= 2*nxy);
+        res.params.F_B = obj.ConvertInterleavedToComplex(params.F_B, length(params.F_B) >= 2*nxy);
+        res.params.F_C = obj.ConvertInterleavedToComplex(params.F_C, length(params.F_C) >= 2*nxy);
+        
+        res.params.F_tot=sum(abs(params.F_A))+sum(abs(params.F_B))+sum(abs(params.F_C));
+        res.params.I_tot=sum(abs(params.F_A).^2)+sum(abs(params.F_B).^2)+sum(abs(params.F_C).^2);
+
+    elseif  isfield(params, 'F_t')
+        
+        res.params.Ftot_t = sum(abs(params.F_t),2);
+        res.params.Itot_t = sum(abs(params.F_t).^2,2);
     end
     
-    params.F_tot=sum(abs(params.F_A))+sum(abs(params.F_B))+sum(abs(params.F_C));
-    params.I_tot=sum(abs(params.F_A).^2)+sum(abs(params.F_B).^2)+sum(abs(params.F_C).^2);
 
     
     %%%-----------------------------------------------------------------%%%
@@ -53,7 +63,7 @@ function res = AverageExtractData( obj, data, params )
     n_traces = size(data{trajId},3);
     t_cut = floor(cutFrac*t_length);
     cutted_frames = t_length-t_cut+1;
-    
+    res.params.t_cut = t_cut;
     
     % Compute the average and std of the Random (Disordered) Matrices
     for i=1:length(randomVarNames)
@@ -146,8 +156,8 @@ function res = AverageExtractData( obj, data, params )
         
         N_b_t = squeeze(sum(N_b_k_t,2));
         Nfrac_b_t = N_b_t./sum(N_b_t,1);
-        params.kx = (0:(nx-1))*pi/nx;
-        params.ky = (0:(ny-1))*pi/ny;
+        res.params.kx = (0:(nx-1))*pi/nx;
+        res.params.ky = (0:(ny-1))*pi/ny;
         %beta_kxy_t = fft(data{trajId}(:,t_cut:end,:));
         %n_kxy_t = (mean(abs(beta_kxy_t).^2,3)/nxy-0.5)./(nxy*nat_cut);
         %beta_k0_t = beta_kxy_t(1,:,:);
@@ -278,8 +288,5 @@ function res = AverageExtractData( obj, data, params )
     %%%                           Quantities                            %%%
     %%%-----------------------------------------------------------------%%%
     res.quan.n_hist_vals = data{trajId}(:,end,:);
-
-    
-    res.params=params;
 end
 

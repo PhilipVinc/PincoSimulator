@@ -7,7 +7,7 @@ classdef LiebReader < SimReader
     end
 
     properties(Access = protected)
-        
+        VERSION = 0;
     end
     
     methods

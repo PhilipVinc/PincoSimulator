@@ -170,9 +170,9 @@ void MPINodeManager::ManagerLoop() {
                    &flag, &status);
         if(flag) {
             if (status.MPI_TAG == TERMINATE_WHEN_DONE_MESSAGE_TAG) {
-                cout << "#" << rank << " - Received Termination message." << endl;
                 MPI_Recv(&tasksToComputeBeforeTerminating, 1, MPI_INT, status.MPI_SOURCE,
                 status.MPI_TAG, MPI_COMM_WORLD, &status);
+                cout << "#" << rank << " - Received Termination message: must compute " << tasksToComputeBeforeTerminating  << " tasks."<< endl;
                 terminate = true;
             }
         }

@@ -43,7 +43,6 @@ public:
 protected:
 	ThreadedTaskProcessor* _manager;
 	Solver* _solver;
-	TaskData* _data = nullptr;
 	std::vector<std::unique_ptr<TaskData>> _currentTasks;
 
 	bool computing = false;

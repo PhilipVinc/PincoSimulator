@@ -10,17 +10,33 @@ function loaded = CheckLoadAnalyzedData( obj )
     
     loaded = false;
 
-    if (obj.IsDataUpToDate(aveDataPath, dataPath) && ~obj.forceAnalysis)
-        fprintf(['Averaged and Quantities data is up', ...
+    if ((obj.IsDataUpToDate(aveDataPath, dataPath) && ~obj.forceAnalysis) || obj.ForceNoAnalysis)
+      fprintf(['Averaged and Quantities data is up', ...
             ' to date. Loading .mat file.\n']);
-       aveData = load(aveDataPath);
-       obj.ave = aveData.averaged;
-       obj.params = aveData.params;
-       clear aveData;
-       quanData = load(quanDataPath);
-       obj.quan = quanData.quantities;
-       clear quanData;
+      aveData = load(aveDataPath);
        
-       loaded = true;
+      if (~obj.ForceNoAnalysis)
+        if isfield(aveData.params, 'VERSION') 
+          if (aveData.params.VERSION < obj.VERSION)
+            fprintf('Ah, no. Analysis VERSION has been bumped. Forcing reanalysis.\n');
+            obj.forceAnalysis = true;
+            return
+          end
+        else
+          if (obj.VERSION ~= 0)
+            fprintf('Ah, no. Analysis VERSION has been bumped. Forcing reanalysis.\n');
+            obj.forceAnalysis = true;
+            return;
+        end
+      end
+
+      obj.ave = aveData.averaged;
+      obj.params = aveData.params;
+      clear aveData;
+      quanData = load(quanDataPath);
+      obj.quan = quanData.quantities;
+      clear quanData;
+
+      loaded = true;
     end
 end

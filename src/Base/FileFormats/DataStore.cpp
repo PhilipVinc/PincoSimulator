@@ -65,6 +65,7 @@ void DataStore::SaveFile(string fileName, vector<float_p> data)
     //FILE* f = fopen(pp.string().c_str(), "w+");
     ofstream f;
     f.open(pp.string(), ofstream::out);
+    f << "%\tformat:real\tcols:1\trows:" << data.size() << endl;
     for (float_p i : data) {
         f << i << endl;
     }
@@ -80,11 +81,45 @@ void DataStore::SaveFile(string fileName, vector<vector<float_p>> data)
 
     ofstream f;
     f.open(pp.string(), ofstream::out);
+    f << "%\tformat:real\tcols:x\trows:" << data.size() << endl;
     size_t nxy = data[0].size();
     for(size_t i =0; i< data.size(); i++)
     {
         for (size_t j = 0; j < nxy; j++ ) {
             f << data[i][j] << "\t";
+        }
+        f << endl;
+    }
+    f.close();
+}
+
+void DataStore::SaveFile(string fileName, vector<complex_p> data)
+{
+    filesystem::path pp = dataStoreBasePath;
+    pp = pp / fileName;
+
+    ofstream f;
+    f.open(pp.string(), ofstream::out);
+    f << "%\tformat:complex\tcols:1\trows:" << data.size() << endl;
+    for (complex_p i : data) {
+        f << real(i) << "\t" << imag(i) << endl;
+    }
+    f.close();
+}
+
+void DataStore::SaveFile(string fileName, vector<vector<complex_p>> data)
+{
+    filesystem::path pp = dataStoreBasePath;
+    pp = pp / fileName;
+
+    ofstream f;
+    f.open(pp.string(), ofstream::out);
+    f << "%\tformat:complex\tcols:x\trows:" << data.size() << endl;
+    size_t nxy = data[0].size();
+    for(size_t i =0; i< data.size(); i++)
+    {
+        for (size_t j = 0; j < nxy; j++ ) {
+            f << real(data[i][j]) << "\t" << imag(data[i][j]) << "\t";
         }
         f << endl;
     }

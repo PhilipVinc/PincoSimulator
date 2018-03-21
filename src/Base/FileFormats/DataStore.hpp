@@ -35,6 +35,8 @@ public:
     virtual void ProvideDatasetNames(std::vector<std::string> names) = 0;
     void SaveFile(std::string fileName, std::vector<float_p> data);
     void SaveFile(std::string fileName, std::vector<std::vector<float_p>> data);
+    void SaveFile(std::string fileName, std::vector<complex_p> data);
+    void SaveFile(std::string fileName, std::vector<std::vector<complex_p>> data);
     // Another save
 
     virtual const std::set<size_t>& UsedIds() = 0;

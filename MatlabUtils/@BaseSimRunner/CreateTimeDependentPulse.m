@@ -10,25 +10,25 @@ function pulseData = CreateTimeDependentPulse( obj)
     values = cell(1, 1);
     
     t0 = 0;
-    if isKey(obj.params, 't_start')
+    if isKey(obj.params,'t_start')
         t0 = obj.params('t_start');
     end
     
-    if isKey(obj.pulseParams, 'initialRelaxation')
+    if isKey(obj.pulseParams,'initialRelaxation')
         t0 = obj.pulseParams('initialRelaxation');
     end
     times = [times, t0];
     
     F0 = 0;
-    if isKey(obj.pulseParams, 'F_start')
-        F0 = obj.pulseParams('F_start');
+    if isKey(obj.pulseParams,'value_start')
+        F0 = obj.pulseParams('value_start');
     else
         F0 = zeros(1, nxy);
     end
     values{1} = F0;
     
     speed = obj.pulseParams('speed');
-    Fend =  obj.pulseParams('F_end');
+    Fend =  obj.pulseParams('value_end');
     durations = (Fend - F0)./speed;
     tups = t0 + durations;
     tEndUp = max(tups);
@@ -41,7 +41,7 @@ function pulseData = CreateTimeDependentPulse( obj)
     end
     
     t1 = 0;
-    if isKey(obj.pulseParams, 'middleRelaxation')
+    if isKey(obj.pulseParams,'middleRelaxation')
         t1 = obj.pulseParams('middleRelaxation');
     end
     

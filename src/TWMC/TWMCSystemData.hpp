@@ -34,8 +34,7 @@ public:
     ~TWMCSystemData();
 
     vector<float_p> GetStoredTimes() const;
-	vector<vector<float_p>> GetStoredVariableEvolution(const NoisyMatrix* mat) const;
-	vector<vector<float_p>> GetStoredVariableEvolution(std::unique_ptr<NoisyMatrix> const& mat) const;
+	vector<vector<complex_p>> GetStoredVariableEvolution(std::unique_ptr<NoisyMatrix> const& mat) const;
 
     std::string latticeName;
     size_t nx;

@@ -147,20 +147,20 @@ void NoisyMatrix::SetNoiseVal(size_t id, std::vector<float_p>& val)
     noiseVars[id] = InitMatrix(nx, ny, val);
 }
 
-MatrixCXd NoisyMatrix::GenerateNoNoise()
+/*inline MatrixCXd NoisyMatrix::GenerateNoNoise()
 {
     return baseMat;
-}
+}*/
 
-NoisyMatrix::NoiseType NoisyMatrix::GetNoiseType() const
+/*NoisyMatrix::NoiseType NoisyMatrix::GetNoiseType() const
 {
     return noiseType;
-}
+}*/
 
-std::tuple<size_t, size_t> NoisyMatrix::GetDimensions() const
+/*std::tuple<size_t, size_t> NoisyMatrix::GetDimensions() const
 {
     return {nx, ny};
-};
+};*/
 
 
 MatrixCXd NoisyMatrix::Generate(std::mt19937 &gen)
@@ -236,9 +236,10 @@ void NoisyMatrix::SetTemporalValue(std::map<float_p, std::vector<float_p>> data)
         }
         else if (pt->second.size() == nx*ny*2)
         {
-            for (int i = 0; i != dim; i+=2)
+            for (int i = 0; i != nx*ny; i++)
             {
-                vals[i] = pt->second[i] + ij*pt->second[i+1];
+                vals[i] = pt->second[2*i] + ij*pt->second[2*i+1];
+                //cout << vals[i] << " = " << pt->second[2*i] << " + i " << pt->second[2*i+1] << " for i= " << i << endl;
             }
 
         } else {
@@ -246,6 +247,7 @@ void NoisyMatrix::SetTemporalValue(std::map<float_p, std::vector<float_p>> data)
         }
 
         times.push_back(timePt);
+        cout << mat_t << endl;
         matCTimes.push_back(mat_t);
     }
 
@@ -294,6 +296,7 @@ void NoisyMatrix::SetTemporalValue(std::map<float_p, std::vector<float_p>> data)
 
     for (int i=1; i!=times.size(); i++)
     {
+        cout << matCTimes[i-1] << endl;
         dVals.push_back((matCTimes[i] - matCTimes[i - 1]) / (times[i] - times[i - 1]));
     }
     dVals.push_back(matCTimes[0]-matCTimes[0]);
@@ -312,10 +315,10 @@ void NoisyMatrix::SetTemporalValue(std::map<float_p, std::vector<float_p>> data)
     }
 }
 
-MatrixCXd NoisyMatrix::GetAtTime(float_p t, size_t suggestedId) const
+/*MatrixCXd NoisyMatrix::GetAtTime(float_p t, size_t suggestedId) const
 {
     return get<1>(GetAtTimeWithSuggestion(t, suggestedId));
-}
+}*/
 
 tuple<size_t,MatrixCXd> NoisyMatrix::GetAtTimeWithSuggestion(float_p t, size_t suggestedId) const
 {
@@ -340,7 +343,7 @@ bool NoisyMatrix::HasNoise() const
     return false;
 }
 
-bool NoisyMatrix::HasTimeDependence() const
+/*bool NoisyMatrix::HasTimeDependence() const
 {
     return timeDep;
-}
+}*/

@@ -148,18 +148,17 @@ vector<vector<float_p>> TWMCSystemData::GetStoredVariableEvolution(const NoisyMa
     }
     return result;
 }
-
-vector<vector<float_p>> TWMCSystemData::GetStoredVariableEvolution(std::unique_ptr<NoisyMatrix> const& mat) const
+vector<vector<complex_p>> TWMCSystemData::GetStoredVariableEvolution(std::unique_ptr<NoisyMatrix> const& mat) const
 {
-	vector<vector<float_p>> result(n_frames, vector<float_p>(nx*ny));
+	vector<vector<complex_p>> result(n_frames, vector<complex_p>(nx*ny*cellSz));
 
 	float_p t = t_start; size_t i_step = 0; size_t i_frame = 0;
 	while(t<=t_end) {
 		if ((i_step % frame_steps == 0) && i_frame < n_frames) {
 			MatrixCXd m = mat->GetAtTime(t);
 			complex_p *data = m.data();
-			for (int kk = 0; kk != nx * ny; kk++) {
-				result[i_frame][kk] = data[kk].real();
+			for (int kk = 0; kk != nx * ny * cellSz; kk++) {
+				result[i_frame][kk] = data[kk];
 			}
 			i_frame++;
 		}

@@ -23,21 +23,11 @@ WorkerThread::WorkerThread(size_t id, ThreadedTaskProcessor* manager, Solver* so
 
 	computing = false;
 	terminate = false;
-
-	/*while(_currentTasks.size() < _solver->nTasksToRequest) {
-		_currentTasks.emplace_back(std::unique_ptr<TaskData>(nullptr));
-	}*/
-
 }
 
 WorkerThread::~WorkerThread()
 {
     delete _solver;
-	if (_data != nullptr)
-		delete _data;
-	/*std::for_each(_currentTasks.begin(),
-	              _currentTasks.end(),
-	              std::default_delete<TaskData>());*/
 }
 
 void WorkerThread::WorkerLoop()

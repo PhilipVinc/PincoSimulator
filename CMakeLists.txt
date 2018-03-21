@@ -10,7 +10,7 @@ option(COMPILE_MPI "Build with MPI Support for the Manager" OFF)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS -g)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native -DEIGEN_NO_DEBUG")
 add_definitions(-std=c++14 -stdlib=libc++)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)

@@ -82,8 +82,12 @@ function output = ReadAnalizeStoreData( obj )
             averaged = res.ave;
             quantities = res.quan;
             save(aveCnkPath, 'averaged', 'params');
+            
+            % This fix is needed because thtop has a future date.
+            obj.FixEditDate(aveCnkPath, cIPath);
             quanCnkPath = obj.QuantitiesChunkPath(chunkId);
             save(quanCnkPath, 'params', 'quantities');
+            obj.FixEditDate(quanCnkPath, cIPath);
             fprintf( ['\t Done!\n']);
             clear params; clear averaged; clear quantities;        
             % params.n_traj = kn
@@ -99,7 +103,7 @@ function output = ReadAnalizeStoreData( obj )
 
     end
     
-    if analizedSomethingNew
+    if (analizedSomethingNew || ~loaded)
         obj.AverageMergeChunks();
         obj.QuantitiesMergeChunks();
     end

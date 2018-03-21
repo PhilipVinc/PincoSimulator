@@ -39,9 +39,12 @@ public:
     
     enum NoiseType { None, Uniform, Gaussian, Lorentzian, Poissonian};
     void SetNoiseType(std::string type);
-    NoiseType GetNoiseType() const;
+	inline NoiseType GetNoiseType() const {
+		return noiseType;
+	}
 	bool HasNoise() const;
-	bool HasTimeDependence() const;
+	inline bool HasTimeDependence() const {
+		return timeDep; };
 
     size_t GetNoiseVariables() const;
     
@@ -49,11 +52,17 @@ public:
     void SetNoiseVal(size_t id, complex_p val);
     void SetNoiseVal(size_t id, std::vector<float_p>& val);
     void SetTemporalValue(std::map<float_p, std::vector<float_p>> data);
-    MatrixCXd GetAtTime(float_p t, size_t suggestedId = 0) const;
+    inline MatrixCXd GetAtTime(float_p t, size_t suggestedId = 0) const {
+		return std::get<1>(GetAtTimeWithSuggestion(t, suggestedId));
+	};
 	std::tuple<size_t,MatrixCXd> GetAtTimeWithSuggestion(float_p t, size_t suggestedId = 0) const;
-	std::tuple<size_t, size_t> GetDimensions() const;
+	inline std::tuple<size_t, size_t> GetDimensions() const {
+		return {nx, ny};
+	};
 
-    MatrixCXd GenerateNoNoise();
+    inline MatrixCXd GenerateNoNoise() {
+		return baseMat;
+	}
     MatrixCXd Generate(std::mt19937 &gen);
     MatrixCXd EvaluateNoise(std::mt19937 &gen);
 
