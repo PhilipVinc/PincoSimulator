@@ -173,7 +173,9 @@ public:
         std::vector<rawTuple> res;
         const std::map<enumVar, T>& vec = MatchingField<0, T, vtype, VectorOfType<0, T>::value>::get(vectors);
 
-        for (auto el :vec) {
+        // Note: this auto &el, the reference is essential: otherwise we would create a copy-ed object with a limited
+        // lifetime and therefore we would be passing pointers to potentially-released memory.
+        for (auto &el :vec) {
             res.push_back(getData(el.second));
         }
         return res;
@@ -185,7 +187,9 @@ public:
         std::vector<std::tuple<enumVar, rawTuple>> res;
         const std::map<enumVar, T>& vec = MatchingField<0, T, vtype, VectorOfType<0, T>::value>::get(vectors);
 
-        for (auto el :vec) {
+        // Note: this auto &el, the reference is essential: otherwise we would create a copy-ed object with a limited
+        // lifetime and therefore we would be passing pointers to potentially-released memory.
+        for (auto &el :vec) {
             res.emplace_back(el.first, getData(el.second));
         }
         return res;
