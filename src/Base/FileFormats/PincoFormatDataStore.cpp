@@ -13,6 +13,7 @@
 #include "../TaskResults.hpp"
 
 #include <algorithm>
+#include <memory>
 
 
 using namespace std;
@@ -99,7 +100,6 @@ void PincoFormatDataStore::StoreDataSimple(std::unique_ptr<TaskResults> const& r
 void PincoFormatDataStore::StoreData(std::unique_ptr<TaskResults> const& results)
 {
 	if (!initialised) { Initialise(results);};
-
 	ChunkFileSet * cnk = GetWritableChunk();
     size_t offset = cnk->WriteToChunk(results);
     cRegister->RegisterStoredData(results, cnk->GetId(), offset);
@@ -128,8 +128,8 @@ std::unique_ptr<TaskResults> PincoFormatDataStore::LoadLastResultFrame(size_t tr
 
     ChunkRegister::RegisterEntry* regEntry = cRegister->GetEntryById(trajId);
 
-    cout << regEntry->additionalData[0]<<endl;
-    cout << regEntry->additionalData[1]<<endl;
+    //cout << regEntry->additionalData[0]<<endl;
+    //cout << regEntry->additionalData[1]<<endl;
 
     ChunkFileSet *cnk = Chunk(regEntry->chunk_id);
 

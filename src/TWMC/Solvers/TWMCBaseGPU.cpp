@@ -204,9 +204,9 @@ void TWMCBaseGPU::Setup() {
 
         for (int i=0; i < nTasksToRequest; i++)
         {
-            memcpy(&(complexU.data()[i*U.size()]), U.data(), szSingle );
-            memcpy(&(iF.data()[i*F.size()]), F.data(), szSingle );
-            memcpy(&(real_step_linear.data()[i*real_step_linear_single.size()]), real_step_linear_single.data(), szSingle );
+            std::memcpy(&(complexU.data()[i*U.size()]), U.data(), szSingle );
+            std::memcpy(&(iF.data()[i*F.size()]), F.data(), szSingle );
+            std::memcpy(&(real_step_linear.data()[i*real_step_linear_single.size()]), real_step_linear_single.data(), szSingle );
         }
 
         coupling_mat.makeCompressed();
@@ -303,7 +303,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(const std::vec
             updateMats = true;
             for (int i=taskI; i < maxTaskI; i++) {
                 U = ij * data->U->Generate(gen);
-                memcpy(&(complexU.data()[i * U.size()]), U.data(), nx*ny*3*sizeof(complex_p));
+                std::memcpy(&(complexU.data()[i * U.size()]), U.data(), nx*ny*3*sizeof(complex_p));
 
                 // And now store this matrix in the results
                 complex_p *resData = allResults[i]->complexMatrices[noiseN];
@@ -324,7 +324,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(const std::vec
 
                 delta =  -data->E->GenerateNoNoise().array() + data->detuning ;
                 MatrixCXd real_step_linear_single = (-ij*delta.array() - data->gamma_val/2.0);
-                memcpy(&(real_step_linear.data()[i*real_step_linear_single.size()]), real_step_linear_single.data(), nx*ny*3*sizeof(complex_p) );
+                std::memcpy(&(real_step_linear.data()[i*real_step_linear_single.size()]), real_step_linear_single.data(), nx*ny*3*sizeof(complex_p) );
 
                 // And now store this matrix in the results
                 complex_p *resData = allResults[i]->complexMatrices[noiseN];
@@ -342,7 +342,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(const std::vec
             for (int i=taskI; i < maxTaskI; i++) {
 
                 F = data->F->Generate(gen);
-                memcpy(&(iF.data()[i * F.size()]), F.data(), nx*ny*3*sizeof(complex_p));
+                std::memcpy(&(iF.data()[i * F.size()]), F.data(), nx*ny*3*sizeof(complex_p));
 
                 // And now store this matrix in the results
                 complex_p *resData = allResults[i]->complexMatrices[noiseN];
@@ -359,7 +359,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(const std::vec
         auto initialCondition = TWMCTaskData::InitialConditions::ReadFromSettings;
         for (int i=0; i < nTasksToRequest; i++)
         {
-            memcpy(&(beta_t.data()[i*data->beta_init.size()]),
+            std::memcpy(&(beta_t.data()[i*data->beta_init.size()]),
                    data->beta_init.data(), nx*ny*3*sizeof(complex_p));
         }
 
@@ -417,7 +417,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(const std::vec
                     size_t size = nx * ny * 3;
                     complex_p *data = beta_t.data() + i*size;
 
-                    memcpy(&(allResults[i]->beta_t[i_frame*size]), data, sizeof(complex_p)*size);
+                    std::memcpy(&(allResults[i]->beta_t[i_frame*size]), data, sizeof(complex_p)*size);
 
                     /*for (unsigned j = 0; j < size; j++) {
                         allResults[i]->beta_t[i_frame * size + j] = data[j];

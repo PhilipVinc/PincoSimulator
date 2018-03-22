@@ -260,7 +260,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCThermoSolver::Compute(const std::v
             {
                 size_t size = nx*ny;
                 complex_p* data = beta_t.data();
-                memcpy(&res_betat[i_frame*size], data, sizeof(complex_p)*size);
+                std::memcpy(&res_betat[i_frame*size], data, sizeof(complex_p)*size);
 
                 complex_p* dataWork = deltaW.data();
                 complex_p* dataArea = deltaA.data();

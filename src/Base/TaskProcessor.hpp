@@ -5,12 +5,12 @@
 #ifndef SIMULATOR_TASKMANAGER_HPP
 #define SIMULATOR_TASKMANAGER_HPP
 
-#import "Interfaces/ITaskConsumer.hpp"
-#import "Interfaces/IResultConsumer.hpp"
+#include "Interfaces/ITaskConsumer.hpp"
+#include "Interfaces/IResultConsumer.hpp"
 
-#import "Settings.hpp"
+#include "Settings.hpp"
 
-#import <string>
+#include <string>
 
 //class Settings;
 class TaskData;

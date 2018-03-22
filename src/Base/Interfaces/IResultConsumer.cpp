@@ -4,7 +4,7 @@
 
 #include "IResultConsumer.hpp"
 
-#import "../TaskResults.hpp"
+#include "../TaskResults.hpp"
 
 void IResultConsumer::EnqueueTasks(std::vector<std::unique_ptr<TaskResults>>&& tasks) {
 	enqueuedTasks.enqueue_bulk(std::make_move_iterator(tasks.begin()),

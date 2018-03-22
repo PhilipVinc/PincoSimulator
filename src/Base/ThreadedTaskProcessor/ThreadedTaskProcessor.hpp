@@ -5,7 +5,7 @@
 #ifndef SIMULATOR_THREADEDTASKPROCESSOR_HPP
 #define SIMULATOR_THREADEDTASKPROCESSOR_HPP
 
-#import "Base/TaskProcessor.hpp"
+#include "Base/TaskProcessor.hpp"
 #include "Libraries/concurrentqueue.h"
 
 #include <chrono>

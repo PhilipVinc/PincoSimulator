@@ -12,7 +12,9 @@
 #include "Libraries/FilesystemLibrary.h"
 
 #include <algorithm>
+#include <memory>
 #include <iostream>
+#include <cstring> // For memcpy bo gcc
 
 
 using namespace std;
@@ -43,6 +45,11 @@ ChunkRegister::~ChunkRegister()
     if (registerInitialized)
     {
         delete[] trajBuffer;
+
+        for (auto entryPtr : entries) {
+            delete[] entryPtr->additionalData;
+            delete entryPtr;
+        }
     }
 }
 
@@ -64,7 +71,7 @@ bool ChunkRegister::ReadRegisterEntries()
             entry->chunk_offset = trajBuffer[2];
             entry->continuation_offset = trajBuffer[3];
             entry->additionalData = new char[trajAdditionalDataSize];
-            memcpy(entry->additionalData, &trajBuffer[4], trajAdditionalDataSize);
+            std::memcpy(entry->additionalData, &trajBuffer[4], trajAdditionalDataSize);
 	        entry->registerWritePosition = ftell(registerFile)-sizeOfTrajEntry;
 	        entries.push_back(entry);
             trajOffsets.insert(std::pair<size_t, size_t>(trajBuffer[0], entries.size()-1));
@@ -321,7 +328,7 @@ void ChunkRegister::RegisterStoredData(std::unique_ptr<TaskResults> const& resul
     trajBuffer[1] = chunkId;
     trajBuffer[2] = chunkOffset;
     trajBuffer[3] = 0;
-    memcpy(&trajBuffer[4], results->SerializeExtraData(), results->SerializingExtraDataOffset());
+    std:memcpy(&trajBuffer[4], results->SerializeExtraData(), results->SerializingExtraDataOffset());
 
     auto continuationOffset = ftell(registerFile);
     fseek(registerFile, 0, SEEK_END);
@@ -356,7 +363,7 @@ void ChunkRegister::RegisterStoredData(std::unique_ptr<TaskResults> const& resul
         entry->chunk_offset = trajBuffer[2];
         entry->continuation_offset = trajBuffer[3];
         entry->additionalData = new char[trajAdditionalDataSize];
-        memcpy(entry->additionalData, &trajBuffer[4], trajAdditionalDataSize);
+        std::memcpy(entry->additionalData, &trajBuffer[4], trajAdditionalDataSize);
         entry->registerWritePosition = continuationOffset;
         entries.push_back(entry);
         trajOffsets.insert(std::pair<size_t, size_t>(trajBuffer[0], entries.size()));

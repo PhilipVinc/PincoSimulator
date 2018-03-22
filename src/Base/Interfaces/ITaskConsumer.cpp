@@ -2,9 +2,9 @@
 // Created by Filippo Vicentini on 22/12/17.
 //
 
-#import "ITaskConsumer.hpp"
+#include "ITaskConsumer.hpp"
 
-#import "../TaskData.hpp"
+#include "../TaskData.hpp"
 
 void ITaskConsumer::EnqueueTasks(std::vector<std::unique_ptr<TaskData>>&& tasks) {
 	enqueuedTasks.enqueue_bulk(std::make_move_iterator(tasks.begin()),

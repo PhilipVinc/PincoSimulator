@@ -12,6 +12,7 @@
 #include <atomic>
 #include <chrono>
 #include <stdio.h>
+#include <memory>
 #include <queue>
 #include <vector>
 

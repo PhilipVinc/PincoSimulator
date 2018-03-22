@@ -25,7 +25,7 @@ public:
 protected:
 
 private:
-	const TWMCSystemData* lastSharedSystemData;
+	const TWMCSystemData* lastSharedSystemData = nullptr;
 
 	// Stuf to setup
 	TWMC_FFTW_plans* plan;

@@ -56,7 +56,7 @@ const void* TWMCResults::SerializeExtraData()const
 template<>
 void TWMCResults::DeSerializeExtraData(void* data, unsigned int length)
 {
-    memcpy(extraDataMemory, data, 2*sizeof(double));
+    std::memcpy(extraDataMemory, data, 2*sizeof(double));
     return;
 }
 

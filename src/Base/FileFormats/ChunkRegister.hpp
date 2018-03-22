@@ -14,6 +14,7 @@
 #include <set>
 #include <unordered_map>
 #include <stdio.h>
+#include <memory>
 #include <string>
 #include <vector>
 

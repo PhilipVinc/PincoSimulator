@@ -13,6 +13,7 @@
 #include "Base/TaskData.hpp"
 #include "../TaskResults.hpp"
 #include <iostream>
+#include <memory>
 
 
 WorkerThread::WorkerThread(size_t id, ThreadedTaskProcessor* manager, Solver* solver)
