@@ -1,0 +1,3 @@
+[submodule "MatlabUtils"]
+	path = MatlabUtils
+	url = git@github.com:PhilipVinc/MatlabUtils.git
