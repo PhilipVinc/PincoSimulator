@@ -3,7 +3,7 @@ function res = AverageExtractData( obj, data, params )
 %   Detailed explanation goes here
 
     res.params = params;
-
+    res.params.VERSION = obj.VERSION;
     %%%-----------------------------------------------------------------%%%
     %%%                           Shortcuts                             %%%
     %%%-----------------------------------------------------------------%%%
@@ -76,7 +76,7 @@ function res = AverageExtractData( obj, data, params )
     
     % G_2(0)
     tmp=mean(mean(abs(data{trajId}).^4,3),1);
-    g2_t=(tmp -2 * n_a_t-0.5)./n_a_t.^2;
+    g2_t=(tmp -2 * n_a_t-0.25)./n_a_t.^2;
     g2_tErr = linspace(0,0,length(g2_t)); %TODO
     
     % N_{k=0}
@@ -117,54 +117,77 @@ function res = AverageExtractData( obj, data, params )
         
         fprintf('g1/2..');
         % Compute G1 and G2
-        g1ij_t = zeros(params.nx+1,params.ny+1,cutted_frames);
-        g2ij_t = zeros(params.nx+1,params.ny+1,cutted_frames);
-        corr1ij_t = zeros(params.nx+1,params.ny+1,cutted_frames);
+        g1ij_t = zeros(params.nx,params.ny,cutted_frames);
+        g2ij_t = zeros(params.nx,params.ny,cutted_frames);
+        corr1ij_t = zeros(params.nx,params.ny,cutted_frames);
         % Set the know edges
         g1ij_t(1,:,:) = 1;
         g1ij_t(:,1,:) = 1;
-        g1ij_t(end,:,:) = 1;
-        g1ij_t(:,end,:) = 1;
         
         avg_beta_ij_t = mean(beta_ij_t, 4);
         avg_betaStar_ij_t = conj(avg_beta_ij_t);
         avg_n_t =mean(n_ij_t, 4);
 
-        corr1ij_t(1,:,:) = ones(size(corr1ij_t(1,:,1))).*nat_cut./(mean(mean(avg_betaStar_ij_t,1),2).*mean(mean(avg_beta_ij_t,1),2));
-        corr1ij_t(:,1,:) = ones(size(corr1ij_t(:,1,1))).*nat_cut./(mean(mean(avg_betaStar_ij_t,1),2).*mean(mean(avg_beta_ij_t,1),2));
-        corr1ij_t(end,:,:) = ones(size(corr1ij_t(end,:,1))).*nat_cut./(mean(mean(avg_betaStar_ij_t,1),2).*mean(mean(avg_beta_ij_t,1),2));
-        corr1ij_t(:,end,:) = ones(size(corr1ij_t(:,end,1))).*nat_cut./(mean(mean(avg_betaStar_ij_t,1),2).*mean(mean(avg_beta_ij_t,1),2));
-
+        corr1ij_t(1,1,:) = ones(size(corr1ij_t(1,1,:))).*nat_cut./(mean(mean(avg_betaStar_ij_t,1),2).*mean(mean(avg_beta_ij_t,1),2));
 
         g2ij_t(1,1,:) = g2_t(t_cut:end);
         beta_abs_xy_t = abs(beta_ij_t).^2;
         beta_ij_conj_t = conj(beta_ij_t);
-
-        ny = params.ny;
+        nij_t = beta_abs_xy_t -1/2;
+        sq_avg_nij_t = sqrt(mean(beta_abs_xy_t,4) -1/2);
         
-        for rx=2:nx
-            for ry=1:ny
-                rx_l = rx-1; ry_l = ry-1;
-                
-                g1ij_t(rx,ry,:) = real(mean(mean(mean(beta_ij_conj_t.*...
-                    circshift(circshift(beta_ij_t,rx_l,1),ry_l,2),4),1),2)./nat_cut);
-                corr1ij_t(rx,ry,:) = real(mean(mean(mean(beta_ij_conj_t.*...
-                    circshift(circshift(beta_ij_t,rx_l,1),ry_l,2),4)./...
-                    (avg_betaStar_ij_t.*circshift(circshift(avg_beta_ij_t,rx_l,1),ry_l,2)),1),2));
-                g2ij_t(rx,ry,:) = real(mean(mean(mean(beta_abs_xy_t.*...
-                    circshift(circshift(beta_abs_xy_t,rx_l,1),ry_l,2),4),1),2))./(nat_cut.^2);
+        for dx=0:nx-1   % for PBC: dx = nx = 0
+            for dy=0:ny-1   % for PBC: dx = nx = 0
+                % First element is alredy set.
+                % r'=r+d
+                % g1ij_t = \sum_r <a_r^\dag a_r'>/sqrt(<n_r><n_r'>)
+                                        %   y    x   
+                g1ij_t(dx+1,dy+1,:) = real(mean(mean( ...%traj TR[ 
+                                                        mean((beta_ij_conj_t.*    ...% numerator: a_r^\dag          % avg ]Tr
+                                                                circshift(circshift(beta_ij_t, dx, 1), dy, 2) ) ,4)./ ...% a_r' % end numerator
+                                                            (sq_avg_nij_t.* ...
+                                                                circshift(circshift(sq_avg_nij_t,dx,1),dy,2) ) ...% denom sqrt(<n_r><n_r'>)
+                                                           ,1),2) ); % avg across xy and trajs
+                                                        %   x  y   real
+
+                %g1ij_t(rx,ry,:) = real(mean(mean(mean(beta_ij_conj_t.*...
+                %    circshift(circshift(beta_ij_t,rx_l,1),ry_l,2),4),1),2)./nat_cut);
+                %corr1ij_t(rx,ry,:) = real(mean(mean(mean(beta_ij_conj_t.*...
+                %    circshift(circshift(beta_ij_t,rx_l,1),ry_l,2),4)./...
+                %    (avg_betaStar_ij_t.*circshift(circshift(avg_beta_ij_t,rx_l,1),ry_l,2)),1),2));
+
+                % r'=r+d
+                % corr1ij_t = \sum_r <a_r^\dag a_r'> - <a_r^\dag><a_r'>
+                                        %       y   x        
+                corr1ij_t(dx+1,dy+1,:) = real(mean(mean(... % Tr[
+                                                            mean((beta_ij_conj_t.*    ...% numerator: a_r^\dag
+                                                                circshift(circshift(beta_ij_t, dx, 1), dy, 2) ) ,4) ./...%a_r'
+                                                            (avg_betaStar_ij_t.*...
+                                                                circshift(circshift(avg_beta_ij_t,dx,1),dy,2) ) ...
+                                                            ,1),2) );% avg across xy and trajs
+                                                        %    x  y   real
+
+                if (dx== 0 && dy == 0)
+                    g1ij_t(1,1,:) = g1ij_t(1,1,:)-1/2;
+                    corr1ij_t(1,1,:) = corr1ij_t(1,1,:)-1/2;
+                    continue;
+                end
+
+                g2ij_t(dx+1,dy+1,:) = real(mean(mean(mean(beta_abs_xy_t.*...
+                    circshift(circshift(beta_abs_xy_t,dx,1),dy,2),4),1),2))./(nat_cut.^2);
             end
         end       
-        for ry=1:nx-1
-            rx = 0;
-            g1ij_t(1,ry+1,:) = real(mean(mean(mean(beta_ij_conj_t.*...
-                circshift(circshift(beta_ij_t,rx,1),ry,2),4),1),2)./nat_cut);
-            corr1ij_t(1,ry+1,:) = real(mean(mean(mean(beta_ij_conj_t.*...
-                circshift(circshift(beta_ij_t,rx,1),ry,2),4)./...
-                (avg_betaStar_ij_t.*circshift(circshift(avg_beta_ij_t,rx,1),ry,2)),1),2));
-            g2ij_t(1,ry+1,:) = real(mean(mean(mean(beta_abs_xy_t.*...
-                circshift(circshift(beta_abs_xy_t,rx,1),ry,2),4),1),2))./(nat_cut.^2);
+
+        g1ij_a = mean(g1ij_t, 3);
+        distX = [0:floor(nx/2) , floor((nx-1)/2):-1:1];
+        distY = [0:floor(ny/2) , floor((ny-1)/2):-1:1];
+        V = 0;
+        for i=1:nx
+            for j=1:ny
+                V = V + g1ij_a(i,j)*(distX(i)^2+distY(j)^2);
+            end
         end
+        V = V/(nx*ny);
 
     elseif ( computeG2 == true && (params.nx == 1 | params.ny == 1))
         fprintf('g1/2..');
@@ -194,11 +217,20 @@ function res = AverageExtractData( obj, data, params )
             g2ij_t(r+1,:) = real(mean(mean(beta_abs_xy_t.*circshift(beta_abs_xy_t,r,1),1),3))./(nat_cut.^2);
         end       
         
+        g1ij_a = mean(g1ij_t, 2);
+        distX = [0:floor(nx/2) , floor((nx-1)/2):1];
+        V = 0;
+        for i=1:nx
+            V = V + g1ij_a(i)*distX(i)^2;
+        end
+        V = V/(nx*ny);
+
     else
         n_kxy_t = zeros(1,1);
         g1ij_t = zeros(1,1);
         g2ij_t = zeros(1,1);
         corr1ij_t = zeros(1,1);
+        V = zeros(1,1);
     end    
     
     %%%-----------------------------------------------------------------%%%
@@ -224,13 +256,15 @@ function res = AverageExtractData( obj, data, params )
     res.ave.g1ij_t = g1ij_t;
     res.ave.corr1ij_t = corr1ij_t;
     res.ave.g2ij_t = g2ij_t;
+    res.ave.V = V;
     
     
     %%%-----------------------------------------------------------------%%%
     %%%                           Quantities                            %%%
     %%%-----------------------------------------------------------------%%%
-    res.quan.n_hist_vals = data{trajId}(:,end,:);
+    res.quan.n_hist_vals = n_t(:,end,:);
 
-    
+    t_cut = floor(t_length*0.99);
+    res.quan.n_hist_tave_vals = mean(n_t(:,t_cut:end,:),2);
 end
 
