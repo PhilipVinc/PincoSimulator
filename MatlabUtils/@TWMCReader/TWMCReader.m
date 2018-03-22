@@ -7,12 +7,12 @@ classdef TWMCReader < SimReader
     end
 
     properties(Access = protected)
-        
+        VERSION = 1.11;
     end
     
     methods
         function obj = TWMCReader(simPath, varargin)
-
+            
             % Base constructor
             obj = obj@SimReader(simPath, varargin{:});
         end

@@ -15,6 +15,7 @@ classdef ThermoRunner < BaseSimRunner
     
     properties (Access = protected)
         managerName = 'TWMCThermoThread';
+        VERSION = 0;
     end  
     
 	methods(Access = protected)
