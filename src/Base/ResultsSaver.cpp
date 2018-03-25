@@ -8,7 +8,7 @@
 
 #include "TaskResults.hpp"
 
-
+#include <chrono>
 
 ResultsSaver::ResultsSaver(const Settings *settings, DataStore *dataStore) {
 	_settings = settings;
@@ -17,15 +17,29 @@ ResultsSaver::ResultsSaver(const Settings *settings, DataStore *dataStore) {
 	while (tmpTasksToSave.size() < 1024) {
 		tmpTasksToSave.emplace_back(nullptr);
 	}
+
+    IOThread = std::thread(&ResultsSaver::IOThreadUpdate, this);
+}
+
+ResultsSaver::~ResultsSaver() {
+    terminate = true;
+    IOThread.join();
 }
 
 void ResultsSaver::Update() {
-	size_t dequeuedTasks = enqueuedTasks.try_dequeue_bulk( tmpTasksToSave.begin(), 1024);
-	for (size_t i = 0; dequeuedTasks != i; i++)
-	{
-		SaveData(tmpTasksToSave[i]);
 
+}
 
+void ResultsSaver::IOThreadUpdate() {
+    while (!terminate) {
+        size_t dequeuedTasks = enqueuedTasks.try_dequeue_bulk(tmpTasksToSave.begin(), 1024);
+        for (size_t i = 0; dequeuedTasks != i; i++) {
+            SaveData(tmpTasksToSave[i]);
+        }
+        if (dequeuedTasks == 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+    }
 }
 
 void ResultsSaver::SaveData(std::unique_ptr<TaskResults> const &results)

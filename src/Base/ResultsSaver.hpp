@@ -7,6 +7,8 @@
 
 #include "Interfaces/IResultConsumer.hpp"
 
+#include <thread>
+
 class Settings;
 class DataStore;
 
@@ -14,7 +16,7 @@ class ResultsSaver : public IResultConsumer
 {
 public:
 	ResultsSaver(const Settings* settings, DataStore* dataStore);
-	virtual ~ResultsSaver() {};
+	virtual ~ResultsSaver();
 
 	void Update();
 
@@ -27,7 +29,10 @@ protected:
 
 	virtual void AllProducersHaveBeenTerminated();
 private:
-	std::vector<std::unique_ptr<TaskResults>> tmpTasksToSave;
+    void IOThreadUpdate();
+
+    std::vector<std::unique_ptr<TaskResults>> tmpTasksToSave;
+	std::thread IOThread;
 
 	bool terminate = false;
 
