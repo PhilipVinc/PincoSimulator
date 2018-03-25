@@ -8,11 +8,6 @@
 
 #include "TaskResults.hpp"
 
-#ifdef MPI_SUPPORT
-#include <fstream>
-#include <iostream>
-#include <cereal/cereal.hpp>
-#endif
 
 
 ResultsSaver::ResultsSaver(const Settings *settings, DataStore *dataStore) {
@@ -30,17 +25,7 @@ void ResultsSaver::Update() {
 	{
 		SaveData(tmpTasksToSave[i]);
 
-#ifdef MPI_SUPPORT
-        /*
-        std::ofstream ofs("res_"+std::to_string(tmpTasksToSave[i]->GetId()));
-        cereal::text_oarchive oa(ofs);
-        oa << tmpTasksToSave[i];*/
-#endif
-	}
 
-	if (dequeuedTasks == 0 && terminate == true) {
-		//std::cout << "Deleting ResultSaver. " << std::endl;
-	}
 }
 
 void ResultsSaver::SaveData(std::unique_ptr<TaskResults> const &results)
