@@ -12,21 +12,11 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <memory>
 #include <stdio.h>
+#include "cpptoml.h"
 
 class NoisyMatrix;
-namespace boost // Forward declaration of ptree
-{
-    namespace property_tree
-    {
-        template < class Key, class Data, class KeyCompare >
-        class basic_ptree;
-
-        typedef basic_ptree< std::string, std::string, std::less<std::string> > ptree;
-    }
-}
-
-//namespace pt = boost::property_tree;
 
 
 /*! 
@@ -61,7 +51,7 @@ public:
     SaveSettings saveStatus = SaveSettings::saveIdFiles;
 
 protected:
-    boost::property_tree::ptree* tree;
+    std::shared_ptr<cpptoml::table> config;
     std::string basePath;
 
     std::string inputPathStr;

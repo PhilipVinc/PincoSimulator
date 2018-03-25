@@ -1,19 +1,19 @@
-cmake_minimum_required(VERSION 3.8)
-project(Simulator)
+cmake_minimum_required(VERSION 3.3)
+project(Simulator VERSION 0.1 LANGUAGES CXX)
 
-#set(COMPILE_MPI ON)
+message("Compiling MPI var: ${COMPILE_MPI}")
 
 option(COMPILE_GPU "Build with GPU Support for the Solvers" OFF)
 option(COMPILE_MPI "Build with MPI Support for the Manager" OFF)
 
-
-set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS -g)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native -DEIGEN_NO_DEBUG")
-add_definitions(-std=c++14 -stdlib=libc++)
+ #-stdlib=libc++)
 
-#set(CMAKE_VERBOSE_MAKEFILE ON)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    #add_definitions(-stdlib=libc++)
+endif()
 
 if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
@@ -22,12 +22,27 @@ endif()
 If(LINUX)
     message(Linux Detected)
     message(is: ${CMAKE_CXX_FLAGS})
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -stdlib=libc++")
+
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -stdlib=libc++")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+        add_definitions(-std=c++17)
+    endif()
+elseif(APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+    if(NOT CEREAL_ROOT)
+        set(CEREAL_ROOT /usr/local/include/)
+    endif()
 endif()
 
 # Directory with all compilation modules
 set(CMAKE_MODULE_PATH  ${CMAKE_SOURCE_DIR}/cmake-modules)
-set(BOOST_PACKAGES program_options system filesystem)
+
+# Get Boost Packages. Adding the filesystem library on mac because we have no C++17 TS support
+if (APPLE)
+    set(BOOST_PACKAGES system filesystem)
+endif()
 
 # GPU SUPPORT
 if (COMPILE_GPU)
@@ -64,60 +79,61 @@ endif(COMPILE_GPU)
 
 if (COMPILE_MPI)
     message("Enabling MPI Support")
+    find_package(MPI REQUIRED)
     add_definitions(-DMPI_SUPPORT)
 
     # New interface
-    # add_library(cereal INTERFACE)
     find_package(cereal REQUIRED)
+    add_library(cereal UNKNOWN IMPORTED)
 
     # Find the mpi implementation linker flags and libraries (this is not the best way
     # because I should be changing the compiler...
-    execute_process(COMMAND mpic++ --showme:compile OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE mpi_compile_flags)
-    execute_process(COMMAND mpic++ --showme:link OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE mpi_linker_flags)
-    message("MPIC++ Compiler flags: ${mpi_compile_flags}")
-    message("MPIC++ Linker flags: ${mpi_linker_flags}")
+    #execute_process(COMMAND mpic++ --showme:compile OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE mpi_compile_flags)
+    #execute_process(COMMAND mpic++ --showme:link OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE mpi_linker_flags)
+    #message("MPIC++ Compiler flags: ${mpi_compile_flags}")
+    #message("MPIC++ Linker flags: ${mpi_linker_flags}")
+    message("MPIC++ Compiler flags: ${MPI_INCLUDE_PATH}")
+    message("MPIC++ Linker flags: ${MPI_LIBRARIES}")
 
     # Append compile flags
-    set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} ${mpi_compile_flags} ")
+    #set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} ${mpi_compile_flags} ")
 
     # Append Linker flags (I could also set flags per-target...
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${mpi_linker_flags}")
+    #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${mpi_linker_flags}")
     #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lompitrace")
     #message("MPIC++ Linker flags: ${CMAKE_EXE_LINKER_FLAGS}")
 
     #set_target_properties(sim PROPERTIES LINK_FLAGS "${mpi_linker_flags}")
-
 endif (COMPILE_MPI)
 
 # Find package boost, if present
 if(APPLE)
-    find_package(Boost 1.65 COMPONENTS "${BOOST_PACKAGES}")
+    find_package(Boost 1.62 COMPONENTS "${BOOST_PACKAGES}")
     if (NOT Boost_FOUND)
         message(Searching again for Boost)
         SET(BOOST_ROOT ~/opt/local/)
         SET(BOOST_ROOT ~/opt/local/)
         find_package(Boost 1.65 COMPONENTS "${BOOST_PACKAGES}" REQUIRED )
     endif (NOT Boost_FOUND)
-else()
-    find_package(Boost 1.65 COMPONENTS "${BOOST_PACKAGES}" )
+elseif(BOOST_PACKAGES)
+    find_package(Boost 1.59 COMPONENTS "${BOOST_PACKAGES}" )
     if (NOT Boost_FOUND)
         message("Searching again for Boost without filesystem support")
         SET(BOOST_ROOT ~/opt/local/)
         SET(BOOST_ROOT ~/opt/local/)
-        list(REMOVE_ITEM BOOST_PACKAGES filesystem) # remove filesystem
-        find_package(Boost 1.65 COMPONENTS "${BOOST_PACKAGES}" REQUIRED )
+        find_package(Boost 1.59 COMPONENTS "${BOOST_PACKAGES}" REQUIRED )
     endif (NOT Boost_FOUND)
 endif()
+
 include_directories(${Boost_INCLUDE_DIR})
 
 message("found Boost_INCLUDE_DIR=${Boost_INCLUDE_DIR}")
 message("found Boost_LIBRARIES=${Boost_LIBRARIES}")
 
-
 find_package(FFTW REQUIRED)
-include_directories(${FFTW_INCLUDE_DIR})
+include_directories(${FFTW_INCLUDES})
 
-message("found FFTW_INCLUDE_DIR=${FFTW_INCLUDE_DIR}")
+message("found FFTW_INCLUDE_DIR=${FFTW_INCLUDES}")
 message("found FFTW_LIBRARIES=${FFTW_LIBRARIES}")
 
 
@@ -196,31 +212,36 @@ endif(COMPILE_MPI)
 
 add_executable(sim ${SOURCE_FILES})
 
-# Includes
-# include_directories(/usr/local/include)
-include_directories(/usr/local/include/eigen3/)
-
-if (LINUX)
-    if (COMPILE_MPI)
-        include_directories(/home/vicentinif/opt/local/include/)
-    endif()
-endif()
+find_package(Eigen3 REQUIRED)
+add_library(Eigen3 UNKNOWN IMPORTED)
+target_include_directories(sim PUBLIC ${EIGEN3_INCLUDES})
 
 
 # Linker
 target_link_libraries(sim ${Boost_LIBRARIES})
-target_link_libraries(sim ${FFTW_LIBRARIES})
+target_link_libraries(sim ${FFTW_LIBRARIES}) #target_link_libraries(sim fftw_thread)
 target_link_libraries(sim m)
+
+set_target_properties(sim PROPERTIES CXX_STANDARD_REQUIRED 17)
+
+target_include_directories(sim PUBLIC Dependencies)
 
 if (COMPILE_GPU)
     target_link_libraries(sim VexCL::OpenCL)
     target_link_libraries(sim boost_system)
 endif(COMPILE_GPU)
-#target_link_libraries(sim fftw_thread)
+
+if (COMPILE_MPI)
+    target_include_directories(sim PUBLIC ${CEREAL_INCLUDES})
+    target_include_directories(sim PUBLIC ${MPI_INCLUDE_PATH})
+    target_link_libraries(sim ${MPI_LIBRARIES})
+endif()
 
 if(LINUX)
     target_link_libraries(sim rt) #realtime
-    target_link_libraries(sim c++experimental) #filesystem
+
+    #target_link_libraries(sim c++experimental) #filesystem
+    target_link_libraries(sim stdc++fs) #filesystem
 endif()
 
 
