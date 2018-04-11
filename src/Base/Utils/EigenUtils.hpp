@@ -18,13 +18,13 @@
 MatrixCXd InitDiagMatrix(size_t dim, size_t diag, complex_p value);
 
 // Initialize with value in every site
-MatrixCXd InitMatrix(size_t nx,size_t ny ,complex_p value);
-MatrixCXd InitMatrix(size_t nx,size_t ny , size_t cellSz, complex_p value);
+MatrixCXd InitMatrix(size_t nx,size_t ny , const complex_p value);
+MatrixCXd InitMatrix(size_t nx,size_t ny , size_t cellSz, const complex_p value);
 
 // Initialize with value[i] at site i
-MatrixCXd InitMatrix(size_t nx,size_t ny ,complex_p* value);
-MatrixCXd InitMatrix(size_t nx,size_t ny ,float_p* value);
-MatrixCXd InitMatrix(size_t nx,size_t ny ,std::vector<float_p>& values);
+MatrixCXd InitMatrix(size_t nx,size_t ny , const complex_p* value);
+MatrixCXd InitMatrix(size_t nx,size_t ny , const float_p* value);
+MatrixCXd InitMatrix(size_t nx,size_t ny , const std::vector<float_p>& values);
 
 MatrixCXd MatExp(MatrixCXd mat);
 MatrixCXd vecSqrt(MatrixCXd mat);

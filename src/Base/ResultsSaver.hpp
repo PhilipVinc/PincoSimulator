@@ -19,6 +19,7 @@ public:
 	virtual ~ResultsSaver();
 
 	void Update();
+	void SetConsumer(IResultConsumer* consumer) { _consumer = consumer;};
 
 	size_t savedItems = 0;
 protected:
@@ -35,6 +36,7 @@ private:
 	std::thread IOThread;
 
 	bool terminate = false;
+	IResultConsumer* _consumer = nullptr;
 
 };
 

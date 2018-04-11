@@ -45,7 +45,8 @@ protected:
     //virtual void DataOpen() = 0;
     std::string rootFolder;
     std::string dataStoreBasePath;
-    
+    size_t idealFileSize = 1024*1024*1024;
+
     bool isFileReady = false;
     bool isReadable = false;
     bool isWritable = false;

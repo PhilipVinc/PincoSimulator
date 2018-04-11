@@ -70,7 +70,7 @@ public:
 
     template<typename T>
     T& GetDataset(enumType name) {
-        datasets.get(name);
+        return datasets.template get<T>(name); // TODO What the Fuck is this??
     }
 
     const std::string DatasetName(enumType eName) const {
@@ -118,6 +118,5 @@ public:
     };
 #endif
 };
-
 
 #endif //SIMULATOR_GENERICTASKRESULTS_HPP

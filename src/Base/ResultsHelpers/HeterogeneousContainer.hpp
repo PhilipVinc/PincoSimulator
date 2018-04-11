@@ -13,7 +13,6 @@
 #include <map>
 #include <array>
 
-
 #ifdef MPI_SUPPORT
 #include "Base/Serialization/SerializationArchiveFormats.hpp"
 #include <Libraries/eigen_cereal_serialization.hpp>

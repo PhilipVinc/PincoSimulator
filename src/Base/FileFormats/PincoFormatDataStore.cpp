@@ -51,7 +51,8 @@ void PincoFormatDataStore::CreateNewChunk()
 {
     size_t id = NewChunkId();
     ChunkFileSet* chunk = new ChunkFileSet(chunkRootPath , datasetN, id);
-    
+    chunk->SetMinChunkSize(idealFileSize);
+
     chunkIds.insert(id);
     chunkFileSets[id] = chunk;
     

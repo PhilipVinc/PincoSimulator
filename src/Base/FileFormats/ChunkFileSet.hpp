@@ -17,10 +17,6 @@
 
 class TaskResults;
 
-
-const size_t minChunkSize = 1024*1024*1024;
-
-
 class ChunkFileSet
 {
 public:
@@ -31,6 +27,7 @@ public:
     FILE* GetFile(size_t datasetId);
     size_t WriteToChunk(std::unique_ptr<TaskResults> const& results);
     void FlushData();
+	void SetMinChunkSize(size_t size) { minChunkSize = size;};
     bool IsChunkBig();
     
     size_t GetId() {return id;};
@@ -60,6 +57,8 @@ private:
     size_t id;
     size_t nTrajWritten = 0;
 	bool initialised = false;
+
+	size_t minChunkSize = 1024*1024*1024;
 
 	// Loaded data
 	std::vector<size_t> registerData;

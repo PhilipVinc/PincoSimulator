@@ -10,6 +10,7 @@
 
 #include <iostream>
 
+#include "easylogging++.h"
 
 #include "Base/Serialization/SerializationArchiveFormats.hpp"
 
@@ -32,7 +33,7 @@ namespace cereal {
     template<class Archive>
     void serialize(Archive & ar, TWMCSystemData & g)
 	{
-		cout << "Serializing TWMCSystemData."<< endl;
+		LOG(INFO) << "Serializing TWMCSystemData."<< endl;
 		ar(g.latticeName);
 		ar(g.nx);
 		ar(g.ny);
@@ -73,6 +74,7 @@ namespace cereal {
         ar(g.initialCondition);
         ar(g.rngSeed);
         ar(g.systemData);
+        ar(g.storeInitialState);
     }
 
     template<class Archive>
@@ -86,6 +88,7 @@ namespace cereal {
         ar(g.initialCondition);
         ar(g.rngSeed);
         ar(g.systemData);
+        ar(g.storeInitialState);
         //cout << "Done TWMCTask" << endl;
     }
 

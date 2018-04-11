@@ -12,6 +12,7 @@
 
 #include <queue>
 
+class ThreadedTaskProcessor;
 
 class MPIProcessor : public TaskProcessor
 {
@@ -38,6 +39,10 @@ protected:
     int nNodes;
     int nProcessesPerNode;
 
+    // processor used for local processing in this node.
+    std::unique_ptr<ThreadedTaskProcessor> _localProcessor;
+    int hwThreadsN, hwThreadsProcessorN;
+
     MPI_Comm* comm;
 
     // Dequeue buffer
@@ -49,6 +54,7 @@ protected:
     std::vector<int> nodeRank;
     std::vector<size_t> tasksSentToNode;
     std::vector<size_t> resultsReceivedFromNode;
+    std::vector<float> nodeProgress;
 
     // MPI Send TaskData elements
     std::vector<MPI_Request> commSendRequests;
@@ -64,6 +70,8 @@ protected:
 
     std::vector<MPI_Request> miscSendReqs;
     std::vector<void*> miscSendBuffers;
+
+    std::vector<MPI_Request> miscRecvInplaceReqs;
 
     bool producersHaveBeenTerminated = false;
     bool waitingNodesToTerminate = false;

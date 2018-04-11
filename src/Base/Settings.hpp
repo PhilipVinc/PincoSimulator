@@ -9,6 +9,8 @@
 #ifndef Settings_hpp
 #define Settings_hpp
 
+#include "SettingStrings.hpp"
+
 #include <functional>
 #include <string>
 #include <vector>
@@ -49,6 +51,8 @@ public:
     
     Status status = Status::invalid;
     SaveSettings saveStatus = SaveSettings::saveIdFiles;
+    int mpiRank;
+    int mpiWorldSize;
 
 protected:
     std::shared_ptr<cpptoml::table> config;

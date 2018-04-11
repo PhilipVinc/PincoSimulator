@@ -38,6 +38,10 @@ void ResultsSaver::IOThreadUpdate() {
         }
         if (dequeuedTasks == 0) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
+        } else {
+            if (_consumer != nullptr) {
+                _consumer->EnqueueTasks(std::move(tmpTasksToSave));
+            }
         }
     }
 }

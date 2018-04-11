@@ -11,6 +11,8 @@
 #include "Libraries/FilesystemLibrary.h"
 #include "Base/TaskResults.hpp"
 
+#include "easylogging++.h"
+
 #include <iostream>
 
 using namespace std;
@@ -22,7 +24,7 @@ ChunkFileSet::ChunkFileSet(std::string _basePath,
 basePath(_basePath), N(nDatasets), id(chunkId)
 {
     if (nDatasets==0)
-        cout << "ERROR: Initialised ChunkFileSet with 0 datasets!" << endl;
+        LOG(ERROR) << "ERROR: Initialised ChunkFileSet with 0 datasets!";
 
     Initialise();
 }
@@ -68,7 +70,7 @@ void ChunkFileSet::Initialise()
         // if the file exists alredy
         if (filesystem::exists(fileNames[i]))
         {
-            cout << "Opening File: " << fileNames[i] << endl;
+            LOG(INFO) << "Opening File: " << fileNames[i];
             files.push_back(fopen(fileNames[i].c_str(), "ab+"));
 	        fseek(files[i], 0, SEEK_END);
 	        fileSizes.push_back(ftell(files[i]));

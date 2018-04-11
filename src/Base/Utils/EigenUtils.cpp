@@ -58,7 +58,7 @@ MatrixCXd InitMatrix(size_t nx,size_t ny , size_t cellSz,complex_p value)
 }
 
 
-MatrixCXd InitMatrix(size_t nx,size_t ny ,std::vector<float_p>& values)
+MatrixCXd InitMatrix(size_t nx,size_t ny ,const std::vector<float_p>& values)
 {
     size_t nxy = nx*ny;
     size_t valSize = values.size();

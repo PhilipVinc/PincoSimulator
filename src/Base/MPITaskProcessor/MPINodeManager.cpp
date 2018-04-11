@@ -9,11 +9,12 @@
 #include "../FileFormats/DataStore.hpp"
 #include "../ThreadedTaskProcessor/ThreadedTaskProcessor.hpp"
 #include "../TaskResults.hpp"
-#include "Libraries/PreAllocator.hpp"
+#include "easylogging++.h"
 
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <unistd.h>
 
 #include "Base/Serialization/SerializationArchiveFormats.hpp"
 
@@ -28,7 +29,7 @@ MPINodeManager::MPINodeManager(MPI_Comm* _comm)  {
     comm = _comm;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    cout << "#"<<rank<<" - MPINodeManager Created." << comm << endl;
+    LOG(INFO) << "#"<<rank<<" - MPINodeManager Created." << comm ;
 
     MPI_Status status;
     MPI_Probe(MASTER_RANK, SOLVER_STRING_MESSAGE_TAG, MPI_COMM_WORLD, &status);
@@ -39,12 +40,12 @@ MPINodeManager::MPINodeManager(MPI_Comm* _comm)  {
 
     _solverName = std::string(buf, stringLen); delete[] buf;
 
-    cout << "#"<<rank<<" - Received solver:"<< _solverName << endl;
+    LOG(INFO) << "#"<<rank<<" - Received solver:"<< _solverName;
 
     _processor = new ThreadedTaskProcessor(_solverName, -1, -1);
     _processor->SetConsumer(this);
     _processor->Setup();
-    cout << "#"<<rank<<" - Done" <<endl;
+    LOG(INFO) << "#"<<rank<<" - Done";
     while(tmpTasksToSend.size() < IDEALSIZE) {
         tmpTasksToSend.emplace_back(nullptr);
     }
@@ -52,6 +53,8 @@ MPINodeManager::MPINodeManager(MPI_Comm* _comm)  {
 
 
 void MPINodeManager::ManagerLoop() {
+  chrono::system_clock::time_point lastProgressReportTime     = chrono::system_clock::now();
+  chrono::system_clock::duration deltaTProgressReport     = chrono::seconds(10);
 
     while(!quit) {
 
@@ -62,7 +65,7 @@ void MPINodeManager::ManagerLoop() {
             MPI_Iprobe(MPI_ANY_SOURCE, TASKDATA_VECTOR_MESSAGE_TAG,
                        MPI_COMM_WORLD, &gotAMessage, &status);
             if (gotAMessage) {
-                cout << "#" << rank << " - MPINodeManager::ManagerLoop(). - Creating irecv request" << endl;
+                LOG(INFO) << "#" << rank << " - MPINodeManager::ManagerLoop(). - Creating irecv request" ;
 
                 // Extract the message size.
                 int msgSize;
@@ -76,8 +79,7 @@ void MPINodeManager::ManagerLoop() {
                 // Start the receive.
                 MPI_Test(&commRecvRequests.back(), &gotAMessage, &status);
                 receiving = true;
-                cout << "#" << rank << " - MPINodeManager::ManagerLoop(). - Created irecv request"
-                     << endl;
+                LOG(INFO) << "#" << rank << " - MPINodeManager::ManagerLoop(). - Created irecv request";
             }
         }
 
@@ -94,10 +96,11 @@ void MPINodeManager::ManagerLoop() {
                     std::vector<std::unique_ptr<TaskData>> _tasks;
                     ia(_tasks);
                     receivedTasks += _tasks.size();
-                    this->_processor->EnqueueTasks(std::move(_tasks));
 
-                    cout << "#"<<rank<< " - Received " << commRecvBuffers[i].size() << " bytes ("
-                        << _tasks.size() << ") of taskData from Master." << endl;
+                    LOG(INFO) << "#"<<rank<< " - Received " << commRecvBuffers[i].size() << " bytes ("
+                        << _tasks.size() << ") of taskData from Master.";
+
+                    this->_processor->EnqueueTasks(std::move(_tasks));
                 }
                 commRecvBuffers.erase(commRecvBuffers.begin()+i);
                 commRecvRequests.erase(commRecvRequests.begin()+i);
@@ -117,7 +120,7 @@ void MPINodeManager::ManagerLoop() {
 
             if ( tasksInBuffer == IDEALSIZE || tasksInBuffer >= receivedTasks - sentResults )
             {
-                cout << "#" << rank << " - MPINodeManager::ManagerLoop(). - sending " << tasksInBuffer << " results";
+                LOG(INFO) << "#" << rank << " - MPINodeManager::ManagerLoop(). - sending " << tasksInBuffer << " results";
 
                 std::vector<std::unique_ptr<TaskResults>> data(std::make_move_iterator(tmpTasksToSend.begin()),
                                                                std::make_move_iterator(tmpTasksToSend.begin()+tasksInBuffer));
@@ -133,11 +136,9 @@ void MPINodeManager::ManagerLoop() {
                 commSendBuffers.push_back(oss.str());
 
                 auto t2 = MPI_Wtime();
-                //std::cout << "The number of Mbytes taken for an archive of "<< tasksInBuffer<<" elements is " << oss->str().size()/1024/1024 <<
-                //" or "<< oss->str().size() << " bytes  - encoded in " << t2-t1 << " s." << endl;
                 tasksInBuffer = 0;
 
-                cout << "( " << commSendBuffers.back().size()/(1024*1024)<< " Mb)" << endl;
+                LOG(INFO) << "( " << commSendBuffers.back().size()/(1024*1024)<< " Mb)";
 
                 MPI_Request req; commSendRequests.push_back(req);
 
@@ -152,12 +153,11 @@ void MPINodeManager::ManagerLoop() {
         // 3 - Test Async result send requests to master
         for (int i=0; i < commSendRequests.size(); i++)
         {
-            //cout << "#" << rank << " - MPINodeManager::ManagerLoop() - Testing send req #" << i << endl;
             MPI_Status status; int done;
             MPI_Test(&commSendRequests[i], &done, &status);
             if (done)
             {
-                cout << "#" << rank << " - MPINodeManager::ManagerLoop() - Has sent #" << i << endl;
+                LOG(INFO) << (" - MPINodeManager::ManagerLoop() - Has sent msg #" + to_string(i) +  " to Master.");
                 commSendBuffers.erase(commSendBuffers.begin()+i);
                 commSendRequests.erase(commSendRequests.begin()+i);
                 i--;
@@ -172,28 +172,46 @@ void MPINodeManager::ManagerLoop() {
             if (status.MPI_TAG == TERMINATE_WHEN_DONE_MESSAGE_TAG) {
                 MPI_Recv(&tasksToComputeBeforeTerminating, 1, MPI_INT, status.MPI_SOURCE,
                 status.MPI_TAG, MPI_COMM_WORLD, &status);
-                cout << "#" << rank << " - Received Termination message: must compute " << tasksToComputeBeforeTerminating  << " tasks."<< endl;
+                LOG(INFO) << " - Received Termination message: must compute " << tasksToComputeBeforeTerminating  << " tasks.";
                 terminate = true;
             }
         }
 
-        if (terminate == true && receivedTasks >= tasksToComputeBeforeTerminating && commRecvRequests.size() == 0)
+        if (terminate  && receivedTasks >= tasksToComputeBeforeTerminating && commRecvRequests.size() == 0)
         {
             _processor->AllProducersHaveBeenTerminated();
 
             if (sentResults == receivedTasks && commSendRequests.size() == 0)
             {
-                cout << "#" << rank << " - MPINodeManager sending Termination message." << endl;
-                MPI_Status status;
+                LOG(INFO) << "#" << rank << " - MPINodeManager sending Termination message.";
                 MPI_Send(&tasksToComputeBeforeTerminating, 1, MPI_INT,
                 MASTER_RANK, NODE_TERMINATED_MESSAGE_TAG, MPI_COMM_WORLD);
                 quit = true;
-                cout << "#" << rank << " - Quitting." << endl;
+                LOG(INFO) << "#" << rank << " - Quitting.";
                 break;
             }
         }
 
-        //usleep(1000);
+        // Report Progress
+        auto now                          = chrono::system_clock::now();
+        chrono::system_clock::duration dt = now - lastProgressReportTime;
+        if (dt > deltaTProgressReport) {
+          float progress = _processor->Progress();
+          commSendBuffers.push_back("");
+          MPI_Request req; commSendRequests.push_back(req);
+          //MPI_Send(&progress, 1, MPI_FLOAT, MASTER_RANK,
+          //         NODE_PROGRESS_MESSAGE_TAG, MPI_COMM_WORLD);
+          LOG(INFO) << "Sending progress " << progress << " to master.";
+          MPI_Isend(&progress, 1,
+                    MPI_FLOAT, MASTER_RANK, NODE_PROGRESS_MESSAGE_TAG,
+                    MPI_COMM_WORLD, &commSendRequests.back());
+          lastProgressReportTime = now;
+        }
+        // If doing nothing then sleep the controlling thread to give space to the workers
+        //      !sending                        !receiving
+        if (commSendRequests.size() == 0 && commRecvRequests.size() == 0) {
+            sleep(1);
+        }
     }
 }
 

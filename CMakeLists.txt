@@ -5,6 +5,7 @@ message("Compiling MPI var: ${COMPILE_MPI}")
 
 option(COMPILE_GPU "Build with GPU Support for the Solvers" OFF)
 option(COMPILE_MPI "Build with MPI Support for the Manager" OFF)
+option(PROFILE_MPI "Build with MPE Profiling support for MPI" OFF)
 
 set(CMAKE_CXX_FLAGS -g)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
@@ -88,10 +89,10 @@ if (COMPILE_MPI)
 
     # Find the mpi implementation linker flags and libraries (this is not the best way
     # because I should be changing the compiler...
-    #execute_process(COMMAND mpic++ --showme:compile OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE mpi_compile_flags)
-    #execute_process(COMMAND mpic++ --showme:link OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE mpi_linker_flags)
-    #message("MPIC++ Compiler flags: ${mpi_compile_flags}")
-    #message("MPIC++ Linker flags: ${mpi_linker_flags}")
+    if (PROFILE_MPI)
+        execute_process(COMMAND mpecc -mpilog --showme:compile OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE MPI_INCLUDE_PATH)
+        execute_process(COMMAND mpecc -mpilog --showme:link OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE MPI_LIBRARIES)
+    endif()
     message("MPIC++ Compiler flags: ${MPI_INCLUDE_PATH}")
     message("MPIC++ Linker flags: ${MPI_LIBRARIES}")
 
@@ -143,11 +144,8 @@ set(LINKING STATIC)
 # Src Folders
 include_directories(src)
 
-#include_directories(src/Base/)
-#include_directories(src/TWMC/)
-
-
 set(SOURCE_FILES
+        Dependencies/easylogging++.cc Dependencies/easylogging++.h
         src/Base/FileFormats/ChunkFileSet.cpp src/Base/FileFormats/ChunkFileSet.hpp
         src/Base/FileFormats/ChunkRegister.cpp src/Base/FileFormats/ChunkRegister.hpp
         src/Base/FileFormats/DataStore.cpp src/Base/FileFormats/DataStore.hpp
@@ -168,21 +166,21 @@ set(SOURCE_FILES
         src/Libraries/TStaticFactory.h
         src/Base/Utils/StringFormatter.hpp
         src/Base/ThreadedTaskProcessor/WorkerThread.cpp src/Base/ThreadedTaskProcessor/WorkerThread.hpp
-        src/Base/Solver.cpp src/Base/Solver.hpp
+        src/Base/Solver.hpp
         src/Base/TaskProcessor.cpp src/Base/TaskProcessor.hpp
         src/Base/Interfaces/ITaskConsumer.hpp src/Base/Interfaces/ITaskConsumer.cpp
         src/Base/ThreadedTaskProcessor/ThreadedTaskProcessor.cpp src/Base/ThreadedTaskProcessor/ThreadedTaskProcessor.hpp
         src/Base/Interfaces/IResultConsumer.cpp src/Base/Interfaces/IResultConsumer.hpp
         src/Base/ResultsSaver.cpp src/Base/ResultsSaver.hpp
-        src/TWMC/Solvers/TWMCBaseSolver.cpp src/TWMC/Solvers/TWMCBaseSolver.hpp
         src/TWMC/TWMCTaskData.cpp src/TWMC/TWMCTaskData.hpp
         src/TWMC/TWMCSystemData.cpp src/TWMC/TWMCSystemData.hpp
         src/TWMC/TWMCManager.cpp src/TWMC/TWMCManager.hpp
-        src/TWMC/Solvers/TWMCThermoSolver.cpp src/TWMC/Solvers/TWMCThermoSolver.hpp
-        src/TWMC/Solvers/TWMCLiebSolver.cpp src/TWMC/Solvers/TWMCLiebSolver.hpp
+        src/TWMC/Solvers/TWMCBaseSolver.cpp src/TWMC/Solvers/TWMCBaseSolver.hpp
+        #src/TWMC/Solvers/TWMCThermoSolver.cpp src/TWMC/Solvers/TWMCThermoSolver.hpp
+        #src/TWMC/Solvers/TWMCLiebSolver.cpp src/TWMC/Solvers/TWMCLiebSolver.hpp
         src/Libraries/PreAllocator.hpp
         src/Base/ResultsHelpers/HeterogeneousContainer.hpp
-        src/Base/TaskResultsGeneric.hpp)
+        src/Base/TaskResultsGeneric.hpp src/Base/SettingStrings.hpp)
 
 set(GPU_SOURCE_FILES
         src/Base/SolverGPU.cpp src/Base/SolverGPU.hpp

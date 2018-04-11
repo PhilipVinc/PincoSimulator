@@ -83,8 +83,4 @@ void TaskResults::DeSerializeExtraData(void* data, unsigned int length) {
     return;
 }
 
-// ------------------ //
-// Boost::Serialization
-#ifdef MPI_SUPPORT
-//CEREAL_REGISTER_TYPE_WITH_NAME(TaskResults, "TaskResults")
-#endif
+

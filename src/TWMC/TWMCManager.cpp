@@ -10,155 +10,221 @@
 #include "TWMC/TWMCSystemData.hpp"
 #include "TWMC/TWMCTaskData.hpp"
 
-#include "Base/ThreadedTaskProcessor/ThreadedTaskProcessor.hpp"
+#include "Base/NoisyMatrix.hpp"
 #include "Base/ResultsSaver.hpp"
 #include "Base/TaskResults.hpp"
-#include "Base/NoisyMatrix.hpp"
+#include "Base/ThreadedTaskProcessor/ThreadedTaskProcessor.hpp"
 #include "Base/Utils/StringFormatter.hpp"
 
+#include "easylogging++.h"
+
+#include <chrono>
+#include <limits>
 #include <memory>
 #include <vector>
-#include <chrono>
-
 
 #ifdef MPI_SUPPORT
 #include "Base/MPITaskProcessor/MPIProcessor.hpp"
 #endif
 
+template<typename T>
+static bool AreEqual(T f1, T f2) {
+  return (std::fabs(f1 - f2) <= std::numeric_limits<T>::epsilon() * std::fmax(fabs(f1), fabs(f2)));
+}
 
 TWMCManager::TWMCManager(const Settings *settings) : Manager(settings) {
-    // Choose the solver
-    _sysData = std::make_shared<TWMCSystemData>(settings);
+  // Choose the solver
+  _sysData = std::make_shared<TWMCSystemData>(settings);
 
-    // TODO: Retrocompatibility fix
-    // If we are running old simulations, then PBC is sottointesa.
-    if (settings->get<string>("Manager") == "TWMCThread")
-    {
-        _sysData->PBC = true;
-    }
-    if (_sysData->latticeName == "lieb")
-        solverName = "TWMCLieb";
-    else if (_sysData->PBC ) {
-        if (! _sysData->F->HasTimeDependence()) {
-            solverName = "TWMCBase";
-        } else {
-            solverName = "TWMCThermo";
-        }
+  // TODO: Retrocompatibility fix
+  // If we are running old simulations, then PBC is sottointesa.
+  if (settings->get<string>("Manager") == "TWMCThread") {
+    _sysData->PBC = true;
+  }
+  if (_sysData->latticeName == "lieb")
+    solverName = "TWMCLieb";
+  else if (_sysData->PBC) {
+    if (!_sysData->F->HasTimeDependence()) {
+      solverName = "TWMCBase";
     } else {
-        std::cerr << "ERROR: No solver available." << std::endl;
-        return;
+      solverName = "TWMCThermo";
     }
+  } else {
+    LOG(ERROR) << "ERROR: No solver available.";
+    return;
+  }
 
-    std::cout << "Using Solver: " << solverName << std::endl;
-
+  LOG(INFO) << "Using Solver: " << solverName;
 }
 
 TWMCManager::~TWMCManager() {
-	delete _processor;
-	delete _saver;
-	delete _dataStore;
+  // dispatchThread.join();
+
+  delete _processor;
+  delete _saver;
+  delete _dataStore;
 }
 
 #ifdef MPI_SUPPORT
-#include <fstream>
-// include headers that implement a archive in simple text format
-
 #include "TWMCResults.hpp"
 #endif
 
 void TWMCManager::Setup() {
+  seedGenerator = mt19937(settings->GlobalSeed());
 
-    seedGenerator = mt19937(settings->GlobalSeed());
+  _dataStore = new PincoFormatDataStore(settings, settings->GetRootFolder());
 
-    _dataStore = new PincoFormatDataStore(settings, settings->GetRootFolder());
-
-	_saver = new ResultsSaver(settings, _dataStore);
+  _saver = new ResultsSaver(settings, _dataStore);
 
 #ifdef MPI_SUPPORT
-    MPIProcessor* mpiManager = new MPIProcessor(solverName, 3, 3);
+  MPIProcessor *mpiManager = new MPIProcessor(solverName, 3, 3);
+  if (settings->mpiWorldSize > 1) {
     mpiManager->ProvideMPICommunicator(nullptr);
     _processor = mpiManager;
+  } else {
+    _processor =
+            new ThreadedTaskProcessor(solverName, settings->get<int>("processes", -1),
+                                      settings->get<int>("max_processes", -1));
+  }
+
 #else
-    _processor = new ThreadedTaskProcessor(solverName,
-                                           settings->get<int>("processes", -1),
-                                           settings->get<int>("max_processes", -1));
+  _processor =
+      new ThreadedTaskProcessor(solverName, settings->get<int>("processes", -1),
+                                settings->get<int>("max_processes", -1));
 #endif
 
-	_processor->SetConsumer(_saver);
-	_processor->Setup();
+  _processor->SetConsumer(_saver);
+  _processor->Setup();
 
-    // Print time and other stuff
-    auto times = _sysData->GetStoredTimes();
-    _dataStore->SaveFile("_t.dat", times);
-    if (_sysData->F->HasTimeDependence()) {
-        auto F_t = _sysData->GetStoredVariableEvolution(_sysData->F);
-        _dataStore->SaveFile("_F_t.dat", F_t);
-    }
-
+  // Print time and other stuff
+  auto times = _sysData->GetStoredTimes();
+  _dataStore->SaveFile("_t.dat", times);
+  if (_sysData->F->HasTimeDependence()) {
+    auto F_t = _sysData->GetStoredVariableEvolution(_sysData->F);
+    _dataStore->SaveFile("_F_t.dat", F_t);
+  }
 }
 
 void TWMCManager::ManagerLoop() {
-    size_t nTaskToEnqueue = settings->get<size_t>("n_traj");
-    {
-        std::vector<std::unique_ptr<TaskData>> tasks;
-        tasks.reserve(nTaskToEnqueue);
-        for (size_t i = 0; i < nTaskToEnqueue; i++) {
-            TWMCTaskData* tmp = new TWMCTaskData();
-            tmp->systemData = _sysData;
-            tmp->t_start = _sysData->t_start;
-            tmp->t_end = _sysData->t_end;
-            tmp->initialCondition = TWMCTaskData::InitialConditions::ReadFromSettings;
-            tmp->rngSeed = seedGenerator();
-            std::unique_ptr<TaskData> tmp2(tmp);
-            tasks.push_back(std::move(tmp2));
-        }
-        _processor->EnqueueTasks(std::move(tasks));
-        _processor->AllProducersHaveBeenTerminated();
+  // Recover ids alredy used
+  std::set<size_t> usedIds = _dataStore->UsedIds();
+  // dispatchThread = std::thread(&TWMCManager::DispatchTasks, this);
+
+  size_t nTaskToEnqueue = DispatchTasks();
+
+  cout << "Enqueued " << nTaskToEnqueue << " tasks. " << endl;
+  //_processor->AllProducersHaveBeenTerminated();
+  // Time
+  chrono::system_clock::time_point startTime     = chrono::system_clock::now();
+  chrono::system_clock::time_point lastPrintTime = startTime;
+  chrono::system_clock::duration deltaTPrint     = chrono::seconds(1);
+  size_t lastMsgLength                           = 0;
+  // -----end time
+
+  while (_saver->savedItems < nTaskToEnqueue) {
+    _processor->Update();
+    _saver->Update();
+
+    auto now                          = chrono::system_clock::now();
+    chrono::system_clock::duration dt = now - lastPrintTime;
+    if (dt > deltaTPrint) {
+      chrono::system_clock::duration elapsed = now - startTime;
+      int deltaTc = chrono::duration_cast<chrono::seconds>(elapsed).count();
+
+      auto nCompletedTasks = _processor->NumberOfCompletedTasks();
+      auto progress = _processor->Progress() / float(nTaskToEnqueue) * 100;
+
+      std::string tmptmp =
+          progress != 0 ? std::to_string(int(deltaTc / progress * 100)) : "***";
+      std::string msgString = string_format(
+          "(%.2f%%) Completed %i/%i.   Time: (%i/%s). ", progress,
+          nCompletedTasks, nTaskToEnqueue, deltaTc, tmptmp.c_str());
+
+      std::string tmp = std::string(lastMsgLength, '\b');
+      lastMsgLength   = msgString.length() - 1;
+      msgString       = tmp + msgString;
+      LOG(INFO) << msgString;
+      LOG(INFO) << endl;
+      fflush(stdout);
+
+      lastPrintTime = now;
     }
-    // Time
-    chrono::system_clock::time_point startTime = chrono::system_clock::now();
-    chrono::system_clock::time_point lastPrintTime = startTime;
-    chrono::system_clock::duration deltaTPrint = chrono::seconds(1);
-    size_t lastMsgLength = 0;
-    // -----end time
+  }
 
+  auto now                               = chrono::system_clock::now();
+  chrono::system_clock::duration elapsed = now - startTime;
+  int deltaTc = chrono::duration_cast<chrono::seconds>(elapsed).count();
+  std::string msgString =
+      string_format("Completed %i in %i seconds. ", nTaskToEnqueue, deltaTc);
+  LOG(INFO) << msgString << endl;
+}
 
-    while(_saver->savedItems < nTaskToEnqueue)
-	{
-		_processor->Update();
-		_saver->Update();
+size_t TWMCManager::DispatchTasks() {
+  std::set<size_t> usedIds = _dataStore->UsedIds();
+  size_t nTaskToEnqueue    = settings->get<size_t>("n_traj");
+  size_t nEnqueuedTasks    = 0;
+  double tEnd              = settings->get<size_t>("t_end");
 
-        auto now = chrono::system_clock::now();
-        chrono::system_clock::duration dt = now-lastPrintTime;
-        if ( dt > deltaTPrint) {
-            chrono::system_clock::duration elapsed = now-startTime;
-            int deltaTc = chrono::duration_cast<chrono::seconds>(elapsed).count();
+  // Add trajectories to reach the end point.
+  if (usedIds.size() == 0 || usedIds.size() < nTaskToEnqueue) {
+    // Find the maxId used, so that following trajectories will be over that
+    // value
+    size_t maxId = 0;
+    for (size_t el : usedIds) {
+      if (el > maxId) { maxId = el; }
+    }
 
-            auto nCompletedTasks = _processor->NumberOfCompletedTasks();
-            auto progress = _processor->Progress() / float(nTaskToEnqueue)*100;
+    // Enqueue tasks to the end.
+    {
+      std::vector<std::unique_ptr<TaskData>> tasks;
+      tasks.reserve(nTaskToEnqueue);
+      for (size_t i = 0; i < nTaskToEnqueue; i++) {
+        maxId++;
 
-            std::string tmptmp = progress!= 0 ? std::to_string(int(deltaTc/progress*100)):"***";
-            std::string msgString = string_format("(%.2f%%) Completed %i/%i.   Time: (%i/%s). ",  progress,
-                                                  nCompletedTasks,
-                                                  nTaskToEnqueue, deltaTc,
-                                                  tmptmp.c_str());
+        TWMCTaskData *tmp = new TWMCTaskData();
+        tmp->systemData   = _sysData;
+        tmp->t_start      = _sysData->t_start;
+        tmp->t_end        = _sysData->t_end;
+        tmp->initialCondition =
+            TWMCTaskData::InitialConditions::ReadFromSettings;
+        tmp->rngSeed           = seedGenerator();
+        tmp->storeInitialState = true;
+        tmp->id                = maxId;
 
-            std::string tmp = std::string(lastMsgLength, '\b');
-            lastMsgLength = msgString.length() -1;
-            //msgString = tmp + msgString;
-            cout << msgString;
-            cout << endl;
-            fflush(stdout);
+        std::unique_ptr<TaskData> tmp2(tmp);
+        tasks.push_back(std::move(tmp2));
+      }
+      nEnqueuedTasks += tasks.size();
+      _processor->EnqueueTasks(std::move(tasks));
+    }
+  }
 
-            lastPrintTime = now;
-        }
-	}
+  // Check that the endTime is right.
+  if (usedIds.size() != 0) {
+    std::vector<std::unique_ptr<TaskData>> tasks;
+    for (size_t id : usedIds) {
+      std::unique_ptr<TaskResults> old = (_dataStore->LoadEndFrame(id));
 
-    auto now = chrono::system_clock::now();
-    chrono::system_clock::duration elapsed = now-startTime;
-    int deltaTc = chrono::duration_cast<chrono::seconds>(elapsed).count();
-
-    std::string msgString = string_format("Finished in %i seconds. ",  deltaTc);
-    cout << msgString << endl;
-
+      std::unique_ptr<TWMCResults> oldRes =
+          unique_ptr<TWMCResults>{static_cast<TWMCResults *>(old.release())};
+      if ((oldRes->extraDataMemory[1] + _sysData->dt_obs )< tEnd) {
+        TWMCTaskData *tmp      = new TWMCTaskData();
+        tmp->systemData        = _sysData;
+        tmp->t_start           = oldRes->extraDataMemory[1];
+        tmp->t_end             = tEnd;
+        tmp->initialCondition  = TWMCTaskData::InitialConditions::ReadFromPreviousData;
+        tmp->rngSeed           = seedGenerator();
+        tmp->id                = oldRes->GetId();
+        tmp->storeInitialState = false;
+        tmp->prevData          = std::move(oldRes);
+        std::unique_ptr<TaskData> tmp2(tmp);
+        tasks.push_back(std::move(tmp2));
+      }
+    }
+    if (tasks.size() != 0) {
+      nEnqueuedTasks += tasks.size();
+      _processor->EnqueueTasks(std::move(tasks));
+    }
+  }
+  return nEnqueuedTasks;
 }

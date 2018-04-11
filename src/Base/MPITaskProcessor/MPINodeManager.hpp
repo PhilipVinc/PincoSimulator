@@ -19,16 +19,14 @@ class DataStore;
 class MPINodeManager : public IResultConsumer
 {
 public:
-    MPINodeManager(MPI_Comm* _comm);
-    virtual ~MPINodeManager() {};
+    explicit MPINodeManager(MPI_Comm* _comm);
+    virtual ~MPINodeManager() = default;
 
 
     void ManagerLoop();
 
 protected:
-    void SaveData(TaskResults *results);
-
-    virtual void AllProducersHaveBeenTerminated();
+    virtual void AllProducersHaveBeenTerminated() final;
 private:
     MPI_Comm* comm;
     int rank;
@@ -56,10 +54,7 @@ private:
     std::vector<std::string> commSendBuffers;
     std::vector<MPI_Request> commSendRequests;
 
-    std::vector<TaskData*> recvBuffer;
     bool receiving = false;
-
-
 };
 
 

@@ -24,7 +24,7 @@ public:
 
 	size_t RequestProducerID();
 
-	void ReportProducerTermination(std::vector<size_t> IDs);
+	void ReportProducerTermination(std::vector<size_t> IDs = {});
 
 protected:
 

@@ -1,0 +1,7 @@
+BasedOnStyle: google
+AlignConsecutiveAssignments: true
+AllowShortBlocksOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: true
+AlignOperands: true
+ColumnLimit: 80

@@ -33,7 +33,6 @@ namespace Base
 		using CompareT = std::less<KeyT>;
 		typedef std::unique_ptr<BaseT> UniquePtr_t;
 		typedef std::shared_ptr<BaseT> SharedPtr_t;
-		typedef KeyT keyType;
 
 	private:
 		class FactoryBase

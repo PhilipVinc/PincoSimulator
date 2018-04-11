@@ -8,6 +8,9 @@
 #include "Base/TaskData.hpp"
 #include "WorkerThread.hpp"
 
+#include "easylogging++.h"
+
+
 #ifdef GPU_SUPPORT
 #include <vexcl/vexcl.hpp>
 #include "Base/SolverGPU.hpp"
@@ -47,7 +50,7 @@ ThreadedTaskProcessor::~ThreadedTaskProcessor()
 		size_t th_id;
 		while (threadsToJoin.try_dequeue(th_id))
 		{
-			cout << "Deactivating thread #" << th_id << endl;
+			LOG(INFO) << ("Deactivating thread #" + to_string(th_id));
 			JoinThread(th_id);
 		}
 	}
@@ -93,12 +96,12 @@ void ThreadedTaskProcessor::Setup()
 	nTasksFillCapacity += worksizeGPU;
 #endif
 
-	cout << "********************************" << endl;
-	cout << "   Running with " << nThreads <<" threads  " << endl;
+	LOG(INFO) << "********************************";
+	LOG(INFO) << "   Running with " << nThreads <<" threads  ";
 #ifdef GPU_SUPPORT
-	cout << "   Running with " << nGPUThreads << " GPUs " << endl;
+	LOG(INFO) << "   Running with " << nGPUThreads << " GPUs " << endl;
 #endif
-	cout << "********************************" << endl;
+	LOG(INFO) << "********************************";
 
 }
 
@@ -108,7 +111,7 @@ void ThreadedTaskProcessor::Update()
 	size_t th_id;
 	while (threadsToJoin.try_dequeue(th_id))
 	{
-		cout << "Deactivating thread #" << th_id << endl;
+		LOG(INFO) <<( "Deactivating thread #" +to_string( th_id));
 		JoinThread(th_id);
 	}
 

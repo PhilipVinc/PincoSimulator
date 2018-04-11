@@ -32,6 +32,11 @@ DataStore::DataStore(const Settings* settings, string folderName)
 
     CreateFolder(dataStoreBasePath);
     saveStatus = settings->saveStatus;
+
+    auto tmp = settings->get<size_t>(STR_PINCOFORMAT_MAXCHUNKSIZE_GB, DEFAULT_PINCOFORMAT_MAXCHUNKSIZE_GB);
+    if (tmp != 0) {
+        idealFileSize = tmp*1024*1024*1024;
+    }
 }
 
 

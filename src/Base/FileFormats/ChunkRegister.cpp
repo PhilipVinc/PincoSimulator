@@ -10,6 +10,7 @@
 
 #include "Base/TaskResults.hpp"
 #include "Libraries/FilesystemLibrary.h"
+#include "easylogging++.h"
 
 #include <algorithm>
 #include <memory>
@@ -24,7 +25,7 @@ const unsigned char fileVersion = 1;
 
 ChunkRegister::ChunkRegister(std::string _path)
 {
-    cout << "Instantiating ChunkRegister Class" << endl;
+    LOG(INFO) << "Instantiating ChunkRegister Class";
     registerFilePath = _path;
 
     if (OpenRegisterFile()) {
@@ -36,7 +37,7 @@ ChunkRegister::ChunkRegister(std::string _path)
 
 ChunkRegister::~ChunkRegister()
 {
-    cout << "Deleting ChunkRegister" << endl;
+    LOG(INFO) << "Deleting ChunkRegister";
     if (registerFile)
     {
         fclose(registerFile);
@@ -84,14 +85,14 @@ bool ChunkRegister::ReadRegisterEntries()
     }
     else
     {
-        cerr << "Error Reading Register File" << endl;
+        LOG(ERROR) << "Error Reading Register File";
 	    return false;
     }
 }
 
 bool ChunkRegister::CreateNewRegisterFile()
 {
-    cout << "Creating new register file at path: " << registerFilePath << endl;
+    LOG(INFO) << "Creating new register file at path: " << registerFilePath;
     registerFile = fopen(registerFilePath.c_str(), "wb");
     newRun = true;
     registerInitialized = false;
@@ -104,7 +105,7 @@ bool ChunkRegister::OpenRegisterFile()
     if (!filesystem::exists(registerFilePath))
         return false;
 
-    cout << "Loading Register file: " << registerFilePath << endl;
+    LOG(INFO) << "Loading Register file: " << registerFilePath;
     registerFile = fopen(registerFilePath.c_str(), "rb+");
     size_t version = CheckRegisterVersion();
 
@@ -275,7 +276,7 @@ bool ChunkRegister::ReadRegisterHeader()
 		int* varTypes = new int[nOfVariables];
 		for (int i = 0; i != nOfVariables; i++) {
 			varTypes[i] = fgetc(registerFile);
-			cout << "var[" << i << "] has typeId = " << varTypes[i] << endl;
+            LOG(INFO) << "var[" << i << "] has typeId = " << varTypes[i];
 		}
         delete[] varTypes;
 		// Read additionalDataSize and location trackers
