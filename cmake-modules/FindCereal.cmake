@@ -10,13 +10,27 @@ if (CEREAL_INCLUDES)
   set (CEREAL_FIND_QUIETLY TRUE)
 endif (CEREAL_INCLUDES)
 
-find_path (CEREAL_INCLUDES Cereal)
+if( CEREAL_ROOT )
+  find_path(CEREAL_INCLUDES
+          NAMES cereal
+          PATHS ${CEREAL_ROOT}
+          PATH_SUFFIXES cereal
+          )
+elseif()
+  find_path(CEREAL_INCLUDES
+          NAMES cereal.hpp
+          PATHS ${CMAKE_INSTALL_PREFIX}/include
+          PATH_SUFFIXES cereal
+          )
+  find_path (CEREAL_INCLUDES Cereal)
+endif()
+
 
 # handle the QUIETLY and REQUIRED arguments and set FFTW_FOUND to TRUE if
 # all listed variables are TRUE
 include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args (CEREAL DEFAULT_MSG CEREAL_INCLUDES)
 
-mark_as_advanced (CEREAL_LIBRARIES CEREAL_INCLUDES)
+mark_as_advanced ( CEREAL_LIBRARIES CEREAL_INCLUDES)
 
 message("Found Cereal: ${CEREAL_INCLUDES}")

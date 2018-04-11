@@ -26,7 +26,20 @@ if (EIGEN3_INCLUDES)
   set (EIGEN3_FIND_QUIETLY TRUE)
 endif (EIGEN3_INCLUDES)
 
-find_path (EIGEN3_INCLUDES Eigen)
+if (EIGEN3_ROOT)
+find_path(EIGEN3_INCLUDES
+        NAMES Eigen
+        PATHS ${EIGEN3_ROOT}
+        PATH_SUFFIXES eigen3 eigen
+        )
+else()
+  find_path(EIGEN3_INCLUDES
+          NAMES Eigen
+          PATHS ${CMAKE_INSTALL_PREFIX}/include
+          PATH_SUFFIXES eigen3 eigen
+          )
+  #find_path (EIGEN3_INCLUDES Eigen)
+endif()
 
 # handle the QUIETLY and REQUIRED arguments and set FFTW_FOUND to TRUE if
 # all listed variables are TRUE
@@ -34,3 +47,5 @@ include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args (EIGEN3 DEFAULT_MSG EIGEN3_INCLUDES)
 
 mark_as_advanced (EIGEN3_LIBRARIES EIGEN3_INCLUDES)
+
+message("Found Eigen: ${EIGEN3_INCLUDES}")
