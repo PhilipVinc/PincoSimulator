@@ -11,7 +11,7 @@
 
 #ifdef MPI_SUPPORT
 #include <mpi.h>
-#include "Base/MPITaskProcessor/MPINodeManager.hpp"
+#include "Base/TaskProcessors/MPITaskProcessor/MPINodeManager.hpp"
 #endif
 
 INITIALIZE_EASYLOGGINGPP
@@ -62,12 +62,13 @@ int main(int argc, char * argv[])
 
 #ifdef MPI_SUPPORT
     } else {
-        int i = 0;
-       // while (0 == i)
-             sleep(3);
-        cout << rank << " - Creating NodeManager" << endl;
-
-        std::unique_ptr<MPINodeManager> node = std::make_unique<MPINodeManager>(nullptr);
+        sleep(3);
+        LOG(INFO) << rank << " - Creating NodeManager" << endl;
+        int ppnMPI = settings->get<int>("ppn", -1);
+        if (ppnMPI == -1) {
+          ppnMPI = settings->get<int>("processes", -1);
+        }
+        std::unique_ptr<MPINodeManager> node = std::make_unique<MPINodeManager>(nullptr, ppnMPI);
         node->ManagerLoop();
     }
     MPI_Finalize();

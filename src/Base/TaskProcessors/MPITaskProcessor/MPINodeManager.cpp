@@ -25,7 +25,7 @@
 using namespace std;
 
 
-MPINodeManager::MPINodeManager(MPI_Comm* _comm)  {
+MPINodeManager::MPINodeManager(MPI_Comm* _comm, int processesPerNode)  {
     comm = _comm;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -42,7 +42,7 @@ MPINodeManager::MPINodeManager(MPI_Comm* _comm)  {
 
     LOG(INFO) << "#"<<rank<<" - Received solver:"<< _solverName;
 
-    _processor = new ThreadedTaskProcessor(_solverName, -1, -1);
+    _processor = new ThreadedTaskProcessor(_solverName, processesPerNode, processesPerNode);
     _processor->SetConsumer(this);
     _processor->Setup();
     LOG(INFO) << "#"<<rank<<" - Done";
@@ -199,8 +199,6 @@ void MPINodeManager::ManagerLoop() {
           float progress = _processor->Progress();
           commSendBuffers.push_back("");
           MPI_Request req; commSendRequests.push_back(req);
-          //MPI_Send(&progress, 1, MPI_FLOAT, MASTER_RANK,
-          //         NODE_PROGRESS_MESSAGE_TAG, MPI_COMM_WORLD);
           LOG(INFO) << "Sending progress " << progress << " to master.";
           MPI_Isend(&progress, 1,
                     MPI_FLOAT, MASTER_RANK, NODE_PROGRESS_MESSAGE_TAG,

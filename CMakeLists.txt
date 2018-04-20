@@ -114,7 +114,7 @@ if(APPLE)
         message(Searching again for Boost)
         SET(BOOST_ROOT ~/opt/local/)
         SET(BOOST_ROOT ~/opt/local/)
-        find_package(Boost 1.65 COMPONENTS "${BOOST_PACKAGES}" REQUIRED )
+        find_package(Boost 1.6 COMPONENTS "${BOOST_PACKAGES}" REQUIRED )
     endif (NOT Boost_FOUND)
 elseif(BOOST_PACKAGES)
     find_package(Boost 1.59 COMPONENTS "${BOOST_PACKAGES}" )
@@ -160,19 +160,19 @@ set(SOURCE_FILES
         src/Base/TaskResults.cpp src/Base/TaskResults.hpp
         src/Base/Modules/ProgressReporter.cpp src/Base/Modules/ProgressReporter.hpp
         src/Libraries/concurrentqueue.h
-        src/Base/ThreadedTaskProcessor/WorkerThread.cpp src/Base/ThreadedTaskProcessor/WorkerThread.hpp
+        src/Base/TaskProcessors/ThreadedTaskProcessor/WorkerThread.cpp src/Base/TaskProcessors/ThreadedTaskProcessor/WorkerThread.hpp
         src/TWMC/TWMCResults.cpp src/TWMC/TWMCResults.hpp
         src/TWMC/TWMCTypes.h
         src/main.cpp src/Libraries/FilesystemLibrary.h
         src/Libraries/TStaticFactory.h
         src/Base/Utils/StringFormatter.hpp
-        src/Base/ThreadedTaskProcessor/WorkerThread.cpp src/Base/ThreadedTaskProcessor/WorkerThread.hpp
+        src/Base/TaskProcessors/ThreadedTaskProcessor/WorkerThread.cpp src/Base/TaskProcessors/ThreadedTaskProcessor/WorkerThread.hpp
         src/Base/Solver.hpp
         src/Base/TaskProcessor.cpp src/Base/TaskProcessor.hpp
         src/Base/Interfaces/ITaskConsumer.hpp src/Base/Interfaces/ITaskConsumer.cpp
-        src/Base/ThreadedTaskProcessor/ThreadedTaskProcessor.cpp src/Base/ThreadedTaskProcessor/ThreadedTaskProcessor.hpp
+        src/Base/TaskProcessors/ThreadedTaskProcessor/ThreadedTaskProcessor.cpp src/Base/TaskProcessors/ThreadedTaskProcessor/ThreadedTaskProcessor.hpp
         src/Base/Interfaces/IResultConsumer.cpp src/Base/Interfaces/IResultConsumer.hpp
-        src/Base/ResultsSaver.cpp src/Base/ResultsSaver.hpp
+        src/Base/Modules/ResultsSaver.cpp src/Base/Modules/ResultsSaver.hpp
         src/TWMC/TWMCTaskData.cpp src/TWMC/TWMCTaskData.hpp
         src/TWMC/TWMCSystemData.cpp src/TWMC/TWMCSystemData.hpp
         src/TWMC/TWMCManager.cpp src/TWMC/TWMCManager.hpp
@@ -189,10 +189,10 @@ set(GPU_SOURCE_FILES
         src/TWMC/Solvers/TWMCBaseGPU.cpp src/TWMC/Solvers/TWMCBaseGPU.hpp)
 
 set(MPI_SOURCE_FILES
-        src/Base/MPITaskProcessor/MPINodeManager.cpp src/Base/MPITaskProcessor/MPINodeManager.hpp
-        src/Base/MPITaskProcessor/MPIProcessor.cpp src/Base/MPITaskProcessor/MPIProcessor.hpp
+        src/Base/TaskProcessors/MPITaskProcessor/MPINodeManager.cpp src/Base/TaskProcessors/MPITaskProcessor/MPINodeManager.hpp
+        src/Base/TaskProcessors/MPITaskProcessor/MPIProcessor.cpp src/Base/TaskProcessors/MPITaskProcessor/MPIProcessor.hpp
         src/Base/Serialization/SerializationArchiveFormats.hpp
-        src/TWMC/TWMCSerializators.hpp src/TWMC/TWMCSerializators.cpp src/Base/MPITaskProcessor/MPIPincoTags.hpp
+        src/TWMC/TWMCSerializators.hpp src/TWMC/TWMCSerializators.cpp src/Base/TaskProcessors/MPITaskProcessor/MPIPincoTags.hpp
         src/Libraries/eigen_cereal_serialization.hpp src/Base/Serialization/BaseSerializators.cpp)
 
 

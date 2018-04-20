@@ -74,11 +74,11 @@ void MPIProcessor::ProvideMPICommunicator(MPI_Comm* _comm)
 }
 
 // Setup a threadedTaskProcessor just for the sake of using this node a bit.
-#include "Base/ThreadedTaskProcessor/ThreadedTaskProcessor.hpp"
+#include "Base/TaskProcessors/ThreadedTaskProcessor/ThreadedTaskProcessor.hpp"
 void MPIProcessor::Setup()
 {
-    hwThreadsN = std::thread::hardware_concurrency();
-    hwThreadsProcessorN = hwThreadsN - 5;
+    hwThreadsN = nProcessesPerNode;
+    hwThreadsProcessorN = hwThreadsN - 3;
     LOG(INFO) << "Starting a ThreadedTaskProcessor on Master Node with a maximum of " <<
               hwThreadsProcessorN << " workers on top of " << hwThreadsN <<
               " total hardware threads.";
@@ -246,7 +246,7 @@ void MPIProcessor::Update()
     if (flag)
     {
         miscRecvInplaceReqs.emplace_back();
-        MPI_Irecv(&nodeProgress[status.MPI_SOURCE], 1, MPI_FLOAT, status.MPI_SOURCE,
+        MPI_Irecv(&nodeProgress[status.MPI_SOURCE-1], 1, MPI_FLOAT, status.MPI_SOURCE,
                   NODE_PROGRESS_MESSAGE_TAG, MPI_COMM_WORLD, &miscRecvInplaceReqs.back());
     }
 

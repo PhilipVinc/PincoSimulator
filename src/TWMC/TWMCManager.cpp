@@ -10,11 +10,11 @@
 #include "TWMC/TWMCSystemData.hpp"
 #include "TWMC/TWMCTaskData.hpp"
 
-#include "Base/NoisyMatrix.hpp"
-#include "Base/Modules/ResultsSaver.hpp"
 #include "Base/Modules/ProgressReporter.hpp"
-#include "Base/TaskResults.hpp"
+#include "Base/Modules/ResultsSaver.hpp"
+#include "Base/NoisyMatrix.hpp"
 #include "Base/TaskProcessors/ThreadedTaskProcessor/ThreadedTaskProcessor.hpp"
+#include "Base/TaskResults.hpp"
 
 #include "easylogging++.h"
 
@@ -24,7 +24,7 @@
 #include <vector>
 
 #ifdef MPI_SUPPORT
-#include "Base/MPITaskProcessor/MPIProcessor.hpp"
+#include "Base/TaskProcessors/MPITaskProcessor/MPIProcessor.hpp"
 #endif
 
 template<typename T>
@@ -77,14 +77,15 @@ void TWMCManager::Setup() {
   _saver = new ResultsSaver(settings, _dataStore);
 
 #ifdef MPI_SUPPORT
-  MPIProcessor *mpiManager = new MPIProcessor(solverName, 3, 3);
+  int ppnMPI = settings->get<int>("ppn", -1);
+  if (ppnMPI == -1) { ppnMPI = settings->get<int>("processes", -1); }
+
+  MPIProcessor *mpiManager = new MPIProcessor(solverName, ppnMPI, ppnMPI);
   if (settings->mpiWorldSize > 1) {
     mpiManager->ProvideMPICommunicator(nullptr);
     _processor = mpiManager;
   } else {
-    _processor =
-            new ThreadedTaskProcessor(solverName, settings->get<int>("processes", -1),
-                                      settings->get<int>("max_processes", -1));
+    _processor = new ThreadedTaskProcessor(solverName, ppnMPI, ppnMPI);
   }
 
 #else

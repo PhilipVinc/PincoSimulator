@@ -19,7 +19,7 @@ class DataStore;
 class MPINodeManager : public IResultConsumer
 {
 public:
-    explicit MPINodeManager(MPI_Comm* _comm);
+    explicit MPINodeManager(MPI_Comm* _comm, int processesPerNode);
     virtual ~MPINodeManager() = default;
 
 
