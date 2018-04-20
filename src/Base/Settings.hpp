@@ -48,9 +48,11 @@ public:
     ///             subsequentRun - indicates that we are resuming a previous run;
     enum Status { invalid, firstRun, subsequentRun, appendRun, elaborateRun};
     enum SaveSettings {dontSave, saveSingleFile, saveIdFiles, appendIdFiles, unspecified};
-    
+    enum Terminal {none, dumb, standard};
+
     Status status = Status::invalid;
     SaveSettings saveStatus = SaveSettings::saveIdFiles;
+    Terminal terminal = Terminal::none;
     int mpiRank;
     int mpiWorldSize;
 

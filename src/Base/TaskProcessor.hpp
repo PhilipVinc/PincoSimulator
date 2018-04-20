@@ -30,8 +30,8 @@ public:
 	void SetConsumer(IResultConsumer* consumer);
 	// Missing: some way to feed forward the results to the
 
-	virtual size_t NumberOfCompletedTasks() {return 0;};
-	virtual float Progress() { return 0;};
+	virtual size_t NumberOfCompletedTasks() const {return 0;} ;
+	virtual float Progress() const { return 0;};
 
 
 protected:

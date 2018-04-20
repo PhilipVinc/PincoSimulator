@@ -158,6 +158,20 @@ std:
   el::Loggers::reconfigureLogger("default", defaultConf);
 
   LOG(INFO) << "Logging started";
+
+  // Determine if we are running from a terminal, from Matlab or from something else
+  char *tmpTerm = getenv("TERM");
+  terminal  = Terminal::none;
+  std::string terminalName = "none";
+  if (tmpTerm != NULL) {
+    terminalName = tmpTerm;
+    if (terminalName == "dumb") {
+      terminal = Terminal::dumb;
+    } else {
+      terminal = Terminal::standard;
+    }
+  }
+  LOG(INFO) << "Running from Terminal: " << terminal << " given by " << terminalName;
   LOG(INFO) << "--- Printing .ini file content:";
   LOG(INFO) << *config;
 
