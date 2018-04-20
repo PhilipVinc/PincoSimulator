@@ -6,9 +6,9 @@
 
 #include "MPIPincoTags.hpp"
 
-#include "../FileFormats/DataStore.hpp"
+#include "Base/FileFormats/DataStore.hpp"
 #include "../ThreadedTaskProcessor/ThreadedTaskProcessor.hpp"
-#include "../TaskResults.hpp"
+#include "Base/TaskResults.hpp"
 #include "easylogging++.h"
 
 #include <sstream>

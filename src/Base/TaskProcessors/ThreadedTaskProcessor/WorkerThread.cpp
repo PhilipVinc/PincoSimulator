@@ -11,7 +11,7 @@
 #include "ThreadedTaskProcessor.hpp"
 #include "Base/Solver.hpp"
 #include "Base/TaskData.hpp"
-#include "../TaskResults.hpp"
+#include "Base/TaskResults.hpp"
 #include <iostream>
 #include <memory>
 

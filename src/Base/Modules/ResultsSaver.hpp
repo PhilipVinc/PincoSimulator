@@ -5,7 +5,7 @@
 #ifndef SIMULATOR_RESULTSSAVER_HPP
 #define SIMULATOR_RESULTSSAVER_HPP
 
-#include "Interfaces/IResultConsumer.hpp"
+#include "Base/Interfaces/IResultConsumer.hpp"
 
 #include <thread>
 

@@ -3,10 +3,10 @@
 //
 
 #include "ResultsSaver.hpp"
-#include "Settings.hpp"
-#include "FileFormats/DataStore.hpp"
+#include "Base/Settings.hpp"
+#include "Base/FileFormats/DataStore.hpp"
 
-#include "TaskResults.hpp"
+#include "Base/TaskResults.hpp"
 
 #include <chrono>
 
