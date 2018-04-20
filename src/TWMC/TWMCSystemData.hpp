@@ -107,9 +107,9 @@ class TWMCSystemData {
 #endif
 
 private:
-    mutable double t_startCache = NAN;
-    mutable double t_endCache = NAN;
-    mutable size_t NFramesCache = 0;
+//    mutable double t_startCache = NAN;
+//    mutable double t_endCache = NAN;
+//    mutable size_t NFramesCache = 0;
 
 };
 

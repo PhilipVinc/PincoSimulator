@@ -27,9 +27,10 @@
 #include "Base/TaskProcessors/MPITaskProcessor/MPIProcessor.hpp"
 #endif
 
-template<typename T>
+template <typename T>
 static bool AreEqual(T f1, T f2) {
-  return (std::fabs(f1 - f2) <= std::numeric_limits<T>::epsilon() * std::fmax(fabs(f1), fabs(f2)));
+  return (std::fabs(f1 - f2) <=
+          std::numeric_limits<T>::epsilon() * std::fmax(fabs(f1), fabs(f2)));
 }
 
 TWMCManager::TWMCManager(const Settings *settings) : Manager(settings) {
@@ -72,7 +73,7 @@ TWMCManager::~TWMCManager() {
 void TWMCManager::Setup() {
   seedGenerator = mt19937(settings->GlobalSeed());
 
-  _dataStore = new PincoFormatDataStore(settings, settings->GetRootFolder());
+  _dataStore = new PincoFormatDataStore(settings, settings->GetOutputFolder());
 
   _saver = new ResultsSaver(settings, _dataStore);
 
@@ -175,12 +176,13 @@ size_t TWMCManager::DispatchTasks() {
 
       std::unique_ptr<TWMCResults> oldRes =
           unique_ptr<TWMCResults>{static_cast<TWMCResults *>(old.release())};
-      if ((oldRes->extraDataMemory[1] + _sysData->dt_obs )< tEnd) {
-        TWMCTaskData *tmp      = new TWMCTaskData();
-        tmp->systemData        = _sysData;
-        tmp->t_start           = oldRes->extraDataMemory[1];
-        tmp->t_end             = tEnd;
-        tmp->initialCondition  = TWMCTaskData::InitialConditions::ReadFromPreviousData;
+      if ((oldRes->extraDataMemory[1] + _sysData->dt_obs) < tEnd) {
+        TWMCTaskData *tmp = new TWMCTaskData();
+        tmp->systemData   = _sysData;
+        tmp->t_start      = oldRes->extraDataMemory[1];
+        tmp->t_end        = tEnd;
+        tmp->initialCondition =
+            TWMCTaskData::InitialConditions::ReadFromPreviousData;
         tmp->rngSeed           = seedGenerator();
         tmp->id                = oldRes->GetId();
         tmp->storeInitialState = false;

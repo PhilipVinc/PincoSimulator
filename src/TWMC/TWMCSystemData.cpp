@@ -6,6 +6,7 @@
 #include "Base/NoisyMatrix.hpp"
 #include "Base/Settings.hpp"
 #include "Base/Utils/EigenUtils.hpp"
+#include "easylogging++.h"
 
 #include <algorithm>
 #include <iostream>
@@ -70,11 +71,11 @@ TWMCSystemData::TWMCSystemData(const Settings* settings) {
   // Backsupport
   if (frames_freq == 0) {
     frames_freq = OBS_n_frames / (t_end - t_start);
-   if (OBS_n_frames == 0) {
-     std::cerr << "Must have a non-zero, integer number of frames! Exiting."
-               << endl;
-     exit(-1);
-   }
+    if (OBS_n_frames == 0) {
+      std::cerr << "Must have a non-zero, integer number of frames! Exiting."
+                << endl;
+      exit(-1);
+    }
   }
 
   float_p timestep = settings->get<float_p>("timestep");
@@ -110,13 +111,20 @@ TWMCSystemData::TWMCSystemData(const Settings* settings) {
 
 size_t TWMCSystemData::ComputeNFrames(double t_start, double t_end) const {
   // return cached result
-  if (t_start == t_startCache && t_end == t_endCache) return NFramesCache;
+  // LOG(INFO) << "I have " << t_startCache << " and " << t_endCache << " giving
+  // " << NFramesCache; LOG(INFO) << "I have been asked" << t_start << " and "
+  // << t_end; LOG(INFO) << "Condition is" << bool(t_start == t_startCache &&
+  // t_end == t_endCache) ; LOG(INFO) << "Result is" << size_t(nearbyint((t_end
+  // - t_start) / dt_obs));
 
+  // if (t_start == t_startCache && t_end == t_endCache) {
+  //    return NFramesCache;
+  //} else {
   // Compute
-  t_startCache = t_start;
-  t_endCache   = t_end;
-  NFramesCache = size_t(nearbyint((t_end - t_start) / dt_obs));
-
+  //   t_startCache = t_start;
+  //   t_endCache = t_end;
+  size_t NFramesCache = size_t(nearbyint((t_end - t_start) / dt_obs));
+  //}
   return NFramesCache;
 }
 
@@ -125,7 +133,7 @@ TWMCSystemData::TWMCSystemData() {}
 TWMCSystemData::~TWMCSystemData() {}
 
 vector<float_p> TWMCSystemData::GetStoredTimes() const {
-  size_t frames = nFramesTot+1;
+  size_t frames = nFramesTot + 1;
   vector<float_p> times(frames);
 
   float_p t      = t_start;
@@ -147,9 +155,8 @@ vector<float_p> TWMCSystemData::GetStoredTimes() const {
 
 vector<vector<complex_p>> TWMCSystemData::GetStoredVariableEvolution(
     std::unique_ptr<NoisyMatrix> const& mat) const {
-  size_t frames = nFramesTot+1;
-  vector<vector<complex_p>> result(frames,
-                                   vector<complex_p>(nx * ny * cellSz));
+  size_t frames = nFramesTot + 1;
+  vector<vector<complex_p>> result(frames, vector<complex_p>(nx * ny * cellSz));
 
   float_p t      = t_start;
   size_t i_step  = 0;
@@ -158,17 +165,14 @@ vector<vector<complex_p>> TWMCSystemData::GetStoredVariableEvolution(
   MatrixCXd m     = mat->GetAtTime(t);
   complex_p* data = m.data();
 
-  for (int kk = 0; kk != nx * ny * cellSz; kk++) {
-    result[0][kk] = data[kk];
-  }
+  for (int kk = 0; kk != nx * ny * cellSz; kk++) { result[0][kk] = data[kk]; }
 
   while (t <= t_end) {
-
     t += dt;
     i_step++;
 
     if ((i_step % frame_steps == 0) && i_frame < frames) {
-      m     = mat->GetAtTime(t);
+      m    = mat->GetAtTime(t);
       data = m.data();
       for (int kk = 0; kk != nx * ny * cellSz; kk++) {
         result[i_frame][kk] = data[kk];

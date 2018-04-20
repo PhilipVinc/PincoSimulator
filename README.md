@@ -1,4 +1,4 @@
-# PincoSimulator
+# 🔴 PincoSimulator 🔴
 
 A scalable Framework for parallel, distributed Montecarlo Trajectory-style physics simulation.
 
@@ -24,19 +24,25 @@ data format, and perform some analysis if one desires.
 ### Dependencies
 
 Prerequisites:
-
+	
+	Hard Dependencies
     - C++14 compiler 
-    - Boost >= 1.6 (program_options, system, filesystem)
-    - FFTW3 
-    - Eigen3 
     - CMake 3 (for generating the makefile)
+    - Boost::filesystem >= 1.6 (or C++17Filesystem)
+    - FFTW3 
+    
+    Header only libraries (included:)
+    - Eigen3 
+    - CLI 11 (Input parsing)
+    - Easylogging++ (logging library)
+    - CPPTOML (.toml/.ini file parsing)
 
 Note: Boost::filesystem is not necessary if one has a C++17 compiler with Filesystem-TF 
 support.
 
 Optionals:
 
-    - MPI Dispatch Support ( -DCOMPILE_MPI_SUPPORT=ON )
+    - MPI Dispatch Support ( -DCOMPILE_MPI=ON )
         - Cereal (>1.2)
         - MPI
 
@@ -46,13 +52,21 @@ Optionals:
 
 ### Compilation
 
-To compile the code you will need CMake 3 :
+To compile the code you will need CMake 3:
     
     cd PincoSimulator
     mkdir build
     cd build
     cmake -DCMAKE_BUILD_TYPE=Release -DCOMPILE_GPU=OFF ..
     make sim
+
+#### Cmake build Options
+
+    COMPILE_GPU [Default=OFF] Enable GPU Support for supported solvers.
+    COMPILE_MPI [Default=OFF] Enable MPI Support for all Managers.
+    PROFILE_MPI [Default=OFF] Enable MPE Profiling Layer for MPI.
+
+## Usage Instructions
 
 To run:
 
@@ -61,12 +75,14 @@ To run:
 
 check test-sim.ini for a sample input file
 
-## Usage Instructions
 
 ### Logging Options
 
     logpath : path to where a logfile should be stored
     nocout  : [true]/false - if we should print to std::cout what is logged to file (default false)
+
+## General Options
+    chunk_size : [default=4] maximum chunk size (in GB)
 
 ###  Noise Instructions
 
