@@ -11,10 +11,10 @@
 #include "TWMC/TWMCTaskData.hpp"
 
 #include "Base/NoisyMatrix.hpp"
-#include "Base/ResultsSaver.hpp"
+#include "Base/Modules/ResultsSaver.hpp"
+#include "Base/Modules/ProgressReporter.hpp"
 #include "Base/TaskResults.hpp"
-#include "Base/ThreadedTaskProcessor/ThreadedTaskProcessor.hpp"
-#include "Base/Utils/StringFormatter.hpp"
+#include "Base/TaskProcessors/ThreadedTaskProcessor/ThreadedTaskProcessor.hpp"
 
 #include "easylogging++.h"
 
@@ -95,6 +95,7 @@ void TWMCManager::Setup() {
 
   _processor->SetConsumer(_saver);
   _processor->Setup();
+  _progressReporter = std::make_unique<ProgressReporter>(settings, _processor);
 
   // Print time and other stuff
   auto times = _sysData->GetStoredTimes();
@@ -111,52 +112,16 @@ void TWMCManager::ManagerLoop() {
   // dispatchThread = std::thread(&TWMCManager::DispatchTasks, this);
 
   size_t nTaskToEnqueue = DispatchTasks();
+  _progressReporter->SetNOfTasks(nTaskToEnqueue);
 
   cout << "Enqueued " << nTaskToEnqueue << " tasks. " << endl;
-  //_processor->AllProducersHaveBeenTerminated();
-  // Time
-  chrono::system_clock::time_point startTime     = chrono::system_clock::now();
-  chrono::system_clock::time_point lastPrintTime = startTime;
-  chrono::system_clock::duration deltaTPrint     = chrono::seconds(1);
-  size_t lastMsgLength                           = 0;
-  // -----end time
 
   while (_saver->savedItems < nTaskToEnqueue) {
     _processor->Update();
     _saver->Update();
-
-    auto now                          = chrono::system_clock::now();
-    chrono::system_clock::duration dt = now - lastPrintTime;
-    if (dt > deltaTPrint) {
-      chrono::system_clock::duration elapsed = now - startTime;
-      int deltaTc = chrono::duration_cast<chrono::seconds>(elapsed).count();
-
-      auto nCompletedTasks = _processor->NumberOfCompletedTasks();
-      auto progress = _processor->Progress() / float(nTaskToEnqueue) * 100;
-
-      std::string tmptmp =
-          progress != 0 ? std::to_string(int(deltaTc / progress * 100)) : "***";
-      std::string msgString = string_format(
-          "(%.2f%%) Completed %i/%i.   Time: (%i/%s). ", progress,
-          nCompletedTasks, nTaskToEnqueue, deltaTc, tmptmp.c_str());
-
-      std::string tmp = std::string(lastMsgLength, '\b');
-      lastMsgLength   = msgString.length() - 1;
-      msgString       = tmp + msgString;
-      LOG(INFO) << msgString;
-      LOG(INFO) << endl;
-      fflush(stdout);
-
-      lastPrintTime = now;
-    }
+    _progressReporter->Update();
+    std::this_thread::sleep_for(chrono::milliseconds(100));
   }
-
-  auto now                               = chrono::system_clock::now();
-  chrono::system_clock::duration elapsed = now - startTime;
-  int deltaTc = chrono::duration_cast<chrono::seconds>(elapsed).count();
-  std::string msgString =
-      string_format("Completed %i in %i seconds. ", nTaskToEnqueue, deltaTc);
-  LOG(INFO) << msgString << endl;
 }
 
 size_t TWMCManager::DispatchTasks() {
@@ -164,6 +129,8 @@ size_t TWMCManager::DispatchTasks() {
   size_t nTaskToEnqueue    = settings->get<size_t>("n_traj");
   size_t nEnqueuedTasks    = 0;
   double tEnd              = settings->get<size_t>("t_end");
+
+  LOG(INFO) << "# of used Ids: " << usedIds.size();
 
   // Add trajectories to reach the end point.
   if (usedIds.size() == 0 || usedIds.size() < nTaskToEnqueue) {
@@ -173,7 +140,7 @@ size_t TWMCManager::DispatchTasks() {
     for (size_t el : usedIds) {
       if (el > maxId) { maxId = el; }
     }
-
+    nTaskToEnqueue -= usedIds.size();
     // Enqueue tasks to the end.
     {
       std::vector<std::unique_ptr<TaskData>> tasks;

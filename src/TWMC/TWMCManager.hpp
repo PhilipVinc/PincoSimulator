@@ -17,6 +17,7 @@ class ThreadedTaskProcessor;
 class TaskProcessor;
 class ResultsSaver;
 class TWMCSystemData;
+class ProgressReporter;
 
 class TWMCManager : public Manager {
  public:
@@ -34,6 +35,7 @@ class TWMCManager : public Manager {
   TaskProcessor* _processor;
 
   std::shared_ptr<TWMCSystemData> _sysData;
+  std::unique_ptr<ProgressReporter> _progressReporter;
   std::string solverName;
 
   std::mt19937 seedGenerator;

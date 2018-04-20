@@ -158,6 +158,7 @@ set(SOURCE_FILES
         src/Base/Settings.cpp src/Base/Settings.hpp
         src/Base/TaskData.cpp src/Base/TaskData.hpp
         src/Base/TaskResults.cpp src/Base/TaskResults.hpp
+        src/Base/Modules/ProgressReporter.cpp src/Base/Modules/ProgressReporter.hpp
         src/Libraries/concurrentqueue.h
         src/Base/ThreadedTaskProcessor/WorkerThread.cpp src/Base/ThreadedTaskProcessor/WorkerThread.hpp
         src/TWMC/TWMCResults.cpp src/TWMC/TWMCResults.hpp
