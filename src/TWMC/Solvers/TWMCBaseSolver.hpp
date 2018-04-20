@@ -28,7 +28,8 @@ private:
 	const TWMCSystemData* lastSharedSystemData = nullptr;
 
 	// Stuf to setup
-	TWMC_FFTW_plans* plan;
+	   TWMC_FFTW_plans* plan =
+					nullptr;
 
 	size_t nx;
 	size_t ny;

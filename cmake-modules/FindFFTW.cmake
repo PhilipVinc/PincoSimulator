@@ -144,9 +144,6 @@ else()
 
 endif( FFTW_ROOT )
 
-message('FFTW is: ${FFTW_INCLUDES}')
-message('FFTW is: ${FFTW_LIBRARIES}')
-
 set(FFTW_LIBRARIES ${FFTW_LIB} ${FFTWF_LIB})
 
 if(FFTWL_LIB)
@@ -160,8 +157,6 @@ find_package_handle_standard_args(FFTW DEFAULT_MSG
         FFTW_INCLUDES FFTW_LIBRARIES)
 
 mark_as_advanced(FFTW_INCLUDES FFTW_LIBRARIES FFTW_LIB FFTWF_LIB FFTWL_LIB FFTW_THREADS_LIB FFTWF_THREADS_LIB FFTWL_THREADS_LIB)
-message('FFTW is: ${FFTW_INCLUDES}')
-
 
 #[[
 # - Find FFTW

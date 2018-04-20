@@ -57,9 +57,11 @@ Settings::Settings(int argc, char* argv[]) {
   if (opto->count() > 0) {
     outputPath        = output;
     outputFolderIsSet = true;
+  } else {
+    outputPath = inputPath.parent_path();
   }
 
-  cout << "Will be looking at path: " << inputPath << endl;
+  cout << "Input file: " << inputPath << endl;
 
   // Now that I have the path, I will check that it is okappa.
 
@@ -81,7 +83,7 @@ Settings::Settings(int argc, char* argv[]) {
     basePath = inputPath.parent_path().string();
     if (basePath == "") basePath = ".";
 
-    cout << "Setting output path to " << outputPath << endl;
+    cout << "Output folder:" << outputPath << endl;
 
     config = cpptoml::parse_file(inputPath.string());
 
