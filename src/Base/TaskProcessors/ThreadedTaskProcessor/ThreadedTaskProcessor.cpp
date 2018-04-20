@@ -221,12 +221,12 @@ void ThreadedTaskProcessor::JoinThread(size_t th_id)
 	activeThreads.erase(std::remove(activeThreads.begin(), activeThreads.end(), th_id), activeThreads.end());
 }
 
-size_t ThreadedTaskProcessor::NumberOfCompletedTasks() {
+size_t ThreadedTaskProcessor::NumberOfCompletedTasks() const{
 	nCompletedTasks = std::accumulate(workerCompletedTasks.begin(), workerCompletedTasks.end(),0);
 	return nCompletedTasks;
 }
 
-float ThreadedTaskProcessor::Progress() {
+float ThreadedTaskProcessor::Progress() const {
     float total = std::accumulate(workerCompletedTasks.begin(), workerCompletedTasks.end(),0);
     for (auto id : activeThreads) {
         total += workers[id]->GetSimulationProgress();

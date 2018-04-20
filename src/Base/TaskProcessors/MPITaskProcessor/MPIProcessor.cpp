@@ -29,7 +29,6 @@ MPIProcessor::MPIProcessor(std::string solverName, int nodes, int processesPerNo
         nProcessesPerNode(processesPerNode)
 {
     LOG(INFO) << "Constructed MPIProcessor";
-
 }
 
 MPIProcessor::~MPIProcessor()
@@ -52,7 +51,6 @@ void MPIProcessor::ProvideMPICommunicator(MPI_Comm* _comm)
     for (int i=1; i < world_size; i++)
     {
         LOG(INFO) << "Master - send to " << i << " the solvername.";
-        // tag 1 is the solvername.
         MPI_Send(_solverName.c_str(), _solverName.length(), MPI_CHAR,
         i, SOLVER_STRING_MESSAGE_TAG, MPI_COMM_WORLD);
         LOG(INFO) << "Master - send to " << i << " has finished.";
@@ -289,14 +287,14 @@ void MPIProcessor::SendTerminationMessage()
     waitingNodesToTerminate = true;
 }
 
-size_t MPIProcessor::NumberOfCompletedTasks() {
-    auto total = std::accumulate(resultsReceivedFromNode.begin(), resultsReceivedFromNode.end(),0);
+size_t MPIProcessor::NumberOfCompletedTasks() const {
+    int total = std::accumulate(resultsReceivedFromNode.begin(), resultsReceivedFromNode.end(),0);
     total += _localProcessor->NumberOfCompletedTasks();
     return total;
 }
 
-float MPIProcessor::Progress() {
-    auto total = std::accumulate(nodeProgress.begin(), nodeProgress.end(),0);
+float MPIProcessor::Progress() const {
+    float total = std::accumulate(nodeProgress.begin(), nodeProgress.end(),0.0);
     total += _localProcessor->Progress();
     return total;
 }

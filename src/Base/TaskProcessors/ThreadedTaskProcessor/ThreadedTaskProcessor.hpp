@@ -61,7 +61,7 @@ protected:
     size_t nTasksLeftToEnqueue = 0;
     size_t nTasksToSave = 0;
     size_t nTasksFillCapacity = 1;
-    size_t nCompletedTasks = 0;
+    mutable size_t nCompletedTasks = 0;
     size_t nTotalTasks = 0;
 
 private:
@@ -105,9 +105,9 @@ private:
     size_t lastMsgLength = 0;
 
 public:
-	void ReportAverageSpeed(float speed);
-	virtual size_t NumberOfCompletedTasks() final;
-	virtual float Progress() final;
+	void ReportAverageSpeed(float speed) ;
+	virtual size_t NumberOfCompletedTasks() const final;
+	virtual float Progress() const final;
 
 };
 

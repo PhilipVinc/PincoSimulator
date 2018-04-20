@@ -30,8 +30,8 @@ public:
 
     void NodeTerminated(size_t nodeId);
 
-    virtual size_t NumberOfCompletedTasks() final;
-    virtual float Progress() final;
+    virtual size_t NumberOfCompletedTasks() const final;
+    virtual float Progress() const final;
 
 private:
 
