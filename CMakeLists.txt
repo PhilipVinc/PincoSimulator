@@ -178,7 +178,7 @@ set(SOURCE_FILES
         src/TWMC/TWMCManager.cpp src/TWMC/TWMCManager.hpp
         src/TWMC/Solvers/TWMCBaseSolver.cpp src/TWMC/Solvers/TWMCBaseSolver.hpp
         #src/TWMC/Solvers/TWMCThermoSolver.cpp src/TWMC/Solvers/TWMCThermoSolver.hpp
-        #src/TWMC/Solvers/TWMCLiebSolver.cpp src/TWMC/Solvers/TWMCLiebSolver.hpp
+        src/TWMC/Solvers/TWMCLiebSolver.cpp src/TWMC/Solvers/TWMCLiebSolver.hpp
         src/Libraries/PreAllocator.hpp
         src/Base/ResultsHelpers/HeterogeneousContainer.hpp
         src/Base/TaskResultsGeneric.hpp src/Base/SettingStrings.hpp)

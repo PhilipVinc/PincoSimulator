@@ -104,6 +104,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(
     }
     const TWMCSystemData *data = lastSharedSystemData;
 
+    // Setup the times and frame number
     t_start         = task->t_start;
     t_end           = task->t_end;
     size_t n_frames = data->ComputeNFrames(t_start, t_end);
@@ -132,6 +133,24 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(
         } else {
           beta_t += temp_gamma * tmpRand;
         }
+        // Generate noisy Matrices both cases
+        if (data->U->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+          updateMats = true;
+          U          = data->U->Generate(gen);
+          res->AddDataset<MatrixCXd>(TWMCData::U_Noise, U, 1, {nx, ny});
+        }
+        if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+          updateMats = true;
+          omega      = data->omega->Generate(gen);
+          res->AddDataset<MatrixCXd>(TWMCData::Delta_Noise, omega, 1, {nx, ny});
+        }
+        if (data->F->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+          updateMats = true;
+          F          = data->F->Generate(gen);
+          res->AddDataset<MatrixCXd>(TWMCData::F_Noise, F, 1, {nx, ny});
+        }
+        break;
+
       case TWMCTaskData::InitialConditions::FixedPoint:
         beta_t = data->beta_init_val->GenerateNoNoise();
 
@@ -153,7 +172,6 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(
         }
         // End handling of noise matrices
 
-
         break;
       case TWMCTaskData::InitialConditions::ReadFromPreviousData:
         const auto tmp =
@@ -171,16 +189,14 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(
         }
         if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None) {
           updateMats = true;
-          omega          = task->prevData->GetDataset<MatrixCXd>(TWMCData::Delta_Noise);
+          omega = task->prevData->GetDataset<MatrixCXd>(TWMCData::Delta_Noise);
           res->AddDataset<MatrixCXd>(TWMCData::Delta_Noise, omega, 1, {nx, ny});
         }
         if (data->F->GetNoiseType() != NoisyMatrix::NoiseType::None) {
           updateMats = true;
           F          = task->prevData->GetDataset<MatrixCXd>(TWMCData::F_Noise);
           res->AddDataset<MatrixCXd>(TWMCData::F_Noise, F, 1, {nx, ny});
-
         }
-
 
         break;
         /*default:
@@ -188,11 +204,6 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(
     }
 
     if (updateMats) { real_step_linear = (-ij * omega - data->gamma / 2.0); }
-
-
-    // int frame_steps = floor(data->dt_obs/data->dt);
-
-    // Initialize the beta value to the starting value.
 
     plan->fft_i_out = beta_t;
 
@@ -240,18 +251,16 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(
 
       beta_t = kai_t;
       t += data->dt;
+      i_step++;
 
       // Print the data
-      i_step++;
       if ((i_step % data->frame_steps == 0) && i_frame < n_frames) {
         size_t size     = nx * ny;
         complex_p *data = beta_t.data();
         std::memcpy(&res_betat[i_frame * size], data, sizeof(complex_p) * size);
 
         i_frame = i_frame + 1;
-
-        if (i_frame == n_frames)
-          break;
+        if (i_frame == n_frames) break;
       }
     }
 

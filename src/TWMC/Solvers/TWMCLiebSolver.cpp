@@ -120,81 +120,135 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
             lastSharedSystemData = task->systemData.get();
             Setup();
         }
+        const TWMCSystemData *data = lastSharedSystemData;
+
+        // Setup the times and frame number
+        t_start         = task->t_start;
+        t_end           = task->t_end;
+        size_t n_frames = data->ComputeNFrames(t_start, t_end);
+        if (task->storeInitialState) n_frames++;
 
         // Setup the single simulation
         TWMCResults *res = new TWMCResults();
-        //allResults.push_back(res);
         unsigned int seed = task->rngSeed;
         res->SetId(task->id);
-        auto initialCondition = TWMCTaskData::InitialConditions::ReadFromSettings;
+        auto initialCondition = task->initialCondition;
 
         // Setup the random number generation
         std::mt19937 gen(seed);
         std::normal_distribution<> normal(0, 1); // mean = 0, std = 1;
 
-        const TWMCSystemData* data = lastSharedSystemData;
-
         // Generate noisy Matrices
         bool updateMats = false;
-        if (data->U->GetNoiseType() != NoisyMatrix::NoiseType::None)
-        {
-            updateMats=true;
-            U = data->U->Generate(gen);
-            res->AddDataset<MatrixCXd>(TWMCData::U_Noise, U, 1, {nx,ny,3});
-        }
-        if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None)
-        {
-            updateMats=true;
-            E = data->omega->Generate(gen);
-            res->AddDataset<MatrixCXd>(TWMCData::Delta_Noise, E, 1, {nx,ny});
-        }
-        if (data->F->GetNoiseType() != NoisyMatrix::NoiseType::None)
-        {
-            updateMats=true;
-            F = data->F->Generate(gen);
-            res->AddDataset<MatrixCXd>(TWMCData::F_Noise, F, 1, {nx,ny});
-        }
-        if (updateMats)
-        {
-            delta =  -data->E->GenerateNoNoise().array() + data->detuning ;
-        }
         // End handling of noise matrices
 
 
         MatrixCXd beta_t = MatrixCXd(nx, 3*ny);
         switch (initialCondition) {
             case TWMCTaskData::InitialConditions::ReadFromSettings:
-                beta_t = data->beta_init;
+                beta_t = data->beta_init_val->Generate(gen);
                 randCMat(&tmpRand, gen, normal);
                 if (data->beta_init_sigma_val != 0) {
-                    beta_t += data->beta_init_sigma_val * tmpRand;
+                  beta_t = beta_t.array() +
+                           data->beta_init_sigma_val->Generate(gen).array() *
+                           tmpRand.array();
                 } else {
-                    beta_t += temp_gamma * tmpRand;
+                  beta_t += temp_gamma * tmpRand;
                 }
                 t = data->t_start;
-                break;
+                // Generate noisy Matrices both cases
+                if (data->U->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+                    updateMats = true;
+                    U          = data->U->Generate(gen);
+                    res->AddDataset<MatrixCXd>(TWMCData::U_Noise, U, 1, {nx, ny,3});
+                }
+                if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+                    updateMats = true;
+                    E      = data->omega->Generate(gen);
+                    res->AddDataset<MatrixCXd>(TWMCData::Delta_Noise, E, 1, {nx, ny, 3});
+                }
+                if (data->F->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+                    updateMats = true;
+                    F          = data->F->Generate(gen);
+                    res->AddDataset<MatrixCXd>(TWMCData::F_Noise, F, 1, {nx, ny, 3});
+                }
+            break;
+
             case TWMCTaskData::InitialConditions::FixedPoint:
-                beta_t = beta_t_init;
+                beta_t = data->beta_init_val->GenerateNoNoise();
+
+                // Generate noisy Matrices both cases
+                if (data->U->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+                    updateMats = true;
+                    U          = data->U->Generate(gen);
+                    res->AddDataset<MatrixCXd>(TWMCData::U_Noise, U, 1, {nx, ny,3});
+                }
+                if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+                    updateMats = true;
+                    E      = data->omega->Generate(gen);
+                    res->AddDataset<MatrixCXd>(TWMCData::Delta_Noise, E, 1, {nx, ny, 3});
+                }
+                if (data->F->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+                    updateMats = true;
+                    F          = data->F->Generate(gen);
+                    res->AddDataset<MatrixCXd>(TWMCData::F_Noise, F, 1, {nx, ny, 3});
+                }
                 break;
-            default:
-                break;
+
+            case TWMCTaskData::InitialConditions::ReadFromPreviousData:
+                const auto tmp =
+                        task->prevData->GetDataset<std::vector<complex_p>>(TWMCData::traj);
+                beta_t =
+                        MatrixCXd(data->beta_init_val->rows(), data->beta_init_val->cols());
+                complex_p *beta_t_data = beta_t.data();
+                std::memcpy(beta_t_data, &tmp[tmp.size() - nx * ny],
+                            sizeof(complex_p) * nx * ny);
+
+                if (data->U->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+                    updateMats = true;
+                    U          = task->prevData->GetDataset<MatrixCXd>(TWMCData::U_Noise);
+                    res->AddDataset<MatrixCXd>(TWMCData::U_Noise, U, 1, {nx, ny, 3});
+                }
+                if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+                    updateMats = true;
+                    E          = task->prevData->GetDataset<MatrixCXd>(TWMCData::Delta_Noise);
+                    res->AddDataset<MatrixCXd>(TWMCData::Delta_Noise, E, 1, {nx, ny, 3});
+                }
+                if (data->F->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+                    updateMats = true;
+                    F          = task->prevData->GetDataset<MatrixCXd>(TWMCData::F_Noise);
+                    res->AddDataset<MatrixCXd>(TWMCData::F_Noise, F, 1, {nx, ny, 3});
+
+                }
         }
 
-        t_start = data->t_start;
-        t_end = data->t_end;
-
-        int i_step = 0;
-        int i_frame = 0;
-        //int frame_steps = floor(data->dt_obs/data->dt);
+        if (updateMats)
+        {
+            delta =  -data->E->GenerateNoNoise().array() + data->detuning ;
+        }
 
         // Initialize the beta value to the starting value.
-
         bool hasTimeDep = data->F->HasTimeDependence();
         size_t tCache;
 
         auto dt4 = sqrt(data->gamma_val * data->dt / 4.0);
         auto dt = data->dt;
-        std::vector<complex_p> res_betat(nx*ny*cellSz*data->n_frames);
+        std::vector<complex_p> res_betat(nx*ny*cellSz*n_frames);
+
+        int i_step  = 0;
+        int i_frame = 0;
+
+        // Save the initial state if needed
+        if (task->storeInitialState) {
+            if ((i_step % data->frame_steps == 0) && i_frame < n_frames) {
+                size_t size     = nx * ny*cellSz;
+                complex_p *data = beta_t.data();
+                std::memcpy(&res_betat[i_frame * size], data, sizeof(complex_p) * size);
+
+                i_frame = i_frame + 1;
+            }
+        }
+
 
         while (t <= data->t_end) {
 
@@ -212,21 +266,30 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(const std::vec
             kai_t = beta_t.array() + a_t.array() + dt4 * tmpRand.array();
 
             beta_t = kai_t;
-
-            // Print the data
-            if ((i_step % data->frame_steps == 0) && i_frame < data->n_frames) {
-                size_t size = nx * ny * 3;
-                complex_p *data = beta_t.data();
-
-                std::memcpy(&res_betat[i_frame*size], data, sizeof(complex_p)*size);
-                i_frame = i_frame + 1;
-            }
             t += data->dt;
             i_step++;
+
+            // Print the data
+            if ((i_step % data->frame_steps == 0) && i_frame < n_frames) {
+                size_t size = nx * ny * 3;
+                complex_p *data = beta_t.data();
+                std::memcpy(&res_betat[i_frame*size], data, sizeof(complex_p)*size);
+
+                i_frame = i_frame + 1;
+                if (i_frame == n_frames)
+                    break;
+            }
         }
-        res->AddDataset<std::vector<complex_p>>(TWMCData::traj, std::move(res_betat), data->n_frames, {nx,ny,3});
+
+        if (i_frame < n_frames) {
+            std::cerr << " error: was supposed to have " << n_frames << " but got "
+                      << i_frame << " frames " << endl;
+        }
+
+        res->AddDataset<std::vector<complex_p>>(
+                TWMCData::traj, std::move(res_betat), n_frames, {nx, ny, 3});
         res->extraDataMemory[0] = task->t_start;
-        res->extraDataMemory[1] = task->t_end;
+        res->extraDataMemory[1] = t;
 
         allResults.push_back(std::unique_ptr<TaskResults>(res));
     }
