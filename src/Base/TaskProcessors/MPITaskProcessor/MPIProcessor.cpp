@@ -78,7 +78,7 @@ void MPIProcessor::ProvideMPICommunicator(MPI_Comm* _comm)
 void MPIProcessor::Setup()
 {
     hwThreadsN = nProcessesPerNode;
-    hwThreadsProcessorN = hwThreadsN - 3;
+    hwThreadsProcessorN = max(hwThreadsN - 3,1);
     LOG(INFO) << "Starting a ThreadedTaskProcessor on Master Node with a maximum of " <<
               hwThreadsProcessorN << " workers on top of " << hwThreadsN <<
               " total hardware threads.";
