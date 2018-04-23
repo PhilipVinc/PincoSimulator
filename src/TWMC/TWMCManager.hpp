@@ -32,7 +32,7 @@ class TWMCManager : public Manager {
  private:
   DataStore* _dataStore;
   ResultsSaver* _saver;
-  TaskProcessor* _processor;
+  std::shared_ptr<TaskProcessor> _processor;
 
   std::shared_ptr<TWMCSystemData> _sysData;
   std::unique_ptr<ProgressReporter> _progressReporter;

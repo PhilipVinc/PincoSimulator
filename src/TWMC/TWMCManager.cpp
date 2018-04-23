@@ -61,7 +61,6 @@ TWMCManager::TWMCManager(const Settings *settings) : Manager(settings) {
 TWMCManager::~TWMCManager() {
   // dispatchThread.join();
 
-  delete _processor;
   delete _saver;
   delete _dataStore;
 }
@@ -81,18 +80,20 @@ void TWMCManager::Setup() {
   int ppnMPI = settings->get<int>("ppn", -1);
   if (ppnMPI == -1) { ppnMPI = settings->get<int>("processes", -1); }
 
-  MPIProcessor *mpiManager = new MPIProcessor(solverName, ppnMPI, ppnMPI);
   if (settings->mpiWorldSize > 1) {
+    std::shared_ptr<MPIProcessor> mpiManager =
+        std::make_shared<MPIProcessor>(solverName, ppnMPI, ppnMPI);
     mpiManager->ProvideMPICommunicator(nullptr);
     _processor = mpiManager;
   } else {
-    _processor = new ThreadedTaskProcessor(solverName, ppnMPI, ppnMPI);
+    _processor =
+        std::make_shared<ThreadedTaskProcessor>(solverName, ppnMPI, ppnMPI);
   }
 
 #else
-  _processor =
-      new ThreadedTaskProcessor(solverName, settings->get<int>("processes", -1),
-                                settings->get<int>("max_processes", -1));
+  _processor = std::make_shared<ThreadedTaskProcessor>(
+      solverName, settings->get<int>("processes", -1),
+      settings->get<int>("max_processes", -1));
 #endif
 
   _processor->SetConsumer(_saver);
@@ -122,7 +123,7 @@ void TWMCManager::ManagerLoop() {
     _processor->Update();
     _saver->Update();
     _progressReporter->Update();
-    //std::this_thread::sleep_for(chrono::milliseconds(100));
+    // std::this_thread::sleep_for(chrono::milliseconds(100));
   }
 }
 
