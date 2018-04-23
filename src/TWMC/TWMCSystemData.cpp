@@ -67,15 +67,20 @@ TWMCSystemData::TWMCSystemData(const Settings* settings) {
   t_start             = settings->get<float_p>("t_start");
   t_end               = settings->get<float_p>("t_end");
   frames_freq         = settings->get<double>("frames_freq");
+  frames_period       = settings->get<double>("frames_period");
 
   // Backsupport
-  if (frames_freq == 0) {
+  if (frames_freq == 0 && frames_period == 0) {
     frames_freq = OBS_n_frames / (t_end - t_start);
     if (OBS_n_frames == 0) {
       std::cerr << "Must have a non-zero, integer number of frames! Exiting."
                 << endl;
       exit(-1);
     }
+  } else if (frames_freq == 0 && frames_period != 0) {
+    frames_freq = 1 / frames_period;
+  } else if (frames_freq != 0 && frames_period == 0) {
+    // do nothing
   }
 
   float_p timestep = settings->get<float_p>("timestep");
@@ -88,7 +93,7 @@ TWMCSystemData::TWMCSystemData(const Settings* settings) {
   }
   dt          = timestep;
   n_dt        = n_times;
-  frame_steps = std::max(size_t(1), size_t(ceil(frames_freq / timestep)));
+  frame_steps = std::max(size_t(1), size_t(ceil(1 / (frames_freq * timestep))));
   dt_obs      = dt * frame_steps;
 
   nFramesTot = size_t(ceil((t_end - t_start) / dt_obs));
@@ -128,9 +133,9 @@ size_t TWMCSystemData::ComputeNFrames(double t_start, double t_end) const {
   return NFramesCache;
 }
 
-TWMCSystemData::TWMCSystemData() {}
+TWMCSystemData::TWMCSystemData() = default;
 
-TWMCSystemData::~TWMCSystemData() {}
+TWMCSystemData::~TWMCSystemData() = default;
 
 vector<float_p> TWMCSystemData::GetStoredTimes() const {
   size_t frames = nFramesTot + 1;

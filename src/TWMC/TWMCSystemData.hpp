@@ -34,7 +34,7 @@ class TWMCSystemData {
   vector<vector<complex_p>> GetStoredVariableEvolution(
       std::unique_ptr<NoisyMatrix> const& mat) const;
 
-  size_t ComputeNFrames(double t_start, double t_end) const ;
+  size_t ComputeNFrames(double t_start, double t_end) const;
 
   std::string latticeName;
   size_t nx;
@@ -63,6 +63,7 @@ class TWMCSystemData {
   float_p dt_obs;
 
   double frames_freq;
+  double frames_period;
   size_t nFramesTot;
   size_t n_dt;
   size_t frame_steps;
@@ -106,11 +107,10 @@ class TWMCSystemData {
   }
 #endif
 
-private:
-//    mutable double t_startCache = NAN;
-//    mutable double t_endCache = NAN;
-//    mutable size_t NFramesCache = 0;
-
+ private:
+  //    mutable double t_startCache = NAN;
+  //    mutable double t_endCache = NAN;
+  //    mutable size_t NFramesCache = 0;
 };
 
 #endif  // SIMULATOR_TWMCSHAREDSYSTEMDATA_HPP
