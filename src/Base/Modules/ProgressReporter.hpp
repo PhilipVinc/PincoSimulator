@@ -7,6 +7,8 @@
 
 #include "Base/Interfaces/IResultConsumer.hpp"
 
+#include <atomic>
+#include <memory>
 #include <thread>
 
 class Settings;
@@ -14,7 +16,8 @@ class TaskProcessor;
 
 class ProgressReporter {
  public:
-  ProgressReporter(const Settings* settings, const TaskProcessor* processor,
+  ProgressReporter(const Settings* settings,
+                   const std::shared_ptr<TaskProcessor> processor,
                    bool forceFile = false);
   virtual ~ProgressReporter();
 
@@ -24,7 +27,7 @@ class ProgressReporter {
 
  private:
   void IOThreadUpdate();
-  const TaskProcessor* processor;
+  const std::shared_ptr<TaskProcessor> processor;
 
   std::thread IOThread;
   enum logType { file, dumb, smart };
@@ -32,8 +35,8 @@ class ProgressReporter {
 
   size_t nTasks = 0;
 
-  bool started               = false;
-  bool terminate             = false;
+  bool started   = false;
+  std::atomic<bool> terminate;
 };
 
 #endif  // SIMULATOR_PROGRESSREPORTER_HPP

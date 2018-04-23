@@ -15,10 +15,10 @@
 
 #include "easylogging++.h"
 
-namespace chrono = std::chrono;
-
 ProgressReporter::ProgressReporter(const Settings *settings,
-                                   const TaskProcessor *_proc, bool forceFile) {
+                                   const std::shared_ptr<TaskProcessor> _proc,
+                                   bool forceFile)
+    : processor(_proc), terminate(false) {
   auto term = settings->terminal;
   if (term == Settings::Terminal::dumb) {
     logging = ProgressReporter::dumb;
@@ -30,8 +30,7 @@ ProgressReporter::ProgressReporter(const Settings *settings,
 
   if (forceFile) { logging = logType::file; }
 
-  processor = _proc;
-  IOThread  = std::thread(&ProgressReporter::IOThreadUpdate, this);
+  IOThread = std::thread(&ProgressReporter::IOThreadUpdate, this);
 }
 
 ProgressReporter::~ProgressReporter() {
@@ -44,18 +43,20 @@ void ProgressReporter::Update() {}
 void ProgressReporter::IOThreadUpdate() {
   while (nTasks == 0) { std::this_thread::sleep_for(std::chrono::seconds(1)); }
 
-  chrono::system_clock::time_point startTime     = chrono::system_clock::now();
-  chrono::system_clock::time_point lastPrintTime = startTime;
-  chrono::system_clock::duration deltaTPrint     = chrono::seconds(1);
-  chrono::system_clock::duration deltaTCompute   = chrono::seconds(1);
-  size_t lastMsgLength                           = 0;
+  std::chrono::system_clock::time_point startTime =
+      std::chrono::system_clock::now();
+  std::chrono::system_clock::time_point lastPrintTime = startTime;
+  std::chrono::system_clock::duration deltaTPrint     = std::chrono::seconds(1);
+  std::chrono::system_clock::duration deltaTCompute   = std::chrono::seconds(1);
+  size_t lastMsgLength                                = 0;
 
   while (!terminate) {
-    auto now                          = chrono::system_clock::now();
-    chrono::system_clock::duration dt = now - lastPrintTime;
+    auto now                               = std::chrono::system_clock::now();
+    std::chrono::system_clock::duration dt = now - lastPrintTime;
     if (dt > deltaTPrint && (nTasks != 0)) {
-      chrono::system_clock::duration elapsed = now - startTime;
-      int deltaTc = chrono::duration_cast<chrono::seconds>(elapsed).count();
+      std::chrono::system_clock::duration elapsed = now - startTime;
+      int deltaTc =
+          std::chrono::duration_cast<std::chrono::seconds>(elapsed).count();
 
       auto nCompletedTasks = processor->NumberOfCompletedTasks();
       auto progress        = processor->Progress() / float(nTasks) * 100;
@@ -86,9 +87,10 @@ void ProgressReporter::IOThreadUpdate() {
     std::this_thread::sleep_for(deltaTCompute);
   }
 
-  auto now                               = chrono::system_clock::now();
-  chrono::system_clock::duration elapsed = now - startTime;
-  int deltaTc = chrono::duration_cast<chrono::seconds>(elapsed).count();
+  auto now                                    = chrono::system_clock::now();
+  std::chrono::system_clock::duration elapsed = now - startTime;
+  int deltaTc =
+      std::chrono::duration_cast<std::chrono::seconds>(elapsed).count();
   std::string msgString =
       string_format("Completed %i tasks in %i seconds. ", nTasks, deltaTc);
   LOG(INFO) << msgString << endl;
