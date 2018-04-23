@@ -118,7 +118,7 @@ void MPINodeManager::ManagerLoop() {
             tasksInBuffer += dequeuedResults;
             totalDequeued += dequeuedResults;
 
-            if ( tasksInBuffer == IDEALSIZE || tasksInBuffer >= receivedTasks - sentResults )
+            if ( tasksInBuffer >= IDEALSIZE || tasksInBuffer >= receivedTasks - sentResults || commSendRequests.size() == 0)
             {
                 LOG(INFO) << "#" << rank << " - MPINodeManager::ManagerLoop(). - sending " << tasksInBuffer << " results";
 
