@@ -263,6 +263,12 @@ float_p Settings::get<float_p>(string path) const {
 }
 
 template <>
+float_p Settings::get<float_p>(string path, float_p defVal) const {
+  float_p result = config->get_as<float_p>(path).value_or(defVal);
+  return result;
+}
+
+template <>
 bool Settings::get<bool>(string path) const {
   bool result = config->get_as<bool>(path).value_or(false);
   return result;

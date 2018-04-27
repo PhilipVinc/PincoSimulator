@@ -182,6 +182,7 @@ set(SOURCE_FILES
         src/Libraries/PreAllocator.hpp
         src/Base/ResultsHelpers/HeterogeneousContainer.hpp
         src/Base/TaskResultsGeneric.hpp src/Base/SettingStrings.hpp)
+        src/Base/ManagerUtils/ResortManager.cpp src/Base/ManagerUtils/ResortManager.hpp src/Base/Utils/VectorUtils.hpp)
 
 set(GPU_SOURCE_FILES
         src/Base/SolverGPU.cpp src/Base/SolverGPU.hpp

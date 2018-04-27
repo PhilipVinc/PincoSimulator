@@ -11,6 +11,7 @@
 
 #include "Base/TaskResultsGeneric.hpp"
 #include "TWMCTypes.h"
+#include "Base/Utils/VectorUtils.hpp"
 
 #include <array>
 #include <stdio.h>
@@ -70,9 +71,28 @@ inline MatrixCXd setData<MatrixCXd>(rawTuple data, size_t frames, const std::vec
     return res;
 }
 
+template <>
+inline bool AppendData<std::vector<complex_p>>(std::vector<complex_p>& toExpand,
+                                                    std::vector<complex_p>&& toAppend) {
+  append(toAppend, toExpand); // src, dest
+  return true;
+}
 
+template <>
+inline bool AppendData<std::vector<float_p>>(std::vector<float_p>& toExpand,
+                                                    std::vector<float_p>&& toAppend) {
+  append(toAppend, toExpand); // src, dest
+  return true;
+}
 
-typedef TaskResultsGeneric<TWMCData, double[2], std::vector<complex_p>, std::vector<float_p>, MatrixCXd> TWMCResults;
+template <>
+inline bool AppendData<MatrixCXd>(MatrixCXd& toExpand, MatrixCXd&& toAppend) {
+  toExpand = std::move(toAppend);
+  return false;
+}
+
+typedef TaskResultsGeneric<TWMCData, std::array<double,2>, std::vector<complex_p>, std::vector<float_p>, MatrixCXd> TWMCResults;
+
 
 
 #ifdef MPI_SUPPORT

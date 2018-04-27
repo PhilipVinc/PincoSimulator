@@ -41,6 +41,7 @@ public:
     size_t DataSetDimension(size_t id)const;
     unsigned char DataSetDataType(size_t id) const;
     const std::vector<size_t>& DataSetsDimensionData() const;
+    std::vector<size_t> DataSetDimensions(size_t id) const;
 
     // Pure virtual methods
     virtual const std::vector<std::string> NamesOfDatasets() const = 0;
@@ -63,13 +64,13 @@ public:
 protected:
     size_t numberOfDatasets = 0;
     size_t id = 0;
+    std::vector<size_t> datasetElementSize;
 
     void AddResult(size_t elSize, size_t format, const std::vector<size_t> dimensions);
 
 private:
 
     // Datasets, and related informations.
-    std::vector<size_t> datasetElementSize;
     std::vector<size_t> datasetFormat;
 
     // Dimensionality data. Required when writing register files.

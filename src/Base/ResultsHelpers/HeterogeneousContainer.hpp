@@ -5,6 +5,7 @@
 #ifndef SIMULATOR_HETEROGENEOUSCONTAINER_HPP
 #define SIMULATOR_HETEROGENEOUSCONTAINER_HPP
 
+#include <array>
 #include <vector>
 #include <tuple>
 #include <functional>
@@ -73,9 +74,11 @@ rawTuple getData(const C& data);
 template <class C>
 C setData(rawTuple data, size_t frames, const std::vector<size_t>& dimensions);
 
+template <class C>
+bool AppendData(C &toExpand, C &&toAppend);
 
 template <typename enumVar, typename... Types>
-class MyClass
+class HeterogeneousContainer
 {
 public:
     typedef std::tuple<std::map<enumVar, Types>...> vtype;
@@ -120,7 +123,7 @@ public:
     };
 
     template <typename T>
-    std::vector<T>& access()
+    std::map<enumVar,T>& access()
     {
         return MatchingField<0, T, vtype,
                 VectorOfType<0, T>::value>::get(vectors);
@@ -216,6 +219,29 @@ public:
         }
         return std::make_tuple<rawT1, rawT2>(nullptr, 0);
     }
+
+private:
+    template <typename T>
+    bool AppendKeyType(enumVar key, std::map<enumVar,T>& myVec, std::map<enumVar,T>& otherVec) {
+        // std::map<enumVar,T>& myVec = MatchingField<0, T, vtype, VectorOfType<0, T>::value>::get(vectors);
+        // std::map<enumVar,T>& otherVec = MatchingField<0, T, vtype, VectorOfType<0, T>::value>::get(otherData.vectors);
+
+        // I only iterate through the other vector, so that data that is not in other but is in this
+        // is carried over, and data that is in other but not in this will be 'created' thanks to using
+        // [] instead of ->at() on 'this' data.
+        if (allVars<enumVar>::varTypes.at(key) == typeid(T)) {
+            return AppendData<T>(myVec[key], std::move(otherVec.at(key)));
+        }
+        return false;
+    }
+
+public:
+    // returns true if the length is the sum, false if it is not.
+    inline bool AppendKey(enumVar key, HeterogeneousContainer<enumVar, Types...>& otherData) {
+        std::array<bool, sizeof...(Types)> trash({(AppendKeyType<Types>(key, access<Types>(), otherData.access<Types>()),false)...});
+        return std::any_of(trash.begin(), trash.end(), [](bool x) { return x;});
+    }
+
 #ifdef MPI_SUPPORT
 public:
     template<class Archive>

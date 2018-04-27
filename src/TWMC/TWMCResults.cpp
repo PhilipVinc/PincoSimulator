@@ -56,8 +56,13 @@ const void* TWMCResults::SerializeExtraData()const
 template<>
 void TWMCResults::DeSerializeExtraData(void* data, unsigned int length)
 {
-    std::memcpy(extraDataMemory, data, 2*sizeof(double));
+    std::memcpy(&extraDataMemory, data, 2*sizeof(double));
     return;
+}
+
+template<>
+void TWMCResults::AppendExtraData(std::array<double, 2>& localData, std::array<double, 2>&& otherData) {
+    localData[1] = otherData[2];
 }
 
 // Trick to force linkage

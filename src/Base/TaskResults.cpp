@@ -8,6 +8,9 @@
 
 #include "TaskResults.hpp"
 
+#include <functional>
+#include <numeric>
+#include <vector>
 
 using namespace std;
 
@@ -37,6 +40,16 @@ void TaskResults::AddResult(size_t elSize, size_t format, const std::vector<size
 // Generic Accessor Methods
 
 size_t TaskResults::GetId() const{
+std::vector<size_t> TaskResults::DataSetDimensions(size_t id) const {
+	if (id == 0) {
+		return std::vector<size_t>(dimensionalityData.begin(), dimensionalityData.begin() + dimensionsOfDatasets[id]);
+	} else {
+		size_t pos = std::accumulate(dimensionsOfDatasets.begin(),
+																 dimensionsOfDatasets.begin() + (id - 1), size_t(1),
+																 std::multiplies<>());
+		return std::vector<size_t>(dimensionalityData.begin() + pos, dimensionalityData.begin() + pos + dimensionsOfDatasets[id]);
+	}
+}
     return id;
 }
 
