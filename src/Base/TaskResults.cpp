@@ -14,32 +14,21 @@
 
 using namespace std;
 
+TaskResults::TaskResults(const size_t _nOfDatasets) { numberOfDatasets = 0; }
 
-TaskResults::TaskResults(const size_t _nOfDatasets)
-{
-    numberOfDatasets = 0;
+void TaskResults::AddResult(size_t elSize, size_t format,
+                            const std::vector<size_t> dimensions) {
+  numberOfDatasets++;
+  datasetElementSize.push_back(elSize);
+  datasetFormat.push_back(format);
+
+  dimensionsOfDatasets.push_back(dimensions.size());
+  for (size_t dim : dimensions) { dimensionalityData.push_back(dim); }
 }
-
-
-void TaskResults::AddResult(size_t elSize, size_t format, const std::vector<size_t> dimensions)
-{
-	numberOfDatasets++;
-	datasetElementSize.push_back(elSize);
-	datasetFormat.push_back(format);
-
-	dimensionsOfDatasets.push_back(dimensions.size());
-	for (size_t dim : dimensions)
-	{
-		dimensionalityData.push_back(dim);
-	}
-}
-
-
 
 // --------------------
 // Generic Accessor Methods
 
-size_t TaskResults::GetId() const{
 std::vector<size_t> TaskResults::DataSetDimensions(size_t id) const {
 	if (id == 0) {
 		return std::vector<size_t>(dimensionalityData.begin(), dimensionalityData.begin() + dimensionsOfDatasets[id]);
@@ -50,6 +39,8 @@ std::vector<size_t> TaskResults::DataSetDimensions(size_t id) const {
 		return std::vector<size_t>(dimensionalityData.begin() + pos, dimensionalityData.begin() + pos + dimensionsOfDatasets[id]);
 	}
 }
+
+/*size_t TaskResults::GetId() const{
     return id;
 }
 
@@ -58,7 +49,7 @@ void TaskResults::SetId(size_t _id) {
 }
 
 size_t TaskResults::ElementsInDataSet(size_t id) const {
-	return datasetElementSize[id];
+        return datasetElementSize[id];
 }
 
 size_t TaskResults::NumberOfDataSets()const {
@@ -67,7 +58,7 @@ size_t TaskResults::NumberOfDataSets()const {
 
 
 unsigned char TaskResults::DataSetDataType(size_t id) const {
-	return datasetFormat[id];
+        return datasetFormat[id];
 }
 
 
@@ -77,23 +68,16 @@ size_t TaskResults::DataSetDimension(size_t id)const {
 
 const vector<size_t>& TaskResults::DataSetsDimensionData()const {
     return dimensionalityData;
-}
-
+}*/
 
 // ------------------ //
 // Serialization and default null methods (to take care when
 // the libraries do not implement those. They are virtual anyawy
 
-const unsigned int TaskResults::SerializingExtraDataOffset()const {
-    return 0;
-}
+const unsigned int TaskResults::SerializingExtraDataOffset() const { return 0; }
 
-const void* TaskResults::SerializeExtraData()const {
-    return nullptr;
-}
+const void* TaskResults::SerializeExtraData() const { return nullptr; }
 
 void TaskResults::DeSerializeExtraData(void* data, unsigned int length) {
-    return;
+  return;
 }
-
-

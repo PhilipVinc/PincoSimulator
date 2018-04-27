@@ -55,12 +55,12 @@ public:
         datasetsIds.push_back(datasetsIds.size());
     }
 
-    virtual void AddDataset(std::string name, std::tuple<rawT1, rawT2> data, size_t frames, const std::vector<size_t> dimensions) {
-
+    // This version of AddDataset is used when adding a dataset from rawData.
+    // For example, this is used when reading data from a file.
+    void AddDataset(std::string name, std::tuple<rawT1, rawT2> data, size_t frames, const std::vector<size_t> dimensions) override {
+        // Find the enum # from it's string serialization, then add the dataset.
         enumType t = allVars<enumType>::varEnums.at(name);
-
         datasets.setUnknownType(t, data, frames, dimensions);
-
 
         AddResult(frames, allVars<enumType>::varFormats.at(t), dimensions);
         datasetsTypes.push_back(t);
@@ -77,14 +77,19 @@ public:
         return allVars<enumType>::varNames[eName];
     }
 
-    virtual const std::string NameOfDataset(size_t datasetId) const {
+    const std::string DatasetName(size_t datasetId) const override {
         return DatasetName(datasetsTypes[datasetId]);
     }
 
-    virtual const std::vector<std::string> NamesOfDatasets() const {
+    inline enumType GetDatasetTypeFromId(int datasetId) const {
+        return datasetsTypes[datasetId];
+    }
+
     inline int GetDatasetIdFromType(enumType datasetType) {
         return std::find(datasetsTypes.begin(), datasetsTypes.end(), datasetType) - datasetsTypes.begin();
     }
+
+    const std::vector<std::string> NamesOfDatasets() const override {
         std::vector<std::string> res;
         for (enumType t : datasetsTypes) {
             const std::string dd = DatasetName(t);
@@ -93,12 +98,12 @@ public:
         return res;
     }
 
-    virtual const size_t DataSetSize(size_t id) const {
+    const size_t DataSetSize(size_t id) const override {
         rawTuple vv = datasets.GetSingleRaw(datasetsTypes[id]);
         return std::get<rawT2>(vv);
 ;    }
 
-    virtual const void* GetDataSet(size_t id) const {
+    const void* GetDataSet(size_t id) const override{
         rawTuple vv = datasets.GetSingleRaw(datasetsTypes[id]);
         return std::get<rawT1>(vv);
     }
@@ -142,9 +147,9 @@ public:
     }
 
     // Serialization and deserialization
-    const virtual unsigned int SerializingExtraDataOffset()const;
-    const virtual void* SerializeExtraData()const;
-    virtual void DeSerializeExtraData(void* data, unsigned int length);
+    const unsigned int SerializingExtraDataOffset()const override;
+    const void* SerializeExtraData()const override;
+    void DeSerializeExtraData(void* data, unsigned int length) override;
 
 
 #ifdef MPI_SUPPORT

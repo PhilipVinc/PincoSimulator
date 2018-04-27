@@ -30,27 +30,28 @@
 class TaskResults : public TaskData
 {
 public:
-    explicit TaskResults( size_t nOfDatasets = 1);
-
-    size_t GetId() const;
-    void SetId(size_t);
+    explicit TaskResults( const size_t nOfDatasets = 1);
+    inline size_t GetId() const { return id;};
+    inline void SetId(size_t _id) { id = _id;};
 
     // Accessing the datasets
-    size_t NumberOfDataSets() const;
-    size_t ElementsInDataSet(size_t id) const;
-    size_t DataSetDimension(size_t id)const;
-    unsigned char DataSetDataType(size_t id) const;
-    const std::vector<size_t>& DataSetsDimensionData() const;
+    inline size_t NumberOfDataSets() const {return numberOfDatasets;};
+    inline size_t ElementsInDataSet(size_t id) const {return datasetElementSize[id];};
+    inline size_t DataSetDimension(size_t id)const {return dimensionsOfDatasets[id];};
     std::vector<size_t> DataSetDimensions(size_t id) const;
+    inline unsigned char DataSetDataType(size_t id) const {return datasetFormat[id];};
+    inline const std::vector<size_t>& DataSetsDimensionData() const {return dimensionalityData;};
 
     // Pure virtual methods
     virtual const std::vector<std::string> NamesOfDatasets() const = 0;
-    virtual const std::string NameOfDataset(size_t datasetId) const = 0 ;
+    virtual const std::string DatasetName(size_t datasetId) const = 0 ;
     virtual const size_t DataSetSize(size_t id) const = 0;
     virtual const void* GetDataSet(size_t id) const = 0;
 
     virtual void AddDataset(std::string name, std::tuple<const void*, size_t> data,
                     size_t frames, const std::vector<size_t> dimensions) = 0;
+
+    virtual void AppendResult(TaskResults&& rhs) = 0;
 
     // Serialization and deserialization
     const virtual unsigned int SerializingExtraDataOffset()const;
