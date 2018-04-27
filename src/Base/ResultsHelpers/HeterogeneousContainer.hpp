@@ -92,14 +92,14 @@ public:
     template <int N, class T, class Tuple, bool Match = false> // this =false is only for clarity
     struct MatchingField
     {
-        static std::map<enumVar,T>& get(Tuple& tp)
+        inline static std::map<enumVar,T>& get(Tuple& tp)
         {
             // The "non-matching" version
             return MatchingField<N+1, T, Tuple,
                     VectorOfType<N+1, T>::value>::get(tp);
         }
 
-        static const std::map<enumVar,T>& get(const Tuple& tp)
+        inline static const std::map<enumVar,T>& get(const Tuple& tp)
         {
             // The "non-matching" version
             return MatchingField<N+1, T, Tuple,
@@ -111,12 +111,12 @@ public:
     template <int N, class T, class Tuple>
     struct MatchingField<N, T, Tuple, true>
     {
-        static std::map<enumVar, T>& get(Tuple& tp)
+        inline static std::map<enumVar, T>& get(Tuple& tp)
         {
             return std::get<N>(tp);
         }
 
-        static const std::map<enumVar, T>& get(const Tuple& tp)
+        inline static const std::map<enumVar, T>& get(const Tuple& tp)
         {
             return std::get<N>(tp);
         }

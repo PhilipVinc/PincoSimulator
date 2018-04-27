@@ -62,6 +62,7 @@ private:
 
 	// Loaded data
 	std::vector<size_t> registerData;
+  size_t totalFilesSize = 0;
 };
 
 #endif /* ChunkFileSet_hpp */

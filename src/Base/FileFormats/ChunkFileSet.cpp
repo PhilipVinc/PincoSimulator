@@ -74,6 +74,7 @@ void ChunkFileSet::Initialise()
             files.push_back(fopen(fileNames[i].c_str(), "ab+"));
 	        fseek(files[i], 0, SEEK_END);
 	        fileSizes.push_back(ftell(files[i]));
+	        totalFilesSize += ftell(files[i]);
 	        fseek(files[i], 0, SEEK_SET);
         }
         else // If it does not, let's create it
@@ -144,7 +145,7 @@ void ChunkFileSet::FlushData()
 
 bool ChunkFileSet::IsChunkBig()
 {
-    return (fileSizes[0] > minChunkSize);
+    return (totalFilesSize > minChunkSize);
 }
 
 /*void ChunkFileSet::ReadChunkRegister(size_t entryChunkId)
