@@ -22,6 +22,11 @@ class TaskData;
 
 using namespace std;
 
+/*! 
+    @brief Controls a thread that will check a given queue for TaskData objects to process through Solver _solver.
+ 
+    @discussion This class should be created by a ThreadedTaskManager or similar objects.
+ */
 class WorkerThread
 {
 public:
@@ -30,8 +35,6 @@ public:
     void WorkerLoop();
 	void Terminate() {terminate = true;};
 	void TerminateWhenDone() {terminateWhenDone = true;};
-
-	//bool IsFinished();
 
 	float GetSimulationSpeed();
 	float GetSimulationProgress();

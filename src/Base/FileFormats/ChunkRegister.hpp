@@ -59,8 +59,8 @@ public:
 	std::vector<RegisterEntry*> GetEntryById(size_t index);
   RegisterEntry* GetEntryByPosition(size_t index);
 
-    std::vector<std::string> datasetNames;
-    std::vector<std::vector<size_t>> dimensionalityData;
+  std::vector<std::string> datasetNames;
+  std::vector<std::vector<size_t>> dimensionalityData;
 
 protected:
     void GoToCurrentWritePosition();

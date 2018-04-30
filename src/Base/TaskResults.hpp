@@ -36,17 +36,17 @@ public:
 
     // Accessing the datasets
     inline size_t NumberOfDataSets() const {return numberOfDatasets;};
-    inline size_t ElementsInDataSet(size_t id) const {return datasetElementSize[id];};
-    inline size_t DataSetDimension(size_t id)const {return dimensionsOfDatasets[id];};
-    std::vector<size_t> DataSetDimensions(size_t id) const;
-    inline unsigned char DataSetDataType(size_t id) const {return datasetFormat[id];};
     inline const std::vector<size_t>& DataSetsDimensionData() const {return dimensionalityData;};
-
-    // Pure virtual methods
     virtual const std::vector<std::string> NamesOfDatasets() const = 0;
-    virtual const std::string DatasetName(size_t datasetId) const = 0 ;
-    virtual const size_t DataSetSize(size_t id) const = 0;
-    virtual const void* GetDataSet(size_t id) const = 0;
+
+    // Dataset-specific properties
+    inline size_t DatasetElements(size_t id) const {return datasetElementSize[id];};
+    inline size_t DatasetDimensionsN(size_t id)const {return dimensionsOfDatasets[id];};
+    std::vector<size_t> DatasetDimensions(size_t id) const;
+    inline unsigned char DatasetFormat(size_t id) const {return datasetFormat[id];};
+    virtual const std::string DatasetName(size_t datasetId) const = 0 ; // pv
+    virtual const size_t DatasetByteSize(size_t id) const = 0;          // pv
+    virtual const void* DatasetGet(size_t id) const = 0;                // pv
 
     virtual void AddDataset(std::string name, std::tuple<const void*, size_t> data,
                     size_t frames, const std::vector<size_t> dimensions) = 0;
@@ -67,7 +67,7 @@ protected:
     size_t id = 0;
     std::vector<size_t> datasetElementSize;
 
-    void AddResult(size_t elSize, size_t format, const std::vector<size_t> dimensions);
+    void AddResult(size_t elSize, size_t format, std::vector<size_t> dimensions);
 
 private:
 

@@ -99,12 +99,12 @@ public:
         return res;
     }
 
-    const size_t DataSetSize(size_t id) const override {
+    const size_t DatasetByteSize(size_t id) const override {
         rawTuple vv = datasets.GetSingleRaw(datasetsTypes[id]);
         return std::get<rawT2>(vv);
 ;    }
 
-    const void* GetDataSet(size_t id) const override{
+    const void* DatasetGet(size_t id) const override{
         rawTuple vv = datasets.GetSingleRaw(datasetsTypes[id]);
         return std::get<rawT1>(vv);
     }
@@ -127,9 +127,9 @@ public:
                 if (i == nDatasets) {
                     datasetsTypes.push_back(type);
                     datasetsIds.push_back(datasetsIds.size());
-                    AddResult(rhs_casted->ElementsInDataSet(oi),
+                    AddResult(rhs_casted->DatasetElements(oi),
                                 allVars<enumType>::varFormats[type],
-                                rhs_casted->DataSetDimensions(oi));
+                              rhs_casted->DatasetDimensions(oi));
                     // add
                     datasets.AppendKey(type, rhs_casted->datasets);
                 } else {

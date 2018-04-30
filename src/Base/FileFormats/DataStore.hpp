@@ -28,7 +28,7 @@ public:
     DataStore(const Settings* settings, std::string folderName);
     virtual ~ DataStore() {};
     bool SaveTaskResults(std::unique_ptr<TaskResults> const& task);
-    bool AppendTaskResults(std::unique_ptr<TaskResults> const& task);
+    //bool AppendTaskResults(std::unique_ptr<TaskResults> const& task);
     std::unique_ptr<TaskResults> LoadEndFrame(size_t id);
     std::unique_ptr<TaskResults> LoadTaskResultsLastNFrames(size_t id, size_t nFrames);
     std::unique_ptr<TaskResults> LoadTaskResults(size_t id);

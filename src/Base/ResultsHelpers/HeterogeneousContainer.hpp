@@ -221,6 +221,19 @@ public:
     }
 
 private:
+    /*template <typename T>
+    void AppendType(std::map<enumVar,T>& myVec, std::map<enumVar,T>&& otherVec) {
+        // std::map<enumVar,T>& myVec = MatchingField<0, T, vtype, VectorOfType<0, T>::value>::get(vectors);
+        // std::map<enumVar,T>& otherVec = MatchingField<0, T, vtype, VectorOfType<0, T>::value>::get(otherData.vectors);
+
+        // I only iterate through the other vector, so that data that is not in other but is in this
+        // is carried over, and data that is in other but not in this will be 'created' thanks to using
+        // [] instead of ->at() on 'this' data.
+        for (typename std::map<enumVar,T>::iterator it=otherVec.begin(); it != otherVec.end(); ++it) {
+            AppendData<T>(myVec[it->first], std::move(it->second));
+        }
+    }*/
+
     template <typename T>
     bool AppendKeyType(enumVar key, std::map<enumVar,T>& myVec, std::map<enumVar,T>& otherVec) {
         // std::map<enumVar,T>& myVec = MatchingField<0, T, vtype, VectorOfType<0, T>::value>::get(vectors);
@@ -236,11 +249,21 @@ private:
     }
 
 public:
+    /*
+    inline void Append(HeterogeneousContainer<enumVar, Types...>&& otherData) {
+        //int trash[] = {(AppendType<Types>(otherData),0)...};
+        int trash[] = {(AppendType<Types>(MatchingField<0, Types, vtype, VectorOfType<0, Types>::value>::get(vectors),
+                                          std::move(MatchingField<0, Types, vtype, VectorOfType<0, Types>::value>::get(
+                                                  otherData.vectors))), 0)...};
+    }*/
+
     // returns true if the length is the sum, false if it is not.
     inline bool AppendKey(enumVar key, HeterogeneousContainer<enumVar, Types...>& otherData) {
         std::array<bool, sizeof...(Types)> trash({(AppendKeyType<Types>(key, access<Types>(), otherData.access<Types>()))...});
         return std::any_of(trash.begin(), trash.end(), [](bool x) { return x;});
     }
+
+
 
 #ifdef MPI_SUPPORT
 public:

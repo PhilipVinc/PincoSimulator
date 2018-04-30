@@ -61,10 +61,10 @@ void ChunkFileSet::Initialise()
     files.reserve(N); fileOffsets.reserve(N); fileSizes.reserve(N);
     fileNames.reserve(N);
 
-	// Create or Open files with the name that is computed.
+	  // Create or Open files with the name that is computed.
     for (size_t i =0; i != N; i++)
     {
-	    // filename of the various datasets
+	      // filename of the various datasets
         fileNames.push_back(basePath + "variable" + to_string(i) + "_" + to_string(id) + ".cnk");
 
         // if the file exists alredy
@@ -84,7 +84,7 @@ void ChunkFileSet::Initialise()
         }
     }
 
-	// Filename of the chunk register
+	  // Filename of the chunk register
     registerFileName = basePath + "index_" + to_string(id) + ".bin";
     registerTrajSize = sizeof(size_t)*(1+2*N);
     bufferByteSize = (1+2*N);
@@ -99,20 +99,14 @@ void ChunkFileSet::Initialise()
     initialised = true;
 }
 
-
-inline FILE* ChunkFileSet::GetFile(size_t datasetId)
-{
-    return files[datasetId];
-}
-
 // To delete
 size_t ChunkFileSet::WriteToChunk(std::unique_ptr<TaskResults> const& results)
 {
     buffer[0] = results->GetId();
     for (size_t i = 0; i!=N; i++) {
-        buffer[1 +i*2] = results->ElementsInDataSet(i);
-        buffer[2 + i*2] = WriteToChunk(i, results->GetDataSet(i),
-                                       results->DataSetSize(i));
+        buffer[1 +i*2] = results->DatasetElements(i);
+        buffer[2 + i*2] = WriteDataToChunk(i, results->DatasetGet(i),
+                                           results->DatasetByteSize(i));
     }
     fwrite(buffer, 1, registerTrajSize, registerFile);
     fflush(registerFile);
@@ -121,7 +115,7 @@ size_t ChunkFileSet::WriteToChunk(std::unique_ptr<TaskResults> const& results)
     return (nTrajWritten-1) ;
 } // End to remove
 
-size_t ChunkFileSet::WriteToChunk(size_t datasetId, const void * ptr, size_t dataSize)
+size_t ChunkFileSet::WriteDataToChunk(size_t datasetId, const void *ptr, size_t dataSize)
 {
     size_t start = ftell(files[datasetId]);
     fwrite(&dataSize, 1, sizeof(size_t), files[datasetId]);
@@ -131,6 +125,7 @@ size_t ChunkFileSet::WriteToChunk(size_t datasetId, const void * ptr, size_t dat
     
     fileOffsets[datasetId] = start;
     fileSizes[datasetId] += (end - start + 1);
+    totalFilesSize += (end - start + 1);
     
     return start; // return the offset of where this is
 }
@@ -159,7 +154,7 @@ bool ChunkFileSet::IsChunkBig()
 
 }
 */
-//std::unique_ptr<TaskResults> ChunkFileSet::ReadEntry(size_t entryChunkId, bool lastItems)
+
 std::vector<std::tuple<void*, size_t, size_t>> ChunkFileSet::ReadEntry(size_t registerIndex, bool lastItems)
 {
     fseek(registerFile, registerIndex*registerTrajSize, SEEK_SET);
@@ -167,9 +162,6 @@ std::vector<std::tuple<void*, size_t, size_t>> ChunkFileSet::ReadEntry(size_t re
     std::vector<std::tuple<void*, size_t, size_t>> result;
 
     if (fread(buffer, 1, registerTrajSize, registerFile) == registerTrajSize) {
-        //std::unique_ptr<TaskResults> result = ResultsFactory::makeUniqueNewInstance("TWMC"); //TODO
-        //result->SetId(buffer[0]);
-
         for (size_t i = 0; i != N; i++) {
             size_t nEntries = buffer[1 + i*2];
             size_t dataStartOffset = buffer[2 + i*2];
@@ -195,10 +187,6 @@ std::vector<std::tuple<void*, size_t, size_t>> ChunkFileSet::ReadEntry(size_t re
             fread(dataset, 1, dataSize, files[i]);
 
             result.emplace_back(std::move(static_cast<void*>(dataset)), std::move(dataSize), std::move(nEntries));
-
-            /*result->AddDataset(std::string("ciao"),
-                               std::make_tuple<const void*, size_t>(dataset, std::move(nEntries)),
-                               nEntries, {1}); //TODO*/
         }
         return result;
     } else {

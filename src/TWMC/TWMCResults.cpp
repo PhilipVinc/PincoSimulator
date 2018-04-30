@@ -44,7 +44,7 @@ static const variable<TWMCData, MatrixCXd> vDNoise(TWMCData::Delta_Noise, "Omega
 template<>
 const unsigned int TWMCResults::SerializingExtraDataOffset()const
 {
-    return sizeof(extraDataMemory);
+    return extraDataMemory.size();
 }
 
 template<>

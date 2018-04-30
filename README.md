@@ -31,7 +31,7 @@ Prerequisites:
     - Boost::filesystem >= 1.6 (or C++17Filesystem)
     - FFTW3 
     
-    Header only libraries (included:)
+    Header only libraries (included)
     - Eigen3 
     - CLI 11 (Input parsing)
     - Easylogging++ (logging library)
@@ -55,16 +55,18 @@ Optionals:
 To compile the code you will need CMake 3:
     
     cd PincoSimulator
-    mkdir build
-    cd build
+    mkdir build && cd build
     cmake -DCMAKE_BUILD_TYPE=Release -DCOMPILE_GPU=OFF ..
-    make sim
+    make -j 8 sim
 
 #### Cmake build Options
 
     COMPILE_GPU [Default=OFF] Enable GPU Support for supported solvers.
     COMPILE_MPI [Default=OFF] Enable MPI Support for all Managers.
     PROFILE_MPI [Default=OFF] Enable MPE Profiling Layer for MPI.
+
+    DEIGEN3_INCLUDES Path to the parent folder of the Eigen3/ header folder.
+    DCEREAL_INCLUDES Path to the parent folder of the Cereal/ header folder.
 
 ## Usage Instructions
 
@@ -75,16 +77,19 @@ To run:
 
 check test-sim.ini for a sample input file
 
+### Options
 
-### Logging Options
+#### Logging
 
-    logpath : path to where a logfile should be stored
-    nocout  : [true]/false - if we should print to std::cout what is logged to file (default false)
+    logpath     : path to where a logfile should be stored
+    nocout      : [true]/false - if we should print to std::cout what is logged to file (default false)
 
-## General Options
-    chunk_size : [default=4] maximum chunk size (in GB)
+#### General 
 
-###  Noise Instructions
+    chunk_size  : [default=4] maximum chunk size (in GB)
+    ppn         : [default=softhreads] maximum number of threads per process.
+
+###  Matrix Instructions
 
 To define Specify a matrix U:
 

@@ -173,7 +173,7 @@ void ChunkRegister::InitializeRegisterHeader(std::unique_ptr<TaskResults> const&
     
     for (int i =0; i!=datasetNames.size(); i++)
     {
-        size_t D = results->DataSetDimension(i);
+        size_t D = results->DatasetDimensionsN(i);
         dimensionalityData.push_back(std::vector<size_t>());
         dimBuffer[ji] = D;
         ji++;
@@ -189,7 +189,7 @@ void ChunkRegister::InitializeRegisterHeader(std::unique_ptr<TaskResults> const&
 
     for (int i=0; i!=datasetNames.size(); i++)
     {
-        fputc(results->DataSetDataType(i), registerFile);
+        fputc(results->DatasetFormat(i), registerFile);
     }
     
     // 5) WRite the Extra Data size for each entry

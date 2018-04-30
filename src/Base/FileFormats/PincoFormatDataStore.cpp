@@ -122,32 +122,53 @@ const std::set<size_t>& PincoFormatDataStore::UsedIds()
     return cRegister->GetSavedTasksIds();
 }
 
-std::unique_ptr<TaskResults> PincoFormatDataStore::LoadLastResultFrame(size_t trajId)
+std::unique_ptr<TaskResults> PincoFormatDataStore::LoadResult(size_t trajId, bool lastFrameOnly)
 {
     if (!initialised)
         datasetN = cRegister->datasetNames.size();
+    std::unique_ptr<TaskResults> result(nullptr); //TODO*/
 
-    ChunkRegister::RegisterEntry* regEntry = cRegister->GetEntryById(trajId);
+    if (lastFrameOnly) {
+        ChunkRegister::RegisterEntry *regEntry = cRegister->GetFinalEntryById(trajId);
 
-    //cout << regEntry->additionalData[0]<<endl;
-    //cout << regEntry->additionalData[1]<<endl;
+        ChunkFileSet *cnk = Chunk(regEntry->chunk_id);
 
-    ChunkFileSet *cnk = Chunk(regEntry->chunk_id);
+        std::vector<std::tuple<void *, size_t, size_t>> data = cnk->ReadEntry(regEntry->chunk_offset, lastFrameOnly);
+        result = ResultsFactory::makeUniqueNewInstance("TWMC"); //TODO
+        result->SetId(regEntry->traj_id);
+        result->DeSerializeExtraData(regEntry->additionalData, 2); //TODO hardcoded 2
 
-    std::vector<std::tuple<void*, size_t, size_t>> data = cnk->ReadEntry(regEntry->chunk_offset, true);
-    std::unique_ptr<TaskResults> result = ResultsFactory::makeUniqueNewInstance("TWMC"); //TODO
-    result->SetId(regEntry->traj_id);
-    result->DeSerializeExtraData(regEntry->additionalData,2); //TODO hardcoded 2
+        int i = 0;
+        for (auto d : data) {
+            result->AddDataset(cRegister->datasetNames[i],
+                               std::make_tuple<const void *, size_t>(std::get<0>(d), std::move(std::get<1>(d))),
+                               std::get<2>(d), cRegister->dimensionalityData[i]); //TODO*/
+            i++;
+            delete[] static_cast<char *>(std::get<0>(d));
+        }
+    } else {
+      std::vector<ChunkRegister::RegisterEntry*> entries = cRegister->GetEntryById(trajId);
 
-    int i = 0;
-    for (auto d : data) {
-        result->AddDataset(cRegister->datasetNames[i],
-                           std::make_tuple<const void*, size_t>(std::get<0>(d), std::move(std::get<1>(d))),
-                           std::get<2>(d), cRegister->dimensionalityData[i]); //TODO*/
-        i++;
-        delete[] static_cast<char*>(std::get<0>(d));
+        for (auto entry: entries) {
+          ChunkFileSet *cnk = Chunk(entry->chunk_id);
+          std::vector<std::tuple<void *, size_t, size_t>> data = cnk->ReadEntry(entry->chunk_offset);
+          std::unique_ptr<TaskResults> newResult = ResultsFactory::makeUniqueNewInstance("TWMC"); //TODO
+          newResult->SetId(entry->traj_id);
+          newResult->DeSerializeExtraData(entry->additionalData, 2); //TODO hardcoded 2
+          int i = 0;
+          for (auto d : data) {
+            newResult->AddDataset(cRegister->datasetNames[i],
+                               std::make_tuple<const void *, size_t>(std::get<0>(d), std::move(std::get<1>(d))),
+                               std::get<2>(d), cRegister->dimensionalityData[i]); //TODO*/
+            i++;
+            delete[] static_cast<char *>(std::get<0>(d));
+          }
+          if (result)
+            result->AppendResult(std::move(newResult));
+          else
+            result = std::move(newResult);
+        }
     }
-
     return result;
 }
 
