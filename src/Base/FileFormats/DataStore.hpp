@@ -31,7 +31,8 @@ public:
     bool AppendTaskResults(std::unique_ptr<TaskResults> const& task);
     std::unique_ptr<TaskResults> LoadEndFrame(size_t id);
     std::unique_ptr<TaskResults> LoadTaskResultsLastNFrames(size_t id, size_t nFrames);
-    
+    std::unique_ptr<TaskResults> LoadTaskResults(size_t id);
+
     virtual void ProvideDatasetNames(std::vector<std::string> names) = 0;
     void SaveFile(std::string fileName, std::vector<float_p> data);
     void SaveFile(std::string fileName, std::vector<std::vector<float_p>> data);
@@ -51,7 +52,7 @@ protected:
     bool isReadable = false;
     bool isWritable = false;
 
-    virtual std::unique_ptr<TaskResults> LoadLastResultFrame(size_t id) = 0;
+    virtual std::unique_ptr<TaskResults> LoadResult(size_t id, bool lastFrameOnly = false) = 0;
 
     virtual void StoreData(std::unique_ptr<TaskResults> const& results) = 0;
     virtual void StoreDataSimple(std::unique_ptr<TaskResults> const& results) = 0;

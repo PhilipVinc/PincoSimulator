@@ -55,8 +55,9 @@ public:
     size_t GetNumberOfSavedTrajectories();
 
 	const std::set<size_t>& GetSavedTasksIds();
-	RegisterEntry* GetEntryById(size_t id);
-	RegisterEntry* GetEntryByPosition(size_t index);
+	RegisterEntry* GetFinalEntryById(size_t id);
+	std::vector<RegisterEntry*> GetEntryById(size_t index);
+  RegisterEntry* GetEntryByPosition(size_t index);
 
     std::vector<std::string> datasetNames;
     std::vector<std::vector<size_t>> dimensionalityData;

@@ -238,7 +238,7 @@ private:
 public:
     // returns true if the length is the sum, false if it is not.
     inline bool AppendKey(enumVar key, HeterogeneousContainer<enumVar, Types...>& otherData) {
-        std::array<bool, sizeof...(Types)> trash({(AppendKeyType<Types>(key, access<Types>(), otherData.access<Types>()),false)...});
+        std::array<bool, sizeof...(Types)> trash({(AppendKeyType<Types>(key, access<Types>(), otherData.access<Types>()))...});
         return std::any_of(trash.begin(), trash.end(), [](bool x) { return x;});
     }
 

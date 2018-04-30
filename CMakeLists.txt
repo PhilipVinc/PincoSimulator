@@ -182,7 +182,7 @@ set(SOURCE_FILES
         src/Libraries/PreAllocator.hpp
         src/Base/ResultsHelpers/HeterogeneousContainer.hpp
         src/Base/TaskResultsGeneric.hpp src/Base/SettingStrings.hpp
-        src/Base/ManagerUtils/ResortManager.cpp src/Base/ManagerUtils/ResortManager.hpp src/Base/Utils/VectorUtils.hpp)
+        src/Base/ManagerUtils/ResortManager.cpp src/Base/ManagerUtils/ResortManager.hpp src/Base/Utils/VectorUtils.hpp src/Base/Utils/Misc.hpp)
 
 set(GPU_SOURCE_FILES
         src/Base/SolverGPU.cpp src/Base/SolverGPU.hpp
@@ -207,7 +207,7 @@ endif(COMPILE_GPU)
 if (COMPILE_MPI)
     # Append MPI Source FIles
     message("Adding MPI Files")
-    set(SOURCE_FILES ${SOURCE_FILES} ${MPI_SOURCE_FILES})
+    set(SOURCE_FILES ${SOURCE_FILES} ${MPI_SOURCE_FILES} )
 endif(COMPILE_MPI)
 
 add_executable(sim ${SOURCE_FILES})

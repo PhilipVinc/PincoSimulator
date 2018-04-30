@@ -36,7 +36,7 @@ protected:
     
     ChunkFileSet* GetWritableChunk();
 
-	virtual std::unique_ptr<TaskResults> LoadLastResultFrame(size_t id);
+	virtual std::unique_ptr<TaskResults> LoadResult(size_t id, bool lastFrameOnly);
 private:
 
 	virtual void StoreData(std::unique_ptr<TaskResults> const& results);

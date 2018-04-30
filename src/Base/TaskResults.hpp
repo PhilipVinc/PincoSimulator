@@ -51,7 +51,7 @@ public:
     virtual void AddDataset(std::string name, std::tuple<const void*, size_t> data,
                     size_t frames, const std::vector<size_t> dimensions) = 0;
 
-    virtual void AppendResult(TaskResults&& rhs) = 0;
+    virtual void AppendResult(std::unique_ptr<TaskResults> rhs) = 0;
 
     // Serialization and deserialization
     const virtual unsigned int SerializingExtraDataOffset()const;

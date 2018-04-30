@@ -47,8 +47,13 @@ bool DataStore::SaveTaskResults(std::unique_ptr<TaskResults> const& task)
 }
 
 std::unique_ptr<TaskResults> DataStore::LoadEndFrame(size_t id) {
-    return LoadLastResultFrame(id);
+    return LoadResult(id, true);
 }
+
+std::unique_ptr<TaskResults> DataStore::LoadTaskResults(size_t id) {
+    return LoadResult(id);
+}
+
 
 
 void DataStore::CreateFolder(string folder)

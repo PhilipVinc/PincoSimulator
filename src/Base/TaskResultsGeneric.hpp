@@ -8,6 +8,7 @@
 
 #include "Base/TaskResults.hpp"
 #include "ResultsHelpers/HeterogeneousContainer.hpp"
+#include "Base/Utils/Misc.hpp"
 
 #include <array>
 #include <stdio.h>
@@ -110,35 +111,36 @@ public:
 
     void AppendExtraData(extraData & localData, extraData && otherData);
 
-    void AppendResult(TaskResults&& rhs) override {
+    void AppendResult(std::unique_ptr<TaskResults> rhs) override {
         try {
-            auto &&rhs_casted = dynamic_cast<TaskResultsGeneric<enumType, extraData, Types...>&&>(rhs);
+
+            auto rhs_casted = dynamic_unique_cast<TaskResultsGeneric<enumType, extraData, Types...>>(std::move(rhs));
             // succesfull cast
 
             // For every id i in other set
-            for (auto oi:rhs_casted.datasetsIds) {
+            for (auto oi:rhs_casted->datasetsIds) {
                 // get the enum type
-                enumType type = rhs_casted.GetDatasetTypeFromId(oi);
+                enumType type = rhs_casted->GetDatasetTypeFromId(oi);
 
                 size_t nDatasets = NumberOfDataSets();
-                int i = rhs_casted.GetDatasetIdFromType(type);
+                int i = rhs_casted->GetDatasetIdFromType(type);
                 if (i == nDatasets) {
                     datasetsTypes.push_back(type);
                     datasetsIds.push_back(datasetsIds.size());
-                    AddResult(rhs_casted.ElementsInDataSet(oi),
+                    AddResult(rhs_casted->ElementsInDataSet(oi),
                                 allVars<enumType>::varFormats[type],
-                                rhs_casted.DataSetDimensions(oi));
+                                rhs_casted->DataSetDimensions(oi));
                     // add
-                    datasets.AppendKey(type, rhs_casted.datasets);
+                    datasets.AppendKey(type, rhs_casted->datasets);
                 } else {
                     // merge object in datasets store
-                    if( datasets.AppendKey(type, rhs_casted.datasets))
-                        datasetElementSize[i] += rhs_casted.datasetElementSize[oi];
+                    if( datasets.AppendKey(type, rhs_casted->datasets))
+                        datasetElementSize[i] += rhs_casted->datasetElementSize[oi];
                 }
             }
 
             AppendExtraData(extraDataMemory,
-                            std::move(rhs_casted.extraDataMemory));
+                            std::move(rhs_casted->extraDataMemory));
         }
         catch(const std::bad_cast& e) {
             std::cout << "Error: bad cast" << std::endl;

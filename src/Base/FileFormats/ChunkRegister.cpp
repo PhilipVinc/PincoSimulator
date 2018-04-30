@@ -340,7 +340,7 @@ void ChunkRegister::RegisterStoredData(std::unique_ptr<TaskResults> const& resul
     // If this is an append, then we will have to correct the old data with a 
     // pointer to actual data
     if (saveType == Settings::SaveSettings::appendIdFiles) {
-	    auto entry = GetEntryById(results->GetId());
+	    auto entry = GetFinalEntryById(results->GetId());
 
 	    fseek(registerFile, entry->registerWritePosition + 3*sizeof(size_t) , SEEK_SET);
 	    fwrite(&continuationOffset, 1, sizeof(size_t), registerFile);
@@ -409,7 +409,7 @@ inline ChunkRegister::RegisterEntry* ChunkRegister::GetEntryByPosition(size_t in
 	return entries[index];
 }
 
-ChunkRegister::RegisterEntry* ChunkRegister::GetEntryById(size_t id)
+ChunkRegister::RegisterEntry* ChunkRegister::GetFinalEntryById(size_t id)
 {
 	/*auto check = [id](const RegisterEntry* entry) {
 		return entry->traj_id == id;
@@ -424,4 +424,22 @@ ChunkRegister::RegisterEntry* ChunkRegister::GetEntryById(size_t id)
         }
     }
     return GetEntryByPosition(maxIndex);
+}
+
+std::vector<ChunkRegister::RegisterEntry*> ChunkRegister::GetEntryById(size_t id) {
+  auto prevEntries = trajOffsets.equal_range(id);
+  auto nTrajs = trajOffsets.count(id);
+  std::vector<size_t> ids(nTrajs);
+  size_t j = 0;
+  for (auto it = prevEntries.first; it != prevEntries.second; it++) {
+    ids[j] = it->second; j++;
+  }
+  std::sort(ids.begin(), ids.end());
+
+  std::vector<ChunkRegister::RegisterEntry*> entries(nTrajs);  j=0;
+  for (auto id:ids) {
+    entries[j] = GetEntryByPosition(id); j++;
+  }
+
+  return entries;
 }
