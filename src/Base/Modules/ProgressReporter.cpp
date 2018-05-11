@@ -41,7 +41,7 @@ ProgressReporter::~ProgressReporter() {
 void ProgressReporter::Update() {}
 
 void ProgressReporter::IOThreadUpdate() {
-  while (nTasks == 0) { std::this_thread::sleep_for(std::chrono::seconds(1)); }
+  while (nTasks == 0 && !terminate) { std::this_thread::sleep_for(std::chrono::seconds(1)); }
 
   std::chrono::system_clock::time_point startTime =
       std::chrono::system_clock::now();
