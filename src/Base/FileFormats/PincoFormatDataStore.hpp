@@ -10,6 +10,7 @@
 #define PincoFormatDataStore_hpp
 
 #include "DataStore.hpp"
+#include "ChunkRegister.hpp"
 
 
 #include <map>
@@ -29,9 +30,12 @@ public:
     PincoFormatDataStore(const Settings* settings, std::string folderName);
     ~PincoFormatDataStore();
     
-    virtual void ProvideDatasetNames(std::vector<std::string> names);
-	virtual const std::set<size_t>& UsedIds();
+    void ProvideDatasetNames(std::vector<std::string> names) override;
+    const std::set<size_t>& UsedIds() override;
 
+	inline std::vector<std::string>& DatasetNamesInRegister() const {
+		return cRegister->datasetNames;
+	}
 protected:
     
     ChunkFileSet* GetWritableChunk();

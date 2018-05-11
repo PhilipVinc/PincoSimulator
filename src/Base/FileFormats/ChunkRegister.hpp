@@ -20,6 +20,7 @@
 
 class TaskResults;
 class ChunkFileSet;
+class PincoFormatDataStore;
 
 
 class ChunkRegister
@@ -105,6 +106,8 @@ private:
     long int trajAdditionalDataSize;
     
     size_t storedEntries = 0;
+
+    friend class PincoFormatDataStore;
 };
 
 

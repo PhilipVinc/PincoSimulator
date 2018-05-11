@@ -86,24 +86,27 @@ ChunkFileSet* PincoFormatDataStore::Chunk(size_t chunkId) {
 
 
 void PincoFormatDataStore::Initialise(std::unique_ptr<TaskResults> const& results) {
-	datasetN = results->NumberOfDataSets();
-	initialised = true;
+  datasetN = results->NumberOfDataSets();
+  if (!cRegister->registerInitialized) { cRegister->InitializeRegisterHeader(results);}
+  initialised = true;
 }
 
 void PincoFormatDataStore::StoreDataSimple(std::unique_ptr<TaskResults> const& results)
 {
-	if (!initialised) { Initialise(results);};
-    ChunkFileSet * cnk = GetWritableChunk();
-    size_t offset = cnk->WriteToChunk(results);
-    cRegister->RegisterStoredData(results, cnk->GetId(), offset, Settings::SaveSettings::saveIdFiles);
+  if (!initialised) { Initialise(results);};
+
+  ChunkFileSet * cnk = GetWritableChunk();
+  size_t offset = cnk->WriteToChunk(results, DatasetNamesInRegister());
+  cRegister->RegisterStoredData(results, cnk->GetId(), offset, Settings::SaveSettings::saveIdFiles);
 }
 
 void PincoFormatDataStore::StoreData(std::unique_ptr<TaskResults> const& results)
 {
-	if (!initialised) { Initialise(results);};
-	ChunkFileSet * cnk = GetWritableChunk();
-    size_t offset = cnk->WriteToChunk(results);
-    cRegister->RegisterStoredData(results, cnk->GetId(), offset);
+  if (!initialised) { Initialise(results);};
+
+  ChunkFileSet * cnk = GetWritableChunk();
+  size_t offset = cnk->WriteToChunk(results, DatasetNamesInRegister());
+  cRegister->RegisterStoredData(results, cnk->GetId(), offset);
 }
 
 void PincoFormatDataStore::ProvideDatasetNames(vector<string> names)

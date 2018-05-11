@@ -13,6 +13,7 @@
 
 #include "easylogging++.h"
 
+#include <algorithm>
 #include <iostream>
 
 using namespace std;
@@ -100,13 +101,19 @@ void ChunkFileSet::Initialise()
 }
 
 // To delete
-size_t ChunkFileSet::WriteToChunk(std::unique_ptr<TaskResults> const& results)
+size_t ChunkFileSet::WriteToChunk(std::unique_ptr<TaskResults> const& results,
+                                  const std::vector<std::string>& orderName)
 {
     buffer[0] = results->GetId();
     for (size_t i = 0; i!=N; i++) {
-        buffer[1 +i*2] = results->DatasetElements(i);
-        buffer[2 + i*2] = WriteDataToChunk(i, results->DatasetGet(i),
-                                           results->DatasetByteSize(i));
+
+        auto id = std::find(orderName.begin(), orderName.end(), results->DatasetName(i));
+        auto j = std::distance(orderName.begin(), id);
+        if (j >= N) { LOG(INFO) << "error: found id " << j << "but have " << N << "variables";}
+
+        buffer[1 +j*2] = results->DatasetElements(j);
+        buffer[2 +j*2] = WriteDataToChunk(j, results->DatasetGet(j),
+                                           results->DatasetByteSize(j));
     }
     fwrite(buffer, 1, registerTrajSize, registerFile);
     fflush(registerFile);
@@ -151,7 +158,6 @@ bool ChunkFileSet::IsChunkBig()
     {
 
     }
-
 }
 */
 

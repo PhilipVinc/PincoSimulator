@@ -28,7 +28,8 @@ class ChunkFileSet {
 
   void SetMinChunkSize(size_t size) { minChunkSize = size; };
 
-  size_t WriteToChunk(std::unique_ptr<TaskResults> const& results);
+  size_t WriteToChunk(std::unique_ptr<TaskResults> const& results,
+                      const std::vector<std::string>& orderName);
   bool IsChunkBig();
   void FlushData();
 
