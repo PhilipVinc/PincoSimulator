@@ -37,32 +37,32 @@ static const variable<TWMCData, MatrixCXd> vUNoise(TWMCData::U_Noise, "U_Realiza
 static const variable<TWMCData, MatrixCXd> vFNoise(TWMCData::F_Noise, "F_Realization");
 static const variable<TWMCData, MatrixCXd> vDNoise(TWMCData::Delta_Noise, "Omega_Realization");
 
-
+//Backward compatibility
 
 // Serialization stuff
 
 template<>
 const unsigned int TWMCResults::SerializingExtraDataOffset()const
 {
-    return extraDataMemory.size();
+    return extraDataMemory.size()*sizeof(extraDataMemory[0]);
 }
 
 template<>
 const void* TWMCResults::SerializeExtraData()const
 {
-    return &extraDataMemory;
+    return extraDataMemory.data();
 }
 
 template<>
 void TWMCResults::DeSerializeExtraData(void* data, unsigned int length)
 {
-    std::memcpy(&extraDataMemory, data, 2*sizeof(double));
+    std::memcpy(extraDataMemory.data(), data, 2*sizeof(double));
     return;
 }
 
 template<>
 void TWMCResults::AppendExtraData(std::array<double, 2>& localData, std::array<double, 2>&& otherData) {
-    localData[1] = otherData[2];
+    localData[1] = otherData[1];
 }
 
 // Trick to force linkage
