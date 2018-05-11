@@ -60,7 +60,13 @@ public:
     // For example, this is used when reading data from a file.
     void AddDataset(std::string name, std::tuple<rawT1, rawT2> data, size_t frames, const std::vector<size_t> dimensions) override {
         // Find the enum # from it's string serialization, then add the dataset.
-        enumType t = allVars<enumType>::varEnums.at(name);
+      enumType t;
+      try {
+        t = allVars<enumType>::varEnums.at(name);
+      } catch (const std::out_of_range& exc){
+        // this dataset name does not exist
+        t = allVars<enumType>::varEnums.at(name.erase(name.length()-1, 1));
+      }
         datasets.setUnknownType(t, data, frames, dimensions);
 
         AddResult(frames, allVars<enumType>::varFormats.at(t), dimensions);
