@@ -17,7 +17,16 @@
 #
 
 #If environment variable FFTWDIR is specified, it has same effect as FFTW_ROOT
+if (FFTW_INCLUDES AND FFTW_LIBRARIES)
+    message("FFTW_INCLUDES set quiet")    # Already in cache, be silent
+  set (FFTW_FIND_QUIETLY TRUE)
+endif ()
+
+if (FFTW_FIND_QUIETLY)
+else()
+
 if( NOT FFTW_ROOT AND ENV{FFTWDIR} )
+    message("1")
     set( FFTW_ROOT $ENV{FFTWDIR} )
 endif()
 
@@ -26,6 +35,7 @@ find_package(PkgConfig)
 
 #Determine from PKG
 if( PKG_CONFIG_FOUND AND NOT FFTW_ROOT )
+message("2")
     pkg_check_modules( PKG_FFTW QUIET "fftw3" )
 endif()
 
@@ -39,6 +49,7 @@ else()
 endif()
 
 if( FFTW_ROOT )
+message("find fftwroot")    
 
     #find libs
     find_library(
@@ -99,6 +110,7 @@ if( FFTW_ROOT )
     )
 
 else()
+    message("find fftwroot bad")    
 
     find_library(
             FFTW_LIB
@@ -147,10 +159,14 @@ endif( FFTW_ROOT )
 set(FFTW_LIBRARIES ${FFTW_LIB} ${FFTWF_LIB})
 
 if(FFTWL_LIB)
+message("fftw_lib")   
+
     set(FFTW_LIBRARIES ${FFTW_LIBRARIES} ${FFTWL_LIB})
 endif()
 
 set( CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_SAV} )
+
+endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(FFTW DEFAULT_MSG
@@ -167,7 +183,7 @@ mark_as_advanced(FFTW_INCLUDES FFTW_LIBRARIES FFTW_LIB FFTWF_LIB FFTWL_LIB FFTW_
 #  FFTW_FOUND       - True if FFTW found.
 
 if (FFTW_INCLUDES)
-  # Already in cache, be silent
+    message("FFTW_INCLUDES set")    # Already in cache, be silent
   set (FFTW_FIND_QUIETLY TRUE)
 endif (FFTW_INCLUDES)
 
