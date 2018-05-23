@@ -47,6 +47,7 @@ public:
     virtual const std::string DatasetName(size_t datasetId) const = 0 ; // pv
     virtual const size_t DatasetByteSize(size_t id) const = 0;          // pv
     virtual const void* DatasetGet(size_t id) const = 0;                // pv
+    //virtual const void* DatasetGet(std::string &name) const = 0;        // pv
 
     virtual void AddDataset(std::string name, std::tuple<const void*, size_t> data,
                     size_t frames, const std::vector<size_t> dimensions) = 0;
