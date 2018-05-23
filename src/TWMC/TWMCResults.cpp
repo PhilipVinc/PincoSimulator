@@ -34,7 +34,7 @@ static const variable<TWMCData, std::vector<complex_p>> vTraj(TWMCData::traj, "t
 static const variable<TWMCData, std::vector<float_p>> vWork(TWMCData::work, "work");
 static const variable<TWMCData, std::vector<float_p>> vArea(TWMCData::area, "area");
 static const variable<TWMCData, MatrixCXd> vUNoise(TWMCData::U_Noise, "U_Realization");
-static const variable<TWMCData, MatrixCXd> vFNoise(TWMCData::F_Noise, "F_Realization");
+static const variable<TWMCData, MatrixCXd> vFNoise(TWMCData::F_Noise, "F_Realizatio");
 static const variable<TWMCData, MatrixCXd> vDNoise(TWMCData::Delta_Noise, "Omega_Realization");
 
 //Backward compatibility

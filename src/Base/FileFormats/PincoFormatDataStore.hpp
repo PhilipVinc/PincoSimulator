@@ -52,7 +52,7 @@ private:
 
 	size_t NewChunkId();
 	void CreateNewChunk();
-	ChunkFileSet* Chunk(size_t id);
+	ChunkFileSet* Chunk(size_t id, bool load = false);
 
 	size_t datasetN;
 	std::string chunkRootPath;

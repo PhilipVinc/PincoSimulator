@@ -21,13 +21,14 @@ using namespace std;
 
 ChunkFileSet::ChunkFileSet(std::string _basePath,
                            size_t nDatasets,
-                           size_t chunkId) :
+                           size_t chunkId,
+                           bool loadOnly) :
 basePath(_basePath), N(nDatasets), id(chunkId)
 {
     if (nDatasets==0)
         LOG(ERROR) << "ERROR: Initialised ChunkFileSet with 0 datasets!";
 
-    Initialise();
+    Initialise(loadOnly);
 }
 
 ChunkFileSet::~ChunkFileSet()
@@ -54,7 +55,7 @@ ChunkFileSet::~ChunkFileSet()
         remove(registerFileName.c_str());
 }
 
-void ChunkFileSet::Initialise()
+void ChunkFileSet::Initialise(bool loadOnly)
 {
     if (initialised)
         return;
@@ -71,17 +72,20 @@ void ChunkFileSet::Initialise()
         // if the file exists alredy
         if (filesystem::exists(fileNames[i]))
         {
-            LOG(INFO) << "Opening File: " << fileNames[i];
-            files.push_back(fopen(fileNames[i].c_str(), "ab+"));
+          LOG(INFO) << "Opening File: " << fileNames[i];
+          files.push_back(fopen(fileNames[i].c_str(), "ab+"));
 	        fseek(files[i], 0, SEEK_END);
 	        fileSizes.push_back(ftell(files[i]));
 	        totalFilesSize += ftell(files[i]);
 	        fseek(files[i], 0, SEEK_SET);
         }
-        else // If it does not, let's create it
+        else if (!loadOnly) // If it does not, let's create it
         {
             files.push_back(fopen(fileNames[i].c_str(), "wb+"));
             fileSizes.push_back(0);
+        } else {
+            std::cerr << "Loading file " << fileNames[i] << " but it does not exist." << std::endl;
+            raise(1);
         }
     }
 
@@ -93,8 +97,11 @@ void ChunkFileSet::Initialise()
 
     if (filesystem::exists(registerFileName)) {
         registerFile = fopen(registerFileName.c_str(), "ab+");
-    } else {
+    } else if (!loadOnly) {
         registerFile = fopen(registerFileName.c_str(), "wb+");
+    } else {
+        std::cerr << "Loading register " << registerFileName << " but it does not exist." << std::endl;
+        raise(1);
     }
 
     initialised = true;
@@ -109,7 +116,22 @@ size_t ChunkFileSet::WriteToChunk(std::unique_ptr<TaskResults> const& results,
 
         auto id = std::find(orderName.begin(), orderName.end(), results->DatasetName(i));
         auto j = std::distance(orderName.begin(), id);
-        if (j >= N) { LOG(INFO) << "error: found id " << j << "but have " << N << "variables";}
+        if (j >= N) {
+            // this is for backward compatibility, as I had the very bad idea of
+            // changing the
+            int ij = 0;
+            for (std::string name : orderName) {
+                name.erase(name.length() - 1, 1);
+                if (results->DatasetName(i) == name) {
+                    j = ij;
+                    break;
+                }
+                ij++;
+            }
+            if (j >= N) {
+                LOG(INFO) << "error: found id " << j << "but have " << N << "variables";
+            }
+        }
 
         buffer[1 +j*2] = results->DatasetElements(j);
         buffer[2 +j*2] = WriteDataToChunk(j, results->DatasetGet(j),
@@ -133,7 +155,7 @@ size_t ChunkFileSet::WriteDataToChunk(size_t datasetId, const void *ptr, size_t 
     fileOffsets[datasetId] = start;
     fileSizes[datasetId] += (end - start + 1);
     totalFilesSize += (end - start + 1);
-    
+
     return start; // return the offset of where this is
 }
 

@@ -70,7 +70,7 @@ ChunkFileSet* PincoFormatDataStore::GetWritableChunk()
     return cachedWriteChunk;
 }
 
-ChunkFileSet* PincoFormatDataStore::Chunk(size_t chunkId) {
+ChunkFileSet* PincoFormatDataStore::Chunk(size_t chunkId, bool load) {
     if (chunkIds.count(chunkId) == 0) {
         cerr << "ERROR" << endl;
     } // else
@@ -78,7 +78,7 @@ ChunkFileSet* PincoFormatDataStore::Chunk(size_t chunkId) {
     if (chunkFileSets.count(chunkId) == 1) {
         return chunkFileSets[chunkId];
     } else {
-        ChunkFileSet* chunk = new ChunkFileSet(chunkRootPath , datasetN, chunkId);
+        ChunkFileSet* chunk = new ChunkFileSet(chunkRootPath , datasetN, chunkId, load);
         chunkFileSets[chunkId] = chunk;
         return chunk;
     }
@@ -153,7 +153,7 @@ std::unique_ptr<TaskResults> PincoFormatDataStore::LoadResult(size_t trajId, boo
       std::vector<ChunkRegister::RegisterEntry*> entries = cRegister->GetEntryById(trajId);
 
         for (auto entry: entries) {
-          ChunkFileSet *cnk = Chunk(entry->chunk_id);
+          ChunkFileSet *cnk = Chunk(entry->chunk_id, true);
           std::vector<std::tuple<void *, size_t, size_t>> data = cnk->ReadEntry(entry->chunk_offset);
           std::unique_ptr<TaskResults> newResult = ResultsFactory::makeUniqueNewInstance("TWMC"); //TODO
           newResult->SetId(entry->traj_id);

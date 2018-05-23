@@ -19,7 +19,7 @@ class TaskResults;
 
 class ChunkFileSet {
  public:
-  ChunkFileSet(std::string basePath, size_t nDatasets, size_t chunkId);
+  ChunkFileSet(std::string basePath, size_t nDatasets, size_t chunkId, bool loadOnly = false);
 
   ~ChunkFileSet();
 
@@ -39,7 +39,7 @@ class ChunkFileSet {
  private:
   size_t WriteDataToChunk(size_t datasetId, const void* ptr, size_t dataSize);
   void ReadChunkRegister();
-  void Initialise();
+  void Initialise(bool loadOnly = false);
 
   std::vector<FILE*> files;
   size_t totalFilesSize = 0;
