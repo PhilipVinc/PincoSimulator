@@ -47,7 +47,6 @@ int main(int argc, char * argv[])
 
         cout << "Thread support level is: "<< threadLevel << endl;
 #endif
-
         std::unique_ptr<Manager> manager = ManagerFactory::makeUniqueNewInstance(settings->get<string>("Manager"), settings);
 #ifdef MPI_SUPPORT
         manager->SetMPICommunicator(nullptr);
@@ -56,7 +55,7 @@ int main(int argc, char * argv[])
         if (!(manager == nullptr)) {
             manager->ManagerLoop();
         } else {
-            LOG(INFO) << "Invalid Manager. Exiting...";
+            LOG(INFO) << settings->get<string>("Manager") << " - is an invalid Manager. Exiting...";
         }
         delete settings;
 

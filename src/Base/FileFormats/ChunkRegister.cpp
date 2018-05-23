@@ -160,8 +160,10 @@ void ChunkRegister::InitializeRegisterHeader(std::unique_ptr<TaskResults> const&
     // 3) Write the dataset names
     datasetNames = results->NamesOfDatasets();
     fputc(datasetNames.size(), registerFile);
+    LOG(INFO) << "Initializing register Header with dataset names:";
     for (auto name : datasetNames)
     {
+        LOG(INFO) << " - " << name;
         fputc(name.size(), registerFile);
         fwrite(name.c_str(), 1, name.size(), registerFile);
     }
@@ -252,9 +254,11 @@ bool ChunkRegister::ReadRegisterHeader()
 		// Read Dataset Names
 		int nOfVariables = fgetc(registerFile);
 		vector<string> variableNames(nOfVariables);
-		for (int i = 0; i != nOfVariables; i++) {
+        LOG(INFO) << "Reading register Header with dataset names:";
+        for (int i = 0; i != nOfVariables; i++) {
 			variableNames[i].resize(fgetc(registerFile));
 			fread(&(variableNames[i][0]), 1, variableNames[i].size(), registerFile);
+			LOG(INFO) << " - " << variableNames[i];
 		}
         datasetNames = variableNames;
 

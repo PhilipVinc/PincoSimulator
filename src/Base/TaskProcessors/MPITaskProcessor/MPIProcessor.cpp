@@ -96,7 +96,7 @@ void MPIProcessor::Update()
     if (dequeuedTasks!=0) {
         LOG(INFO) << "Got " << dequeuedTasks << " tasks to dispatch.";
         tasks.resize(dequeuedTasks);
-        size_t nTasksToMasterNode = size_t(ceil(float(dequeuedTasks/(nNodes+float(hwThreadsProcessorN)/hwThreadsN))*float(hwThreadsProcessorN)/hwThreadsN));
+        size_t nTasksToMasterNode = size_t(floor(float(dequeuedTasks/(nNodes+float(hwThreadsProcessorN)/hwThreadsN))*float(hwThreadsProcessorN)/hwThreadsN));
         LOG(INFO) << "Enqueing to master::localProcessor " << nTasksToMasterNode << "/" <<dequeuedTasks << " tasks.";
         auto data = std::vector<std::unique_ptr<TaskData>>(std::make_move_iterator(tasks.end() - nTasksToMasterNode),
                                                            std::make_move_iterator(tasks.end()));

@@ -38,7 +38,7 @@ ThreadedTaskProcessor::ThreadedTaskProcessor(std::string solverName, int _proces
     nThreads = (n == 0 ? 20 : _processes );
 #endif
 	maxProcesses = _max_processes;
-	if (maxProcesses == 0)
+	if (maxProcesses <= 0)
 		maxProcesses = 2*n;
 
 	nThreads = min(nThreads, maxProcesses);

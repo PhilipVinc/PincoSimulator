@@ -47,11 +47,18 @@ void ResortManager::ManagerLoop() {
   LOG(INFO) << "# of used Ids: " << usedIds.size();
 
   for (size_t id : usedIds) {
-    LOG(INFO) << "Loading #" << id;
+    std::cout << "Loaded : " << nEnqueuedTasks << "/" << usedIds.size()
+              << " - attempting # " << id << std::endl;
+    std::cout << " Saved : " << _saver->savedItems << "/" << usedIds.size()
+              << " - in queue : " << nEnqueuedTasks - _saver->savedItems
+              << std::endl;
+    std::cout << "\x1b[A\r" << std::flush;
+
+    // LOG(INFO) << "Loading #" << id;
     std::vector<std::unique_ptr<TaskResults>> oldTasks;
     nEnqueuedTasks++;
     oldTasks.push_back(std::move(_dataStore_old->LoadTaskResults(id)));
-    LOG(INFO) << "Loaded #" << id;
+    // LOG(INFO) << "Loaded #" << id;
     _saver->EnqueueTasks(std::move(oldTasks));
   }
 
