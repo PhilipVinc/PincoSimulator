@@ -241,8 +241,12 @@ endif()
 if(LINUX)
     target_link_libraries(sim rt) #realtime
 
-    #target_link_libraries(sim c++experimental) #filesystem
-    target_link_libraries(sim stdc++fs) #filesystem
+    # On thtop
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        target_link_libraries(sim c++experimental) #filesystem
+    else() #on curie
+        target_link_libraries(sim stdc++fs) #filesystem
+    endif()
 endif()
 
 
