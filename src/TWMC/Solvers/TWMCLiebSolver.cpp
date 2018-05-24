@@ -42,12 +42,12 @@ void TWMCLiebSolver::Setup() {
 
     // Merge the three variants in a single for Delta
     delta = -data->E->GenerateNoNoise().array() + data->detuning;
+    real_step_linear = (-ij * delta.array() - data->gamma_val / 2.0);
 
     // For U
     U = data->U->GenerateNoNoise();
     F = data->F->GenerateNoNoise();
 
-    real_step_linear = (-ij * delta.array() - data->gamma_val / 2.0);
 
     coupling_mat = SparseCXd(3 * ny, 3 * ny);
 
@@ -159,9 +159,9 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(
           U          = data->U->Generate(gen);
           res->AddDataset<MatrixCXd>(TWMCData::U_Noise, U, 1, {nx, ny, 3});
         }
-        if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+        if (data->E->GetNoiseType() != NoisyMatrix::NoiseType::None) {
           updateMats = true;
-          E          = data->omega->Generate(gen);
+          E          = data->E->Generate(gen);
           res->AddDataset<MatrixCXd>(TWMCData::Delta_Noise, E, 1, {nx, ny, 3});
         }
         if (data->F->GetNoiseType() != NoisyMatrix::NoiseType::None) {
@@ -180,7 +180,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(
           U          = data->U->Generate(gen);
           res->AddDataset<MatrixCXd>(TWMCData::U_Noise, U, 1, {nx, ny, 3});
         }
-        if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+        if (data->E->GetNoiseType() != NoisyMatrix::NoiseType::None) {
           updateMats = true;
           E          = data->omega->Generate(gen);
           res->AddDataset<MatrixCXd>(TWMCData::Delta_Noise, E, 1, {nx, ny, 3});
@@ -206,7 +206,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(
           U          = task->prevData->GetDataset<MatrixCXd>(TWMCData::U_Noise);
           res->AddDataset<MatrixCXd>(TWMCData::U_Noise, U, 1, {nx, ny, 3});
         }
-        if (data->omega->GetNoiseType() != NoisyMatrix::NoiseType::None) {
+        if (data->E->GetNoiseType() != NoisyMatrix::NoiseType::None) {
           updateMats = true;
           E = task->prevData->GetDataset<MatrixCXd>(TWMCData::Delta_Noise);
           res->AddDataset<MatrixCXd>(TWMCData::Delta_Noise, E, 1, {nx, ny, 3});
@@ -217,9 +217,11 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(
           res->AddDataset<MatrixCXd>(TWMCData::F_Noise, F, 1, {nx, ny, 3});
         }
     }
+    // Merge the three variants in a single for Delta
 
     if (updateMats) {
-      delta = -data->E->GenerateNoNoise().array() + data->detuning;
+      delta = - E.array() + data->detuning;
+      real_step_linear = (-ij * delta.array() - data->gamma_val / 2.0);
     }
 
     // Initialize the beta value to the starting value.
@@ -231,7 +233,8 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(
     std::vector<complex_p> res_betat(nx * ny * cellSz * n_frames);
 
     int i_step  = 0;
-    int i_frame = 0;
+    size_t i_frame = 0;
+    double t_frame = 0;
 
     // Save the initial state if needed
     if (task->storeInitialState) {
@@ -271,7 +274,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(
         complex_p *data = beta_t.data();
         std::memcpy(&res_betat[i_frame * size], data, sizeof(complex_p) * size);
 
-        i_frame = i_frame + 1;
+        i_frame = i_frame + 1; t_frame = t;
         if (i_frame == n_frames) break;
       }
     }
@@ -279,7 +282,11 @@ std::vector<std::unique_ptr<TaskResults>> TWMCLiebSolver::Compute(
     if (i_frame < n_frames) {
       std::cerr << " error: was supposed to have " << n_frames << " but got "
                 << i_frame << " frames " << endl;
+      std::cerr << " last frame was at time: " << t_frame << " and simulation ended at " << t << endl;
+      res_betat.resize(i_frame*nx*ny*cellSz);
+      n_frames = i_frame;
     }
+
 
     res->AddDataset<std::vector<complex_p>>(
         TWMCData::traj, std::move(res_betat), n_frames, {nx, ny, 3});

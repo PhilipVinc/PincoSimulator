@@ -214,7 +214,8 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(
 
     std::vector<complex_p> res_betat(nx * ny * n_frames);
     int i_step  = 0;
-    int i_frame = 0;
+    size_t i_frame = 0;
+    double t_frame = 0;
 
     // Save the initial state if needed
     if (task->storeInitialState) {
@@ -259,7 +260,7 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(
         complex_p *data = beta_t.data();
         std::memcpy(&res_betat[i_frame * size], data, sizeof(complex_p) * size);
 
-        i_frame = i_frame + 1;
+        i_frame = i_frame + 1; t_frame = t;
         if (i_frame == n_frames) break;
       }
     }
@@ -267,6 +268,9 @@ std::vector<std::unique_ptr<TaskResults>> TWMCBaseSolver::Compute(
     if (i_frame < n_frames) {
       std::cerr << " error: was supposed to have " << n_frames << " but got "
                 << i_frame << " frames " << endl;
+      std::cerr << " last frame was at time: " << t_frame << " and simulation ended at " << t << endl;
+      res_betat.resize(i_frame*nx*ny);
+      n_frames = i_frame;
     }
 
     res->AddDataset<std::vector<complex_p>>(
