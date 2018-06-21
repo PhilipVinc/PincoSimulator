@@ -38,9 +38,8 @@ ThreadedTaskProcessor::ThreadedTaskProcessor(std::string solverName, int _proces
     nThreads = (n == 0 ? 20 : _processes );
 #endif
 	maxProcesses = _max_processes;
-	if (maxProcesses <= 0)
+	if (maxProcesses <= 0 || maxProcesses > 1000)
 		maxProcesses = 2*n;
-
 	nThreads = min(nThreads, maxProcesses);
 }
 
@@ -64,6 +63,7 @@ void ThreadedTaskProcessor::AllProducersHaveBeenTerminated() {
 
 void ThreadedTaskProcessor::Setup()
 {
+  LOG(INFO) << "Initializing " << nThreads << " threads.";
 	for (size_t i = 0; i != nThreads; i++)
 	{
 		Solver* solver = SolverFactory::makeRawNewInstance(_solverName);
