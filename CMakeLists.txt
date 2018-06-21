@@ -183,7 +183,7 @@ set(SOURCE_FILES
         src/Libraries/PreAllocator.hpp
         src/Base/ResultsHelpers/HeterogeneousContainer.hpp
         src/Base/TaskResultsGeneric.hpp src/Base/SettingStrings.hpp
-        src/Base/ManagerUtils/ResortManager.cpp src/Base/ManagerUtils/ResortManager.hpp src/Base/Utils/VectorUtils.hpp src/Base/Utils/Misc.hpp src/Base/Exceptions/NotImplementedException.hpp src/Base/Exceptions/FileNotExistsException.hpp src/Base/Utils/File.cpp src/Base/Utils/File.hpp src/Libraries/enum.h)
+        src/Base/ManagerUtils/ResortManager.cpp src/Base/ManagerUtils/ResortManager.hpp src/Base/Utils/VectorUtils.hpp src/Base/Utils/Misc.hpp src/Base/Exceptions/NotImplementedException.hpp src/Base/Exceptions/FileNotExistsException.hpp src/Base/Utils/File.cpp src/Base/Utils/File.hpp src/Libraries/enum.h src/Base/ManagerUtils/MergeManager.cpp src/Base/ManagerUtils/MergeManager.hpp)
 
 set(GPU_SOURCE_FILES
         src/Base/SolverGPU.hpp

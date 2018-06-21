@@ -9,7 +9,6 @@
 
 class TaskData;
 class TaskResults;
-class SolverManager;
 
 #include <memory>
 #include <vector>
