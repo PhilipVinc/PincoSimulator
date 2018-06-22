@@ -4,7 +4,7 @@
 
 #include "MergeManager.hpp"
 
-#include "Base/FileFormats/PincoFormatDataStore.hpp"
+#include "Base/FileFormats/PincoFormat/PincoFormatDataStore.hpp"
 #include "Base/TaskResults.hpp"
 
 #include "Base/Modules/ProgressReporter.hpp"

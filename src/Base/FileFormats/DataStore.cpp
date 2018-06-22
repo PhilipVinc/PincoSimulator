@@ -8,8 +8,8 @@
 
 #include "DataStore.hpp"
 
-#include "ChunkRegister.hpp"
-#include "ChunkFileSet.hpp"
+//#include "Base/FileFormats/PincoFormat/ChunkRegister.hpp"
+//#include "Base/FileFormats/PincoFormat/ChunkFileSet.hpp"
 #include "Libraries/FilesystemLibrary.h"
 #include "../Utils/FsUtils.hpp"
 #include "../Settings.hpp"

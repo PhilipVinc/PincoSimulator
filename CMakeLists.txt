@@ -147,10 +147,10 @@ include_directories(src)
 
 set(SOURCE_FILES
         Dependencies/easylogging++.cc Dependencies/easylogging++.h
-        src/Base/FileFormats/ChunkFileSet.cpp src/Base/FileFormats/ChunkFileSet.hpp
-        src/Base/FileFormats/ChunkRegister.cpp src/Base/FileFormats/ChunkRegister.hpp
+        src/Base/FileFormats/PincoFormat/ChunkFileSet.cpp src/Base/FileFormats/PincoFormat/ChunkFileSet.hpp
+        src/Base/FileFormats/PincoFormat/ChunkRegister.cpp src/Base/FileFormats/PincoFormat/ChunkRegister.hpp
         src/Base/FileFormats/DataStore.cpp src/Base/FileFormats/DataStore.hpp
-        src/Base/FileFormats/PincoFormatDataStore.cpp src/Base/FileFormats/PincoFormatDataStore.hpp
+        src/Base/FileFormats/PincoFormat/PincoFormatDataStore.cpp src/Base/FileFormats/PincoFormat/PincoFormatDataStore.hpp
         src/Base/Utils/EigenUtils.cpp src/Base/Utils/EigenUtils.hpp
         src/Base/Utils/FsUtils.cpp src/Base/Utils/FsUtils.hpp
         src/Base/CustomTypes.h
