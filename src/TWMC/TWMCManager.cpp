@@ -16,6 +16,8 @@
 #include "Base/TaskProcessors/ThreadedTaskProcessor/ThreadedTaskProcessor.hpp"
 #include "Base/TaskResults.hpp"
 
+#include "Base/Exceptions/NoEligibleSolverException.hpp"
+
 #include "easylogging++.h"
 
 #include <chrono>
@@ -52,7 +54,7 @@ TWMCManager::TWMCManager(const Settings *settings) : Manager(settings) {
     }
   } else {
     LOG(ERROR) << "ERROR: No solver available.";
-    return;
+    throw NoEligibleSolver();
   }
 
   LOG(INFO) << "Using Solver: " << solverName;
