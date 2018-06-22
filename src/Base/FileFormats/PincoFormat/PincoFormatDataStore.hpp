@@ -40,13 +40,13 @@ protected:
     
     ChunkFileSet* GetWritableChunk();
 
-	virtual std::unique_ptr<TaskResults> LoadResult(size_t id, bool lastFrameOnly);
+	virtual std::unique_ptr<TaskResults> LoadResult(size_t id, bool lastFrameOnly) override;
 private:
 
-	virtual void StoreData(std::unique_ptr<TaskResults> const& results);
-	virtual void StoreDataSimple(std::unique_ptr<TaskResults> const& results);
+	virtual void StoreData(std::unique_ptr<TaskResults> const& results) override;
+	virtual void StoreDataSimple(std::unique_ptr<TaskResults> const& results) override;
 	//virtual void StoreDataComplex(std::unique_ptr<TaskResults> const& results);
-	virtual void LoadListOfStoredDataEvents();
+	virtual void LoadListOfStoredDataEvents() override;
 
 	void Initialise(std::unique_ptr<TaskResults> const& task);
 

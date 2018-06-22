@@ -2,7 +2,7 @@
 // Created by Filippo Vicentini on 22/06/2018.
 //
 
-#ifndef SIMULATOR_NOELIGIBLESOLVERHPP
+#ifndef SIMULATOR_NOELIGIBLESOLVER_HPP
 #define SIMULATOR_NOELIGIBLESOLVER_HPP
 
 #include <stdexcept>
