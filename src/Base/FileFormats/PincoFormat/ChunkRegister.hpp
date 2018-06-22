@@ -9,7 +9,7 @@
 #ifndef ChunkRegister_hpp
 #define ChunkRegister_hpp
 
-#include "../Settings.hpp"
+#include "Base/Settings.hpp"
 
 #include <set>
 #include <unordered_map>

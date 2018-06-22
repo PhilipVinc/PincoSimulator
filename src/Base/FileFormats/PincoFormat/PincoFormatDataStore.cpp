@@ -10,7 +10,7 @@
 
 #include "ChunkFileSet.hpp"
 #include "ChunkRegister.hpp"
-#include "../TaskResults.hpp"
+#include "Base/TaskResults.hpp"
 
 #include <algorithm>
 #include <memory>
