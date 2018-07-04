@@ -78,6 +78,9 @@ void MPIProcessor::ProvideMPICommunicator(MPI_Comm* _comm)
 void MPIProcessor::Setup()
 {
     hwThreadsN = nProcessesPerNode;
+    if (hwThreadsN < 0) {
+        hwThreadsN = std::thread::hardware_concurrency();
+    }
     hwThreadsProcessorN = max(hwThreadsN - 3,1);
     LOG(INFO) << "Starting a ThreadedTaskProcessor on Master Node with a maximum of " <<
               hwThreadsProcessorN << " workers on top of " << hwThreadsN <<
@@ -228,13 +231,13 @@ void MPIProcessor::Update()
         }
     }
 
-
     // 5 - Receive Miscellaneuous Messages
     MPI_Status status; int flag;
     MPI_Iprobe(MPI_ANY_SOURCE,NODE_TERMINATED_MESSAGE_TAG, MPI_COMM_WORLD,
                &flag, &status);
     if (flag)
     {
+        LOG(INFO) << "Receiving Node Terminated Message." << endl;
         int nn;
         MPI_Recv(&nn, 1, MPI_INT, status.MPI_SOURCE, NODE_TERMINATED_MESSAGE_TAG,
         MPI_COMM_WORLD, &status);

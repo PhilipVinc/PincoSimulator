@@ -36,6 +36,7 @@ ProgressReporter::ProgressReporter(const Settings *settings,
 ProgressReporter::~ProgressReporter() {
   terminate = true;
   IOThread.join();
+  LOG(INFO) << "Deleted ProgressReporter.";
 }
 
 void ProgressReporter::Update() {}

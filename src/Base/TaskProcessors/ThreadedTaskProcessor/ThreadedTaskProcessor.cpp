@@ -55,6 +55,7 @@ ThreadedTaskProcessor::~ThreadedTaskProcessor()
 			JoinThread(th_id);
 		}
 	}
+	LOG(INFO) << ("Destroyed ThreadedTaskProcessor");
 }
 
 void ThreadedTaskProcessor::AllProducersHaveBeenTerminated() {

@@ -70,11 +70,11 @@ int main(int argc, char * argv[])
         std::unique_ptr<MPINodeManager> node = std::make_unique<MPINodeManager>(nullptr, ppnMPI);
         node->ManagerLoop();
     }
+    LOG(INFO) << rank << " Calling MPI_Finalize()" << endl;
     MPI_Finalize();
+    LOG(INFO) << rank << " Completed MPI_Finalize()" << endl;
 #else
 #endif
-
-
     return 0;
 }
 

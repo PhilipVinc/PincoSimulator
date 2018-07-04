@@ -51,6 +51,10 @@ MPINodeManager::MPINodeManager(MPI_Comm* _comm, int processesPerNode)  {
     }
 }
 
+MPINodeManager::~MPINodeManager() {
+    LOG(INFO) << "#"<<rank<< " - Destroyed MPINodeManager.";
+}
+
 
 void MPINodeManager::ManagerLoop() {
   chrono::system_clock::time_point lastProgressReportTime     = chrono::system_clock::now();
