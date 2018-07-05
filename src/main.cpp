@@ -47,7 +47,7 @@ int main(int argc, char * argv[])
 
         cout << "Thread support level is: "<< threadLevel << endl;
 #endif
-        std::unique_ptr<Manager> manager = ManagerFactory::makeUniqueNewInstance(settings->get<string>("Manager"), settings);
+        std::shared_ptr<Manager> manager = ManagerFactory::makeSharedNewInstance(settings->get<string>("Manager"), settings);
 #ifdef MPI_SUPPORT
         manager->SetMPICommunicator(nullptr);
 #endif
@@ -67,7 +67,8 @@ int main(int argc, char * argv[])
         if (ppnMPI == -1) {
           ppnMPI = settings->get<int>("processes", -1);
         }
-        std::unique_ptr<MPINodeManager> node = std::make_unique<MPINodeManager>(nullptr, ppnMPI);
+        std::shared_ptr<MPINodeManager> node = std::make_shared<MPINodeManager>(nullptr, ppnMPI);
+        node->Setup();
         node->ManagerLoop();
     }
     LOG(INFO) << rank << " Calling MPI_Finalize()" << endl;

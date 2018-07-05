@@ -24,25 +24,28 @@ MergeManager::MergeManager(const Settings *settings) : Manager(settings) {
 }
 
 MergeManager::~MergeManager() {
-  delete _dataStore_old1;
-  delete _dataStore_old2;
-  delete _dataStore_new;
 }
 
 void MergeManager::Setup() {
   LOG(INFO) << "Loading data from: "
             << settings->get<std::string>("oldArchive1");
-  _dataStore_old1 = new PincoFormatDataStore(
-      settings, settings->get<std::string>("oldArchive1"));
+  std::shared_ptr<PincoFormatDataStore> ds_old1 =
+          std::make_shared<PincoFormatDataStore>(settings,
+                                                 settings->get<std::string>("oldArchive1"));
+  _dataStore_old1 = std::static_pointer_cast<DataStore>(ds_old1);
+
   LOG(INFO) << "Loading data from: "
             << settings->get<std::string>("oldArchive2");
-  _dataStore_old2 = new PincoFormatDataStore(
-      settings, settings->get<std::string>("oldArchive2"));
+  std::shared_ptr<PincoFormatDataStore> ds_old2 =
+          std::make_shared<PincoFormatDataStore>(settings,
+                                                 settings->get<std::string>("oldArchive2"));
+  _dataStore_old2 = std::static_pointer_cast<DataStore>(ds_old2);
 
   LOG(INFO) << "Saving data to: " << settings->GetOutputFolder();
-  _dataStore_new =
-      new PincoFormatDataStore(settings, settings->GetOutputFolder());
-  LOG(INFO) << "succesfully created archives";
+  std::shared_ptr<PincoFormatDataStore> ds_new =
+          std::make_shared<PincoFormatDataStore>(settings,
+                                                 settings->GetOutputFolder());
+  _dataStore_new = std::static_pointer_cast<DataStore>(ds_new);
 
   LOG(INFO) << "succesfully created archives";
   _saver = std::make_unique<ResultsSaver>(settings, _dataStore_new);
@@ -54,10 +57,11 @@ void MergeManager::ManagerLoop() {
   LOG(INFO) << "# of used Ids: " << usedIds.size();
 
   for (size_t id : usedIds) {
+    size_t savedItems = _saver->SavedItems();
     std::cout << "Loaded : " << nEnqueuedTasks << "/" << usedIds.size()
               << " - attempting # " << id << std::endl;
-    std::cout << " Saved : " << _saver->savedItems << "/" << usedIds.size()
-              << " - in queue : " << nEnqueuedTasks - _saver->savedItems
+    std::cout << " Saved : " << savedItems << "/" << usedIds.size()
+              << " - in queue : " << nEnqueuedTasks - savedItems
               << std::endl;
     std::cout << "\x1b[A\r" << std::flush;
 
@@ -74,10 +78,11 @@ void MergeManager::ManagerLoop() {
   LOG(INFO) << "# of used Ids: " << usedIds.size();
 
   for (size_t id : usedIds) {
+    size_t savedItems = _saver->SavedItems();
     std::cout << "Loaded : " << nEnqueuedTasks - usedIdsSize1 << "/" << usedIds.size()
               << " - attempting # " << id << std::endl;
-    std::cout << " Saved : " << _saver->savedItems << "/" << usedIds.size()
-              << " - in queue : " << nEnqueuedTasks - _saver->savedItems
+    std::cout << " Saved : " << savedItems << "/" << usedIds.size()
+              << " - in queue : " << nEnqueuedTasks - savedItems
               << std::endl;
     std::cout << "\x1b[A\r" << std::flush;
 
@@ -89,9 +94,9 @@ void MergeManager::ManagerLoop() {
     _saver->EnqueueTasks(std::move(oldTasks));
   }
 
-  while (_saver->savedItems < nEnqueuedTasks) {
+  while (_saver->SavedItems() < nEnqueuedTasks) {
     _saver->Update();
-    LOG(INFO) << "Saved " << _saver->savedItems << " items.";
+    LOG(INFO) << "Saved " << _saver->SavedItems() << " items.";
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 }

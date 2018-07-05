@@ -30,8 +30,8 @@ class TWMCManager : public Manager {
   void Setup();
 
  private:
-  DataStore* _dataStore;
-  ResultsSaver* _saver;
+  std::shared_ptr<DataStore> _dataStore;
+  std::shared_ptr<ResultsSaver> _saver;
   std::shared_ptr<TaskProcessor> _processor;
 
   std::shared_ptr<TWMCSystemData> _sysData;

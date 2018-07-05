@@ -61,10 +61,6 @@ TWMCManager::TWMCManager(const Settings *settings) : Manager(settings) {
 }
 
 TWMCManager::~TWMCManager() {
-  // dispatchThread.join();
-
-  delete _saver;
-  delete _dataStore;
 }
 
 #ifdef MPI_SUPPORT
@@ -74,9 +70,12 @@ TWMCManager::~TWMCManager() {
 void TWMCManager::Setup() {
   seedGenerator = mt19937(settings->GlobalSeed());
 
-  _dataStore = new PincoFormatDataStore(settings, settings->GetOutputFolder());
+  std::shared_ptr<PincoFormatDataStore> ds =
+          std::make_shared<PincoFormatDataStore>(settings,
+                                                 settings->GetOutputFolder());
+  _dataStore = std::static_pointer_cast<DataStore>(ds);
 
-  _saver = new ResultsSaver(settings, _dataStore);
+  _saver = std::make_shared<ResultsSaver>(settings, _dataStore);
 
 #ifdef MPI_SUPPORT
   int ppnMPI = settings->get<int>("ppn", -1);
@@ -121,7 +120,7 @@ void TWMCManager::ManagerLoop() {
 
   cout << "Enqueued " << nTaskToEnqueue << " tasks. " << endl;
 
-  while (_saver->savedItems < nTaskToEnqueue) {
+  while (_saver->SavedItems() < nTaskToEnqueue) {
     _processor->Update();
     _saver->Update();
     _progressReporter->Update();

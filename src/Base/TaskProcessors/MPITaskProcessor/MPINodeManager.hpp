@@ -8,6 +8,7 @@
 #include "Base/Interfaces/IResultConsumer.hpp"
 #include "Base/TaskProcessor.hpp"
 
+#include <memory>
 #include <mpi.h>
 #include <string>
 #include <sstream>
@@ -22,6 +23,7 @@ public:
     explicit MPINodeManager(MPI_Comm* _comm, int processesPerNode);
     ~MPINodeManager();
 
+    void Setup();
 
     void ManagerLoop();
 
@@ -31,7 +33,8 @@ private:
     MPI_Comm* comm;
     int rank;
 
-    TaskProcessor* _processor;
+    std::unique_ptr<TaskProcessor> _processor;
+
 
     size_t receivedTasks = 0;
     size_t sentResults = 0;

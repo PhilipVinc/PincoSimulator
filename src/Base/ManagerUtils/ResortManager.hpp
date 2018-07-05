@@ -27,8 +27,8 @@ class ResortManager : public Manager {
   void Setup();
 
  private:
-  DataStore* _dataStore_old;
-  DataStore* _dataStore_new;
+  std::shared_ptr<DataStore> _dataStore_old;
+  std::shared_ptr<DataStore> _dataStore_new;
   std::unique_ptr<ResultsSaver> _saver;
 
   std::unique_ptr<ProgressReporter> _progressReporter;

@@ -42,9 +42,8 @@ MPINodeManager::MPINodeManager(MPI_Comm* _comm, int processesPerNode)  {
 
     LOG(INFO) << "#"<<rank<<" - Received solver:"<< _solverName;
 
-    _processor = new ThreadedTaskProcessor(_solverName, processesPerNode, processesPerNode);
-    _processor->SetConsumer(this);
-    _processor->Setup();
+    //_processor = new ThreadedTaskProcessor(_solverName, processesPerNode, processesPerNode);
+    _processor = std::make_unique<ThreadedTaskProcessor>(_solverName, processesPerNode, processesPerNode);
     LOG(INFO) << "#"<<rank<<" - Done";
     while(tmpTasksToSend.size() < IDEALSIZE) {
         tmpTasksToSend.emplace_back(nullptr);
@@ -55,6 +54,11 @@ MPINodeManager::~MPINodeManager() {
     LOG(INFO) << "#"<<rank<< " - Destroyed MPINodeManager.";
 }
 
+void MPINodeManager::Setup() {
+    LOG(INFO) << "#"<<rank<< " - Setting up consumer relationship with ThreadedTaskProcessor.";
+    _processor->SetConsumer(shared_from_this());
+    _processor->Setup();
+}
 
 void MPINodeManager::ManagerLoop() {
   chrono::system_clock::time_point lastProgressReportTime     = chrono::system_clock::now();
