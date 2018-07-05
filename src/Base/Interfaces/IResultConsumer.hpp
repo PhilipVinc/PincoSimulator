@@ -12,7 +12,7 @@
 
 class TaskResults;
 
-class IResultConsumer {
+class IResultConsumer : public std::enable_shared_from_this<IResultConsumer> {
  public:
   // Inherited public methods
   void EnqueueTasks(std::vector<std::unique_ptr<TaskResults>>&& tasks);

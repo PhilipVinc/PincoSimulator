@@ -6,6 +6,8 @@
 
 #include "../TaskResults.hpp"
 
+#include "easylogging++.h"
+
 void IResultConsumer::EnqueueTasks(
     std::vector<std::unique_ptr<TaskResults>>&& tasks) {
   enqueuedTasks.enqueue_bulk(std::make_move_iterator(tasks.begin()),
@@ -28,8 +30,12 @@ size_t IResultConsumer::RequestProducerID() {
 }
 
 void IResultConsumer::ReportProducerTermination(std::vector<size_t> IDs) {
+  LOG(DEBUG) << "IResultConsumer::ReportProducerTermination()";
   for (size_t i = 0; i < IDs.size(); i++) { disabledTokens.push_back(IDs[i]); }
 
-  if (disabledTokens.size() == requestedTokens.size())
+  if (disabledTokens.size() == requestedTokens.size()) {
+    LOG(INFO) << "AllProducerHaveBeenTerminated Terminated.";
     AllProducersHaveBeenTerminated();
+  }
+  LOG(DEBUG) << "CompletedReport.";
 }

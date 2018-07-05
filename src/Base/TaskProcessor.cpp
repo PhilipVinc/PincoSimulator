@@ -10,6 +10,6 @@ TaskProcessor::TaskProcessor(std::string solverName)  :
 
 }
 
-void TaskProcessor::SetConsumer(IResultConsumer* consumer) {
+void TaskProcessor::SetConsumer(std::shared_ptr<IResultConsumer> consumer) {
 	_consumer = consumer;
 }

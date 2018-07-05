@@ -10,6 +10,7 @@
 
 #include "Settings.hpp"
 
+#include <memory>
 #include <string>
 
 //class Settings;
@@ -27,7 +28,7 @@ public:
 	virtual void Update() = 0;
 
 	virtual void AllProducersHaveBeenTerminated() = 0;
-	void SetConsumer(IResultConsumer* consumer);
+	void SetConsumer(std::shared_ptr<IResultConsumer> consumer);
 	// Missing: some way to feed forward the results to the
 
 	virtual size_t NumberOfCompletedTasks() const {return 0;} ;
@@ -35,9 +36,9 @@ public:
 
 
 protected:
-    const std::string _solverName;
+  const std::string _solverName;
 
-	IResultConsumer* _consumer;
+	std::shared_ptr<IResultConsumer> _consumer;
 private:
 
 };
