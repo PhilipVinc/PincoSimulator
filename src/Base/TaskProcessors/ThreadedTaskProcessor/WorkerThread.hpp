@@ -33,8 +33,8 @@ public:
     WorkerThread(size_t id, ThreadedTaskProcessor* manager, Solver* solver);
     ~WorkerThread();
     void WorkerLoop();
-	void Terminate() {terminate = true;};
-	void TerminateWhenDone() {terminateWhenDone = true;};
+	void Terminate() {terminate.store(true, std::memory_order_release);};
+	void TerminateWhenDone() {terminateWhenDone.store(true, std::memory_order_release);};
 
 	float GetSimulationSpeed();
 	float GetSimulationProgress();
@@ -50,8 +50,8 @@ protected:
 	std::vector<std::unique_ptr<TaskData>> _currentTasks;
 
 	bool computing = false;
-	bool terminate = false;
-	bool terminateWhenDone = false;
+  std::atomic_bool terminate{false};
+  std::atomic_bool terminateWhenDone{false};
 
 	bool profileEnabled = false;
 	bool monitoringTime = false;

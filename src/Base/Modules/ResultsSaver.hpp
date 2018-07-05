@@ -7,38 +7,42 @@
 
 #include "Base/Interfaces/IResultConsumer.hpp"
 
+#include <atomic>
+#include <memory>
 #include <thread>
 
 class Settings;
 class DataStore;
 
-class ResultsSaver : public IResultConsumer
-{
-public:
-	ResultsSaver(const Settings* settings, DataStore* dataStore);
-	virtual ~ResultsSaver();
+class ResultsSaver : public IResultConsumer {
+ public:
+  ResultsSaver(const Settings* settings, std::shared_ptr<DataStore> dataStore);
+  virtual ~ResultsSaver();
 
-	void Update();
-	void SetConsumer(IResultConsumer* consumer) { _consumer = consumer;};
+  void Update();
+  void SetConsumer(IResultConsumer* consumer) { _consumer = consumer; };
 
-	size_t savedItems = 0;
-protected:
-	const Settings* _settings;
-	DataStore* _dataStore;
-	void SaveData(std::unique_ptr<TaskResults> const &results);
+  inline size_t SavedItems() {
+    return savedItems.load(std::memory_order_acquire);
+  }
 
+ protected:
+  const Settings* _settings;
+  std::shared_ptr<DataStore> _dataStore;
+  void SaveData(std::unique_ptr<TaskResults> const& results);
 
-	virtual void AllProducersHaveBeenTerminated();
-private:
-    void IOThreadUpdate();
+  virtual void AllProducersHaveBeenTerminated();
 
-    std::vector<std::unique_ptr<TaskResults>> tmpTasksToSave;
-	std::thread IOThread;
+ private:
+  void IOThreadUpdate();
 
-	bool terminate = false;
-	IResultConsumer* _consumer = nullptr;
+  std::vector<std::unique_ptr<TaskResults>> tmpTasksToSave;
+  std::thread IOThread;
 
+  IResultConsumer* _consumer = nullptr;
+
+  std::atomic<size_t> savedItems{0};
+  std::atomic_bool terminate{false};
 };
 
-
-#endif //SIMULATOR_RESULTSSAVER_HPP
+#endif  // SIMULATOR_RESULTSSAVER_HPP

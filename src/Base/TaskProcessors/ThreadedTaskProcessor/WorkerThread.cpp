@@ -23,7 +23,6 @@ WorkerThread::WorkerThread(size_t id, ThreadedTaskProcessor* manager, Solver* so
 	_solver = solver;
 
 	computing = false;
-	terminate = false;
 }
 
 WorkerThread::~WorkerThread()
@@ -33,7 +32,7 @@ WorkerThread::~WorkerThread()
 
 void WorkerThread::WorkerLoop()
 {
-    while (!terminate)
+    while (!terminate.load(std::memory_order_acquire))
     {
 	    _currentTasks = _manager->GetDispatchedTasks(_id, _solver->nTasksToRequest);
 	    if (_currentTasks.size() != 0)
@@ -62,8 +61,8 @@ void WorkerThread::WorkerLoop()
                 monitoringTime = false;
                 _manager->ReportAverageSpeed(speed);
             }
-        } else if (terminateWhenDone == true) {
-	        terminate = true;
+        } else if (terminateWhenDone.load(std::memory_order_acquire)) {
+	        terminate.store(terminate, std::memory_order_release);
         }
     }
     _manager->ReportThreadTermination(_id);
