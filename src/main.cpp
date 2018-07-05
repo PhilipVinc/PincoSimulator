@@ -43,7 +43,7 @@ int main(int argc, char * argv[])
 
     if (rank == 0)
     {
-        sleep(3);
+        sleep(6);
 
         cout << "Thread support level is: "<< threadLevel << endl;
 #endif
@@ -71,9 +71,9 @@ int main(int argc, char * argv[])
         node->Setup();
         node->ManagerLoop();
     }
-    LOG(INFO) << rank << " Calling MPI_Finalize()" << endl;
+    LOG(INFO) << "#" << rank << " Calling MPI_Finalize()";
     MPI_Finalize();
-    LOG(INFO) << rank << " Completed MPI_Finalize()" << endl;
+    LOG(INFO) << "#" << rank << " Completed MPI_Finalize()";
 #else
 #endif
     return 0;

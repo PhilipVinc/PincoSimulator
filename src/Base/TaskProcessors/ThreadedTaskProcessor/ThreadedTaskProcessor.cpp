@@ -45,6 +45,7 @@ ThreadedTaskProcessor::ThreadedTaskProcessor(std::string solverName, int _proces
 
 ThreadedTaskProcessor::~ThreadedTaskProcessor()
 {
+	LOG(INFO) << "Starting deletion of ThreadedTaskProcessor's Workers";
 	TerminateAllWorkers();
 	while(activeThreads.size()!= 0)
 	{
@@ -53,9 +54,9 @@ ThreadedTaskProcessor::~ThreadedTaskProcessor()
 		{
 			LOG(INFO) << ("Deactivating thread #" + to_string(th_id));
 			JoinThread(th_id);
-		}
+    }
 	}
-	LOG(INFO) << ("Destroyed ThreadedTaskProcessor");
+	LOG(INFO) << "Destroyed ThreadedTaskProcessor";
 }
 
 void ThreadedTaskProcessor::AllProducersHaveBeenTerminated() {
@@ -215,13 +216,14 @@ void ThreadedTaskProcessor::ReportThreadTermination(size_t th_id)
 void ThreadedTaskProcessor::JoinThread(size_t th_id)
 {
 	threads[th_id].join();
-	delete workers[th_id];
+  delete workers[th_id];
+  LOG(INFO) << "deactivated id. "<< th_id <<"Cleaning up it's remains... " << th_id;
+
 	if (_consumer != nullptr)
 		_consumer->ReportProducerTermination({workerProducerID[th_id]});
 
-	//_consumer->ReportProducerTermination(workerProducerID[th_id]);
 	unactivatedThreadPool.push(th_id);
-	activeThreads.erase(std::remove(activeThreads.begin(), activeThreads.end(), th_id), activeThreads.end());
+  activeThreads.erase(std::remove(activeThreads.begin(), activeThreads.end(), th_id), activeThreads.end());
 }
 
 size_t ThreadedTaskProcessor::NumberOfCompletedTasks() const{
