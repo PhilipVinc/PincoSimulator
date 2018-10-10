@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 3.3)
 project(Simulator VERSION 0.1 LANGUAGES CXX)
 
+set(COMPILE_MPI OFF)
 message("Compiling MPI var: ${COMPILE_MPI}")
 
 option(COMPILE_GPU "Build with GPU Support for the Solvers" OFF)
 option(COMPILE_MPI "Build with MPI Support for the Manager" OFF)
 option(PROFILE_MPI "Build with MPE Profiling support for MPI" OFF)
+
+#set(COMPILE_MPI OFF)
 
 set(CMAKE_CXX_FLAGS -g)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
@@ -183,7 +186,7 @@ set(SOURCE_FILES
         src/Libraries/PreAllocator.hpp
         src/Base/ResultsHelpers/HeterogeneousContainer.hpp
         src/Base/TaskResultsGeneric.hpp src/Base/SettingStrings.hpp
-        src/Base/ManagerUtils/ResortManager.cpp src/Base/ManagerUtils/ResortManager.hpp src/Base/Utils/VectorUtils.hpp src/Base/Utils/Misc.hpp src/Base/Exceptions/NotImplementedException.hpp src/Base/Exceptions/FileNotExistsException.hpp src/Base/Utils/File.cpp src/Base/Utils/File.hpp src/Libraries/enum.h src/Base/ManagerUtils/MergeManager.cpp src/Base/ManagerUtils/MergeManager.hpp src/Base/Exceptions/NoEligibleSolverException.hpp)
+        src/Base/ManagerUtils/ResortManager.cpp src/Base/ManagerUtils/ResortManager.hpp src/Base/Utils/VectorUtils.hpp src/Base/Utils/Misc.hpp src/Base/Exceptions/NotImplementedException.hpp src/Base/Exceptions/FileNotExistsException.hpp src/Base/Utils/File.cpp src/Base/Utils/File.hpp src/Libraries/enum.h src/Base/ManagerUtils/MergeManager.cpp src/Base/ManagerUtils/MergeManager.hpp src/Base/Exceptions/NoEligibleSolverException.hpp src/Base/ManagerUtils/JuliaManager.cpp src/Base/ManagerUtils/JuliaManager.h)
 
 set(GPU_SOURCE_FILES
         src/Base/SolverGPU.hpp

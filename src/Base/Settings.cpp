@@ -188,6 +188,8 @@ std:
 
 Settings::~Settings() {}
 
+string Settings::GetInputFolder() const { return inputParentPathStr; }
+
 string Settings::GetOutputFolder() const { return outputPathStr; }
 
 string Settings::GetRootFolder() const {

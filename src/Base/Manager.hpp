@@ -20,10 +20,8 @@
 
 
 class Settings;
-class DataSaver;
 class TaskData;
 class TaskResults;
-class Task;
 
 
 class Manager
