@@ -1,8 +1,11 @@
-# 🔴 PincoSimulator 🔴
+# 🔴 PincoSimulatorFramework (and TWMCSimulator) 🔴
 
 A scalable Framework for parallel, distributed Montecarlo Trajectory-style physics simulation.
+Several TWMC simulation kernels is included.
 
 ## Description
+
+### Framework
 
 This framework is an ongoing work during my Ph.D. to help scale my numerical simulations. 
 The idea is that if one specifies the common input and ouput of a numerical solver, the
@@ -17,6 +20,14 @@ are currently unstable.
 
 This framework comes with a set of Matlab Utilities designed to read the standard binary 
 data format, and perform some analysis if one desires. 
+
+### TWMC
+
+A set of Truncated Wigner Monte Carlo (TWMC) kernels are included with the code. It is possible
+to simulate 1D, 2D or 1D Lieb Driven-Dissipative Bose-Hubbard lattices with or without PBC 
+and with or without disorder. In the case of uniform hopping constant, a Fast Fourier Transform
+is used to compute the dispersion contribution in k-space, with a cost O(Nlog(N)) instead of 
+O(N^2).
 
 
 ##  Installation
@@ -89,7 +100,7 @@ check test-sim.ini for a sample input file
     chunk_size  : [default=4] maximum chunk size (in GB)
     ppn         : [default=softhreads] maximum number of threads per process.
 
-###  Matrix Instructions
+###  Matrix Input Instructions
 
 To define Specify a matrix U:
 
